@@ -43,11 +43,6 @@
     },
     "plugins": [
       "expo-location"
-    ],
-    "extra": {
-      "eas": {
-        "projectId": "your-project-id-here"
-      }
-    }
+    ]
   }
 }
