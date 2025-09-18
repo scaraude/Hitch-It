@@ -60,11 +60,9 @@ const HomeScreen: React.FC = () => {
                 />
             </View>
 
-            <View style={styles.controls}>
-                <TouchableOpacity style={styles.button} onPress={addMarker}>
-                    <Text style={styles.buttonText}>Add Marker</Text>
-                </TouchableOpacity>
-            </View>
+            <TouchableOpacity style={styles.floatingButton} onPress={addMarker}>
+                <Text style={styles.plusIcon}>+</Text>
+            </TouchableOpacity>
         </SafeAreaView>
     );
 };
@@ -93,20 +91,30 @@ const styles = StyleSheet.create({
     mapContainer: {
         flex: 1,
     },
-    controls: {
-        padding: SPACING.md,
-        backgroundColor: COLORS.surface,
-    },
-    button: {
+    floatingButton: {
+        position: 'absolute',
+        bottom: 60,
+        alignSelf: 'center',
+        width: 60,
+        height: 60,
+        borderRadius: 30,
         backgroundColor: COLORS.primary,
-        padding: SPACING.md,
-        borderRadius: 8,
+        justifyContent: 'center',
         alignItems: 'center',
+        elevation: 8,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 4,
+        },
+        shadowOpacity: 0.3,
+        shadowRadius: 4.65,
     },
-    buttonText: {
+    plusIcon: {
         color: COLORS.background,
-        fontSize: 16,
-        fontWeight: '600',
+        fontSize: 40,
+        fontWeight: 'bold',
+        textAlign: 'center',
     },
 });
 
