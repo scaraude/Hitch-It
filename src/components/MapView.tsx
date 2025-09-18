@@ -22,8 +22,6 @@ const MapViewComponent: React.FC<MapViewComponentProps> = ({
     showUserLocation = true,
     followUserLocation = false,
 }) => {
-    const [region, setRegion] = useState<MapRegion>(initialRegion);
-
     const handleMarkerDragEnd = useCallback(
         (event: any, markerId: string) => {
             const coordinate = event.nativeEvent.coordinate;
@@ -38,9 +36,8 @@ const MapViewComponent: React.FC<MapViewComponentProps> = ({
         [onMarkerDragEnd],
     );
 
-    const handleRegionChange = useCallback(
+    const handleRegionChangeComplete = useCallback(
         (newRegion: Region) => {
-            setRegion(newRegion);
             onRegionChange?.(newRegion);
         },
         [onRegionChange],
@@ -49,14 +46,19 @@ const MapViewComponent: React.FC<MapViewComponentProps> = ({
     return (
         <MapView
             style={styles.map}
-            region={region}
-            onRegionChange={handleRegionChange}
+            initialRegion={initialRegion}
+            onRegionChangeComplete={handleRegionChangeComplete}
             showsUserLocation={showUserLocation}
             followsUserLocation={followUserLocation}
             showsMyLocationButton={true}
             showsCompass={true}
             showsScale={true}
             mapType="standard"
+            moveOnMarkerPress={false}
+            pitchEnabled={true}
+            rotateEnabled={true}
+            scrollEnabled={true}
+            zoomEnabled={true}
         >
             {markers.map((marker) => (
                 <Marker
@@ -67,6 +69,7 @@ const MapViewComponent: React.FC<MapViewComponentProps> = ({
                     pinColor={marker.color || MAP_CONFIG.defaultMarkerColor}
                     draggable={true}
                     onDragEnd={(event) => handleMarkerDragEnd(event, marker.id)}
+                    tracksViewChanges={false}
                 />
             ))}
         </MapView>
