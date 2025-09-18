@@ -1,29 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
     View,
     StyleSheet,
     Text,
     TouchableOpacity,
     Alert,
+    ToastAndroid,
+    Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MapViewComponent } from '../components';
 import { Location, MarkerData } from '../types';
-import { COLORS, SPACING } from '../constants';
+import { COLORS, MAP_CONFIG, SPACING } from '../constants';
 
 const HomeScreen: React.FC = () => {
     const [markers, setMarkers] = useState<MarkerData[]>([
         {
             id: '1',
             coordinate: {
-                latitude: 45.75500275139512,
-                longitude: 4.840276964527021,
+                latitude: MAP_CONFIG.defaultRegion.latitude,
+                longitude: MAP_CONFIG.defaultRegion.longitude,
             },
             title: 'Test Marker',
             description: 'This is a description of the marker',
             color: COLORS.primary,
         },
     ]);
+    const [isPlacingMarker, setIsPlacingMarker] = useState(false);
+    const [currentRegion, setCurrentRegion] = useState(MAP_CONFIG.defaultRegion);
 
     const handleMarkerDragEnd = (coordinate: Location) => {
         Alert.alert(
@@ -32,18 +36,36 @@ const HomeScreen: React.FC = () => {
         );
     };
 
-    const addMarker = () => {
+    const showToast = (message: string) => {
+        if (Platform.OS === 'android') {
+            ToastAndroid.show(message, ToastAndroid.SHORT);
+        } else {
+            Alert.alert('Success', message);
+        }
+    };
+
+    const handleRegionChange = (region: any) => {
+        setCurrentRegion(region);
+    };
+
+    const startPlacingMarker = () => {
+        setIsPlacingMarker(true);
+    };
+
+    const confirmMarkerPlacement = () => {
         const newMarker: MarkerData = {
             id: Date.now().toString(),
             coordinate: {
-                latitude: 45.75500275139512 + (Math.random() - 0.5) * 0.01,
-                longitude: 4.840276964527021 + (Math.random() - 0.5) * 0.01,
+                latitude: currentRegion.latitude,
+                longitude: currentRegion.longitude,
             },
             title: `Marker ${markers.length + 1}`,
             description: 'A new marker',
             color: COLORS.secondary,
         };
         setMarkers([...markers, newMarker]);
+        setIsPlacingMarker(false);
+        showToast(`New marker saved at ${currentRegion.latitude.toFixed(6)}, ${currentRegion.longitude.toFixed(6)}`);
     };
 
     return (
@@ -57,11 +79,20 @@ const HomeScreen: React.FC = () => {
                 <MapViewComponent
                     markers={markers}
                     onMarkerDragEnd={handleMarkerDragEnd}
+                    onRegionChange={handleRegionChange}
                 />
+                {isPlacingMarker && (
+                    <View style={styles.centerMarker}>
+                        <View style={styles.markerPin} />
+                    </View>
+                )}
             </View>
 
-            <TouchableOpacity style={styles.floatingButton} onPress={addMarker}>
-                <Text style={styles.plusIcon}>+</Text>
+            <TouchableOpacity
+                style={styles.floatingButton}
+                onPress={isPlacingMarker ? confirmMarkerPlacement : startPlacingMarker}
+            >
+                <Text style={styles.plusIcon}>{isPlacingMarker ? '✓' : '+'}</Text>
             </TouchableOpacity>
         </SafeAreaView>
     );
@@ -116,6 +147,22 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         textAlign: 'center',
     },
+    centerMarker: {
+        position: 'absolute',
+        left: '50%',
+        top: '50%',
+        marginLeft: -9,
+        marginTop: -9,
+        alignItems: 'center',
+    },
+    markerPin: {
+        width: 18,
+        height: 18,
+        backgroundColor: COLORS.secondary,
+        borderRadius: 12,
+        borderWidth: 3,
+        borderColor: COLORS.background,
+    }
 });
 
 export default HomeScreen;
