@@ -5,10 +5,10 @@ import {
     Text,
     TouchableOpacity,
     Alert,
-    ToastAndroid,
     Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Toast from 'react-native-toast-message';
 import { MapViewComponent } from '../components';
 import { Location, MarkerData } from '../types';
 import { COLORS, MAP_CONFIG, SPACING } from '../constants';
@@ -37,11 +37,13 @@ const HomeScreen: React.FC = () => {
     };
 
     const showToast = (message: string) => {
-        if (Platform.OS === 'android') {
-            ToastAndroid.show(message, ToastAndroid.SHORT);
-        } else {
-            Alert.alert('Success', message);
-        }
+        Toast.show({
+            type: 'success',
+            text1: 'Marker Added',
+            text2: message,
+            position: 'top',
+            visibilityTime: 3000,
+        });
     };
 
     const handleRegionChange = (region: any) => {
@@ -115,6 +117,7 @@ const HomeScreen: React.FC = () => {
                     <Text style={styles.plusIcon}>+</Text>
                 </TouchableOpacity>
             )}
+            <Toast />
         </SafeAreaView>
     );
 };
