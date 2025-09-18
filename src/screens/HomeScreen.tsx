@@ -68,6 +68,10 @@ const HomeScreen: React.FC = () => {
         showToast(`New marker saved at ${currentRegion.latitude.toFixed(6)}, ${currentRegion.longitude.toFixed(6)}`);
     };
 
+    const cancelMarkerPlacement = () => {
+        setIsPlacingMarker(false);
+    };
+
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
@@ -88,12 +92,29 @@ const HomeScreen: React.FC = () => {
                 )}
             </View>
 
-            <TouchableOpacity
-                style={styles.floatingButton}
-                onPress={isPlacingMarker ? confirmMarkerPlacement : startPlacingMarker}
-            >
-                <Text style={styles.plusIcon}>{isPlacingMarker ? '✓' : '+'}</Text>
-            </TouchableOpacity>
+            {isPlacingMarker ? (
+                <View style={styles.buttonContainer}>
+                    <TouchableOpacity
+                        style={[styles.actionButton, styles.cancelButton]}
+                        onPress={cancelMarkerPlacement}
+                    >
+                        <Text style={styles.plusIcon}>×</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[styles.actionButton, styles.confirmButton]}
+                        onPress={confirmMarkerPlacement}
+                    >
+                        <Text style={styles.plusIcon}>✓</Text>
+                    </TouchableOpacity>
+                </View>
+            ) : (
+                <TouchableOpacity
+                    style={styles.floatingButton}
+                    onPress={startPlacingMarker}
+                >
+                    <Text style={styles.plusIcon}>+</Text>
+                </TouchableOpacity>
+            )}
         </SafeAreaView>
     );
 };
@@ -122,6 +143,13 @@ const styles = StyleSheet.create({
     mapContainer: {
         flex: 1,
     },
+    buttonContainer: {
+        position: 'absolute',
+        bottom: 60,
+        alignSelf: 'center',
+        flexDirection: 'row',
+        gap: 80,
+    },
     floatingButton: {
         position: 'absolute',
         bottom: 60,
@@ -140,6 +168,28 @@ const styles = StyleSheet.create({
         },
         shadowOpacity: 0.3,
         shadowRadius: 4.65,
+    },
+    actionButton: {
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        backgroundColor: COLORS.primary,
+        justifyContent: 'space-around',
+        alignItems: 'center',
+        elevation: 8,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 4,
+        },
+        shadowOpacity: 0.3,
+        shadowRadius: 4.65,
+    },
+    cancelButton: {
+        backgroundColor: COLORS.error,
+    },
+    confirmButton: {
+        backgroundColor: COLORS.success,
     },
     plusIcon: {
         color: COLORS.background,
