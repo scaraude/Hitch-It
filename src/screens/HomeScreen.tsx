@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import {
     View,
     StyleSheet,
-    SafeAreaView,
     Text,
     TouchableOpacity,
     Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { MapViewComponent } from '../components';
 import { Location, MarkerData } from '../types';
 import { COLORS, SPACING } from '../constants';
