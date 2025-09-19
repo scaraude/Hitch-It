@@ -1,17 +1,16 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import {
-    View,
+    Alert,
     StyleSheet,
     Text,
     TouchableOpacity,
-    Alert,
-    Platform,
+    View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import { MapViewComponent } from '../components';
-import { Location, MarkerData } from '../types';
 import { COLORS, MAP_CONFIG, SPACING } from '../constants';
+import { Location, MarkerData } from '../types';
 
 const HomeScreen: React.FC = () => {
     const [markers, setMarkers] = useState<MarkerData[]>([
