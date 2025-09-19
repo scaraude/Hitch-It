@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import * as Location from 'expo-location';
+import React, { useEffect, useState } from 'react';
 import {
+    ActivityIndicator,
     Alert,
     StyleSheet,
     Text,
@@ -10,7 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import { MapViewComponent } from '../components';
 import { COLORS, MAP_CONFIG, SPACING } from '../constants';
-import { Location, MarkerData } from '../types';
+import { Location as LocationType, MapRegion, MarkerData } from '../types';
 
 const HomeScreen: React.FC = () => {
     const [markers, setMarkers] = useState<MarkerData[]>([
@@ -26,9 +28,57 @@ const HomeScreen: React.FC = () => {
         },
     ]);
     const [isPlacingMarker, setIsPlacingMarker] = useState(false);
-    const [currentRegion, setCurrentRegion] = useState(MAP_CONFIG.defaultRegion);
+    const [currentRegion, setCurrentRegion] = useState<MapRegion>(MAP_CONFIG.defaultRegion);
+    const [_userLocation, setUserLocation] = useState<LocationType | null>(null);
+    const [locationLoading, setLocationLoading] = useState(true);
 
-    const handleMarkerDragEnd = (coordinate: Location) => {
+    useEffect(() => {
+        getCurrentLocation();
+    }, []);
+
+    const getCurrentLocation = async () => {
+        try {
+            const { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== 'granted') {
+                Alert.alert(
+                    'Permission Denied',
+                    'Location permission is required to show your current location on the map.',
+                    [
+                        { text: 'OK', onPress: () => setLocationLoading(false) }
+                    ]
+                );
+                return;
+            }
+
+            const location = await Location.getCurrentPositionAsync({});
+            const userCoordinate: LocationType = {
+                latitude: location.coords.latitude,
+                longitude: location.coords.longitude,
+            };
+
+            setUserLocation(userCoordinate);
+            const newRegion = {
+                latitude: userCoordinate.latitude,
+                longitude: userCoordinate.longitude,
+                latitudeDelta: MAP_CONFIG.defaultRegion.latitudeDelta,
+                longitudeDelta: MAP_CONFIG.defaultRegion.longitudeDelta,
+            };
+            setCurrentRegion(newRegion);
+        } catch (error) {
+            console.error('Error getting location:', error);
+            Alert.alert(
+                'Location Error',
+                'Unable to get your current location. Using default location.',
+                [
+                    { text: 'OK', onPress: () => setLocationLoading(false) }
+                ]
+            );
+        } finally {
+            setLocationLoading(false);
+        }
+    };
+
+    const handleMarkerDragEnd = (coordinate: LocationType) => {
         Alert.alert(
             'Marker Moved',
             `New location: ${coordinate.latitude.toFixed(6)}, ${coordinate.longitude.toFixed(6)}`,
@@ -45,7 +95,7 @@ const HomeScreen: React.FC = () => {
         });
     };
 
-    const handleRegionChange = (region: any) => {
+    const handleRegionChange = (region: MapRegion) => {
         setCurrentRegion(region);
     };
 
@@ -81,15 +131,25 @@ const HomeScreen: React.FC = () => {
             </View>
 
             <View style={styles.mapContainer}>
-                <MapViewComponent
-                    markers={markers}
-                    onMarkerDragEnd={handleMarkerDragEnd}
-                    onRegionChange={handleRegionChange}
-                />
-                {isPlacingMarker && (
-                    <View style={styles.centerMarker}>
-                        <View style={styles.markerPin} />
+                {locationLoading ? (
+                    <View style={styles.loadingContainer}>
+                        <ActivityIndicator size="large" color={COLORS.primary} />
+                        <Text style={styles.loadingText}>Getting your location...</Text>
                     </View>
+                ) : (
+                    <>
+                        <MapViewComponent
+                            initialRegion={currentRegion}
+                            markers={markers}
+                            onMarkerDragEnd={handleMarkerDragEnd}
+                            onRegionChange={handleRegionChange}
+                        />
+                        {isPlacingMarker && (
+                            <View style={styles.centerMarker}>
+                                <View style={styles.markerPin} />
+                            </View>
+                        )}
+                    </>
                 )}
             </View>
 
@@ -144,6 +204,18 @@ const styles = StyleSheet.create({
     },
     mapContainer: {
         flex: 1,
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: COLORS.surface,
+    },
+    loadingText: {
+        marginTop: SPACING.md,
+        fontSize: 16,
+        color: COLORS.text,
+        textAlign: 'center',
     },
     buttonContainer: {
         position: 'absolute',
