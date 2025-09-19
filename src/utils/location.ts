@@ -1,4 +1,4 @@
-import { Location } from '@types/index';
+import { Location } from '@shared-types/index';
 
 /**
  * Calculate distance between two coordinates in kilometers

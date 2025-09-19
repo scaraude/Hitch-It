@@ -28,7 +28,7 @@
       "@utils/*": [
         "./src/utils/*"
       ],
-      "@types/*": [
+      "@shared-types/*": [
         "./src/types/*"
       ],
       "@constants/*": [
