@@ -1,8 +1,8 @@
-import React, { useState, useCallback } from 'react';
-import { StyleSheet, Alert } from 'react-native';
+import React, { useCallback } from 'react';
+import { Alert, StyleSheet } from 'react-native';
 import MapView, { Marker, Region } from 'react-native-maps';
-import { Location, MarkerData, MapRegion } from '../types';
-import { MAP_CONFIG, COLORS } from '../constants';
+import { MAP_CONFIG } from '../constants';
+import { Location, MapRegion, MarkerData } from '../types';
 import { isValidLocation } from '../utils';
 
 interface MapViewComponentProps {
@@ -23,7 +23,14 @@ const MapViewComponent: React.FC<MapViewComponentProps> = ({
     followUserLocation = false,
 }) => {
     const handleMarkerDragEnd = useCallback(
-        (event: any, markerId: string) => {
+        (event: {
+            nativeEvent: {
+                coordinate: {
+                    latitude: number;
+                    longitude: number;
+                };
+            };
+        }, _markerId: string) => {
             const coordinate = event.nativeEvent.coordinate;
 
             if (!isValidLocation(coordinate)) {
