@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { toastUtils } from '../components/ui';
 import { COLORS, MAP_CONFIG } from '../constants';
-import { Location, MapRegion, MarkerData } from '../types';
+import { MapRegion, MarkerData } from '../types';
 
 interface UseMarkersReturn {
     markers: MarkerData[];
@@ -9,7 +9,6 @@ interface UseMarkersReturn {
     startPlacingMarker: () => void;
     confirmMarkerPlacement: (region: MapRegion) => void;
     cancelMarkerPlacement: () => void;
-    handleMarkerDragEnd: (coordinate: Location) => void;
 }
 
 export const useMarkers = (): UseMarkersReturn => {
@@ -52,17 +51,11 @@ export const useMarkers = (): UseMarkersReturn => {
         setIsPlacingMarker(false);
     };
 
-    const handleMarkerDragEnd = (coordinate: Location) => {
-        // You can add marker update logic here if needed
-        console.log('Marker dragged to:', coordinate);
-    };
-
     return {
         markers,
         isPlacingMarker,
         startPlacingMarker,
         confirmMarkerPlacement,
         cancelMarkerPlacement,
-        handleMarkerDragEnd,
     };
 };

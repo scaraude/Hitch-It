@@ -1,25 +1,16 @@
 import React, { useState } from 'react';
-import { Alert, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import { ActionButtons, FloatingButton, Header, LoadingSpinner, MapViewComponent } from '../components';
 import { COLORS } from '../constants';
 import { useLocation, useMarkers } from '../hooks';
-import { Location as LocationType, MapRegion } from '../types';
+import { MapRegion } from '../types';
 
 const HomeScreen: React.FC = () => {
     const { currentRegion, locationLoading } = useLocation();
-    const { markers, isPlacingMarker, startPlacingMarker, confirmMarkerPlacement, cancelMarkerPlacement, handleMarkerDragEnd } = useMarkers();
+    const { markers, isPlacingMarker, startPlacingMarker, confirmMarkerPlacement, cancelMarkerPlacement } = useMarkers();
     const [mapRegion, setMapRegion] = useState<MapRegion>(currentRegion);
-
-
-    const onMarkerDragEnd = (coordinate: LocationType) => {
-        Alert.alert(
-            'Marker Moved',
-            `New location: ${coordinate.latitude.toFixed(6)}, ${coordinate.longitude.toFixed(6)}`,
-        );
-        handleMarkerDragEnd(coordinate);
-    };
 
     const handleRegionChange = (region: MapRegion) => {
         setMapRegion(region);
@@ -41,7 +32,6 @@ const HomeScreen: React.FC = () => {
                         <MapViewComponent
                             initialRegion={currentRegion}
                             markers={markers}
-                            onMarkerDragEnd={onMarkerDragEnd}
                             onRegionChange={handleRegionChange}
                         />
                         {isPlacingMarker && (
@@ -54,12 +44,12 @@ const HomeScreen: React.FC = () => {
             </View>
 
             {isPlacingMarker ? (
-                <ActionButtons 
+                <ActionButtons
                     onConfirm={onConfirmMarkerPlacement}
                     onCancel={cancelMarkerPlacement}
                 />
             ) : (
-                <FloatingButton 
+                <FloatingButton
                     onPress={startPlacingMarker}
                     icon="+"
                 />

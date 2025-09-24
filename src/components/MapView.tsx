@@ -2,14 +2,11 @@ import React, { useCallback } from 'react';
 import { StyleSheet } from 'react-native';
 import MapView, { Marker, Region } from 'react-native-maps';
 import { MAP_CONFIG } from '../constants';
-import { Location, MapRegion, MarkerData } from '../types';
-import { toastUtils } from './ui';
-import { isValidLocation } from '../utils';
+import { MapRegion, MarkerData } from '../types';
 
 interface MapViewComponentProps {
     initialRegion?: MapRegion;
     markers?: MarkerData[];
-    onMarkerDragEnd?: (coordinate: Location) => void;
     onRegionChange?: (region: Region) => void;
     showUserLocation?: boolean;
     followUserLocation?: boolean;
@@ -18,32 +15,10 @@ interface MapViewComponentProps {
 const MapViewComponent: React.FC<MapViewComponentProps> = ({
     initialRegion = MAP_CONFIG.defaultRegion,
     markers = [],
-    onMarkerDragEnd,
     onRegionChange,
     showUserLocation = true,
     followUserLocation = false,
 }) => {
-    const handleMarkerDragEnd = useCallback(
-        (event: {
-            nativeEvent: {
-                coordinate: {
-                    latitude: number;
-                    longitude: number;
-                };
-            };
-        }, _markerId: string) => {
-            const coordinate = event.nativeEvent.coordinate;
-
-            if (!isValidLocation(coordinate)) {
-                toastUtils.error('Invalid Location', 'Please select a valid location.');
-                return;
-            }
-
-            onMarkerDragEnd?.(coordinate);
-        },
-        [onMarkerDragEnd],
-    );
-
     const handleRegionChangeComplete = useCallback(
         (newRegion: Region) => {
             onRegionChange?.(newRegion);
@@ -75,8 +50,6 @@ const MapViewComponent: React.FC<MapViewComponentProps> = ({
                     title={marker.title}
                     description={marker.description}
                     pinColor={marker.color || MAP_CONFIG.defaultMarkerColor}
-                    draggable={true}
-                    onDragEnd={(event) => handleMarkerDragEnd(event, marker.id)}
                     tracksViewChanges={false}
                 />
             ))}
