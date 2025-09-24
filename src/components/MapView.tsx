@@ -1,8 +1,9 @@
 import React, { useCallback } from 'react';
-import { Alert, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 import MapView, { Marker, Region } from 'react-native-maps';
 import { MAP_CONFIG } from '../constants';
 import { Location, MapRegion, MarkerData } from '../types';
+import { toastUtils } from './ui';
 import { isValidLocation } from '../utils';
 
 interface MapViewComponentProps {
@@ -34,7 +35,7 @@ const MapViewComponent: React.FC<MapViewComponentProps> = ({
             const coordinate = event.nativeEvent.coordinate;
 
             if (!isValidLocation(coordinate)) {
-                Alert.alert('Invalid Location', 'Please select a valid location.');
+                toastUtils.error('Invalid Location', 'Please select a valid location.');
                 return;
             }
 
