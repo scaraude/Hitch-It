@@ -4,16 +4,6 @@ export const APP_CONFIG = {
     description: 'A modern React Native app for hitchhiking',
 } as const;
 
-export const MAP_CONFIG = {
-    defaultRegion: {
-        latitude: 45.75500275139512,
-        longitude: 4.840276964527021,
-        latitudeDelta: 0.0922,
-        longitudeDelta: 0.0421,
-    },
-    defaultMarkerColor: '#096396',
-} as const;
-
 export const COLORS = {
     primary: '#096396',
     secondary: '#4A90E2',
@@ -24,6 +14,16 @@ export const COLORS = {
     surface: '#F5F5F5',
     text: '#212121',
     textSecondary: '#757575',
+} as const;
+
+export const MAP_CONFIG = {
+    defaultRegion: {
+        latitude: 45.75500275139512,
+        longitude: 4.840276964527021,
+        latitudeDelta: 0.0922,
+        longitudeDelta: 0.0421,
+    },
+    defaultMarkerColor: COLORS.primary,
 } as const;
 
 export const SPACING = {
