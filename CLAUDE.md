@@ -2,6 +2,9 @@
 
 ## Project Commands
 
+### Product spec
+- the app is for french people and french territory
+
 ### Package manager
 project package manager: 
 ```
@@ -55,3 +58,8 @@ src/
 - **UI components** are reusable and composable
 - **TypeScript** for type safety
 - **Expo** for React Native development
+
+## Domain struct
+
+- **spots**: spots will have {appreciation: "perfect" | "good" | "bad", roadName: string, direction: "North" | "North-East" | "East"..., destinations: string[], comments: Comment[] } + { createdAt, updatedAt, createdBy, etc }
+- **comment**: {text: string, appreciation: Appreciation, markedAsDangerous: bool} + {createdAt, updatedAt, autor, etc}

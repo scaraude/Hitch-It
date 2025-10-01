@@ -4,20 +4,21 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import { ActionButtons, FloatingButton, Header, LoadingSpinner, MapViewComponent } from '../components';
 import { COLORS } from '../constants';
-import { useLocation, useMarkers } from '../hooks';
+import { useLocation } from '../hooks';
+import { useSpots } from '../spot/hooks';
 import { MapRegion } from '../types';
 
 const HomeScreen: React.FC = () => {
     const { currentRegion, locationLoading } = useLocation();
-    const { markers, isPlacingMarker, startPlacingMarker, confirmMarkerPlacement, cancelMarkerPlacement } = useMarkers();
+    const { spots, isPlacingSpot, startPlacingSpot, confirmSpotPlacement, cancelSpotPlacement } = useSpots();
     const [mapRegion, setMapRegion] = useState<MapRegion>(currentRegion);
 
     const handleRegionChange = (region: MapRegion) => {
         setMapRegion(region);
     };
 
-    const onConfirmMarkerPlacement = () => {
-        confirmMarkerPlacement(mapRegion);
+    const onConfirmSpotPlacement = () => {
+        confirmSpotPlacement(mapRegion);
     };
 
     return (
@@ -31,10 +32,10 @@ const HomeScreen: React.FC = () => {
                     <>
                         <MapViewComponent
                             initialRegion={currentRegion}
-                            markers={markers}
+                            markers={spots}
                             onRegionChange={handleRegionChange}
                         />
-                        {isPlacingMarker && (
+                        {isPlacingSpot && (
                             <View style={styles.centerMarker}>
                                 <View style={styles.markerPin} />
                             </View>
@@ -43,14 +44,14 @@ const HomeScreen: React.FC = () => {
                 )}
             </View>
 
-            {isPlacingMarker ? (
+            {isPlacingSpot ? (
                 <ActionButtons
-                    onConfirm={onConfirmMarkerPlacement}
-                    onCancel={cancelMarkerPlacement}
+                    onConfirm={onConfirmSpotPlacement}
+                    onCancel={cancelSpotPlacement}
                 />
             ) : (
                 <FloatingButton
-                    onPress={startPlacingMarker}
+                    onPress={startPlacingSpot}
                     icon="+"
                 />
             )}

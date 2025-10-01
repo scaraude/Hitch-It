@@ -1,0 +1,1 @@
+export { useSpots } from './useSpots';
