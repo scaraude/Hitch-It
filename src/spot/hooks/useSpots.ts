@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { toastUtils } from '../../components/ui';
 import { COLORS, MAP_CONFIG } from '../../constants';
-import { MapRegion, MarkerData } from '../../types';
+import type { MapRegion } from '../../types';
+import type { SpotMarkerData } from '../types';
 
 interface UseSpotsReturn {
-    spots: MarkerData[];
+    spots: SpotMarkerData[];
     isPlacingSpot: boolean;
     startPlacingSpot: () => void;
     confirmSpotPlacement: (region: MapRegion) => void;
@@ -12,7 +13,7 @@ interface UseSpotsReturn {
 }
 
 export const useSpots = (): UseSpotsReturn => {
-    const [spots, setSpots] = useState<MarkerData[]>([
+    const [spotMarkers, setSpotMarkers] = useState<SpotMarkerData[]>([
         {
             id: '1',
             coordinate: {
@@ -32,17 +33,17 @@ export const useSpots = (): UseSpotsReturn => {
     };
 
     const confirmSpotPlacement = (region: MapRegion) => {
-        const newSpot: MarkerData = {
+        const newSpotMarker: SpotMarkerData = {
             id: Date.now().toString(),
             coordinate: {
                 latitude: region.latitude,
                 longitude: region.longitude,
             },
-            title: `Spot ${spots.length + 1}`,
+            title: `Spot ${spotMarkers.length + 1}`,
             description: 'A new spot',
             color: COLORS.secondary,
         };
-        setSpots([...spots, newSpot]);
+        setSpotMarkers([...spotMarkers, newSpotMarker]);
         setIsPlacingSpot(false);
         toastUtils.success('Spot Added', `New spot saved at ${region.latitude.toFixed(6)}, ${region.longitude.toFixed(6)}`);
     };
@@ -52,7 +53,7 @@ export const useSpots = (): UseSpotsReturn => {
     };
 
     return {
-        spots,
+        spots: spotMarkers,
         isPlacingSpot,
         startPlacingSpot,
         confirmSpotPlacement,

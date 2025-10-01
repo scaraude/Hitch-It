@@ -3,14 +3,6 @@ export interface Location {
     longitude: number;
 }
 
-export interface MarkerData {
-    id: string;
-    coordinate: Location;
-    title: string;
-    description?: string;
-    color?: string;
-}
-
 export interface MapRegion {
     latitude: number;
     longitude: number;

@@ -2,11 +2,12 @@ import React, { useCallback } from 'react';
 import { StyleSheet } from 'react-native';
 import MapView, { Marker, Region } from 'react-native-maps';
 import { MAP_CONFIG } from '../constants';
-import { MapRegion, MarkerData } from '../types';
+import type { SpotMarkerData } from '../spot/types';
+import { MapRegion } from '../types';
 
 interface MapViewComponentProps {
     initialRegion?: MapRegion;
-    markers?: MarkerData[];
+    markers?: SpotMarkerData[];
     onRegionChange?: (region: Region) => void;
     showUserLocation?: boolean;
     followUserLocation?: boolean;

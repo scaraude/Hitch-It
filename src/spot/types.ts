@@ -12,6 +12,14 @@ export interface Location {
     longitude: number;
 }
 
+export interface SpotMarkerData {
+    id: string;
+    coordinate: Location;
+    title: string;
+    description?: string;
+    color?: string;
+}
+
 export interface Spot {
     id: SpotId;
     appreciation: Appreciation;
