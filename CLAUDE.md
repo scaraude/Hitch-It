@@ -94,6 +94,34 @@ src/
 - **Enums**: Use `enum` for domain values (not union types)
   - **PascalCase** for enum keys (e.g., `Direction.North`, not `Direction.NORTH`)
   - Reserve UPPER_SNAKE_CASE for true constants (e.g., `const MAX_RETRIES = 3`)
+  - Example:
+    ```typescript
+    enum Direction {
+        North = "North",
+        NorthEast = "North-East"
+    }
+    // Usage: Direction.North
+    ```
+- **Branded Types**: Use branded types for IDs to prevent mixing different entity IDs
+  - Provides type safety at compile time
+  - Prevents accidentally using wrong ID type (e.g., using UserId as SpotId)
+  - Example:
+    ```typescript
+    // Define branded type
+    export type SpotId = string & { readonly brand: unique symbol };
+    export type UserId = string & { readonly brand: unique symbol };
+
+    interface Spot {
+        id: SpotId;
+        // ...
+    }
+
+    // Usage: cast string to branded type when creating/receiving IDs
+    const spotId = "123" as SpotId;
+    const userId = "456" as UserId;
+
+    // TypeScript will prevent: spot.id = userId (compile error!)
+    ```
 
 ### Domain struct
 - **spots**: spots will have {appreciation: "perfect" | "good" | "bad", roadName: string, direction: "North" | "North-East" | "East"..., destinations: string[], comments: Comment[] } + { createdAt, updatedAt, createdBy, etc }
