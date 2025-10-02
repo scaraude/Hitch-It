@@ -40,7 +40,7 @@ const HomeScreen: React.FC = () => {
 
     return (
         <SafeAreaView style={styles.container}>
-            <Header title="Hitch It" subtitle="Find your next ride" />
+            <Header title="Hitch It" />
 
             <View style={styles.mapContainer}>
                 {locationLoading ? (
