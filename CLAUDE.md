@@ -90,7 +90,11 @@ src/
 - Use **barrel exports** (`index.ts`) for clean imports
 - Follow **React Native best practices** for performance
 
-## Domain struct
+### TypeScript Conventions
+- **Enums**: Use `enum` for domain values (not union types)
+  - **PascalCase** for enum keys (e.g., `Direction.North`, not `Direction.NORTH`)
+  - Reserve UPPER_SNAKE_CASE for true constants (e.g., `const MAX_RETRIES = 3`)
 
+### Domain struct
 - **spots**: spots will have {appreciation: "perfect" | "good" | "bad", roadName: string, direction: "North" | "North-East" | "East"..., destinations: string[], comments: Comment[] } + { createdAt, updatedAt, createdBy, etc }
 - **comment**: {text: string, appreciation: Appreciation, markedAsDangerous: bool} + {createdAt, updatedAt, autor, etc}
