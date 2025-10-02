@@ -33,20 +33,12 @@ export const FloatingButton: React.FC<FloatingButtonProps> = ({
 
 const styles = StyleSheet.create({
     button: {
-        bottom: 60,
         width: 60,
         height: 60,
         borderRadius: 30,
         justifyContent: 'center',
         alignItems: 'center',
         elevation: 8,
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 4,
-        },
-        shadowOpacity: 0.3,
-        shadowRadius: 4.65,
     },
     center: {
         alignSelf: 'center',

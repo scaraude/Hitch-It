@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
-import { ActionButtons, FloatingButton, Header, LoadingSpinner, MapViewComponent } from '../components';
+import { ActionButtons, Header, LoadingSpinner, MapViewComponent } from '../components';
 import { COLORS } from '../constants';
 import { useLocation } from '../hooks';
+import { CreateSpotButton } from '../spot/components';
 import { useSpots } from '../spot/hooks';
 import { MapRegion } from '../types';
 
@@ -50,9 +51,8 @@ const HomeScreen: React.FC = () => {
                     onCancel={cancelSpotPlacement}
                 />
             ) : (
-                <FloatingButton
+                <CreateSpotButton
                     onPress={startPlacingSpot}
-                    icon="+"
                 />
             )}
             <Toast />
