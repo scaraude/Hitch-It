@@ -4,6 +4,7 @@ import { COLORS, MAP_CONFIG } from '../../constants';
 import type { MapRegion } from '../../types';
 import type { Location, Spot, SpotId, SpotMarkerData } from '../types';
 import { Appreciation, Direction } from '../types';
+import { createSpotId } from '../utils';
 
 export interface SpotFormData {
     appreciation: Appreciation;
@@ -31,7 +32,7 @@ interface UseSpotsReturn {
 export const useSpots = (): UseSpotsReturn => {
     const [fullSpots, setFullSpots] = useState<Spot[]>([
         {
-            id: '1' as SpotId,
+            id: createSpotId('1'),
             coordinates: {
                 latitude: MAP_CONFIG.defaultRegion.latitude,
                 longitude: MAP_CONFIG.defaultRegion.longitude,
@@ -76,7 +77,7 @@ export const useSpots = (): UseSpotsReturn => {
         if (!pendingLocation) return;
 
         const newSpot: Spot = {
-            id: Date.now().toString() as SpotId,
+            id: createSpotId(Date.now().toString()),
             coordinates: pendingLocation,
             roadName: formData.roadName,
             appreciation: formData.appreciation,
@@ -103,7 +104,8 @@ export const useSpots = (): UseSpotsReturn => {
     };
 
     const selectSpot = (spotId: string) => {
-        const spot = fullSpots.find(s => s.id === spotId as SpotId);
+        const spotIdBranded = createSpotId(spotId);
+        const spot = fullSpots.find(s => s.id === spotIdBranded);
         if (spot) {
             setSelectedSpot(spot);
         }

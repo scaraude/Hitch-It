@@ -1,7 +1,10 @@
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View, ScrollView } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { COLORS, SPACING } from '../../constants';
-import { Appreciation, Direction, Spot } from '../types';
+import { formatDate } from '../../utils';
+import { APPRECIATION_CONFIG, DIRECTION_CONFIG } from '../constants';
+import { Spot } from '../types';
+import { DestinationChip } from './ui';
 
 interface SpotDetailsSheetProps {
     spot: Spot;
@@ -9,36 +12,9 @@ interface SpotDetailsSheetProps {
     onAddComment?: () => void;
 }
 
-const APPRECIATION_CONFIG: Record<Appreciation, { label: string; color: string; emoji: string }> = {
-    [Appreciation.Perfect]: { label: 'Parfait', color: COLORS.success, emoji: '🎯' },
-    [Appreciation.Good]: { label: 'Bon', color: COLORS.primary, emoji: '👍' },
-    [Appreciation.Bad]: { label: 'Mauvais', color: COLORS.error, emoji: '👎' }
-};
-
-const DIRECTION_EMOJI: Record<Direction, string> = {
-    [Direction.North]: '⬆️',
-    [Direction.NorthEast]: '↗️',
-    [Direction.East]: '➡️',
-    [Direction.SouthEast]: '↘️',
-    [Direction.South]: '⬇️',
-    [Direction.SouthWest]: '↙️',
-    [Direction.West]: '⬅️',
-    [Direction.NorthWest]: '↖️'
-};
-
 export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({ spot, onClose, onAddComment }) => {
     const appreciationConfig = APPRECIATION_CONFIG[spot.appreciation];
-    const directionEmoji = DIRECTION_EMOJI[spot.direction];
-
-    const formatDate = (date: Date) => {
-        return new Intl.DateTimeFormat('fr-FR', {
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        }).format(date);
-    };
+    const directionEmoji = DIRECTION_CONFIG[spot.direction].emoji;
 
     return (
         <View style={styles.container}>
@@ -74,9 +50,7 @@ export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({ spot, onClos
                         <Text style={styles.sectionTitle}>Destinations</Text>
                         <View style={styles.destinationList}>
                             {spot.destinations.map((dest, index) => (
-                                <View key={index} style={styles.destinationChip}>
-                                    <Text style={styles.destinationText}>{dest}</Text>
-                                </View>
+                                <DestinationChip key={index} destination={dest} />
                             ))}
                         </View>
                     </View>
@@ -230,17 +204,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         flexWrap: 'wrap',
         gap: SPACING.sm,
-    },
-    destinationChip: {
-        backgroundColor: COLORS.secondary,
-        paddingVertical: SPACING.sm,
-        paddingHorizontal: SPACING.md,
-        borderRadius: 20,
-    },
-    destinationText: {
-        fontSize: 14,
-        color: COLORS.background,
-        fontWeight: '500',
     },
     coordinates: {
         fontSize: 14,

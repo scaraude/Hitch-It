@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { COLORS, SPACING } from '../../constants';
+import { APPRECIATION_CONFIG, APPRECIATIONS, DIRECTIONS } from '../constants';
 import { Appreciation, Direction } from '../types';
+import { DestinationChip, DestinationInput } from './ui';
 
 interface SpotFormData {
     appreciation: Appreciation;
@@ -14,15 +16,6 @@ interface SpotFormProps {
     onSubmit: (data: SpotFormData) => void;
     onCancel: () => void;
 }
-
-const APPRECIATIONS = Object.values(Appreciation);
-const DIRECTIONS = Object.values(Direction);
-
-const APPRECIATION_LABELS: Record<Appreciation, string> = {
-    [Appreciation.Perfect]: 'Parfait',
-    [Appreciation.Good]: 'Bon',
-    [Appreciation.Bad]: 'Mauvais'
-};
 
 export const SpotForm: React.FC<SpotFormProps> = ({ onSubmit, onCancel }) => {
     const [appreciation, setAppreciation] = useState<Appreciation>(Appreciation.Good);
@@ -76,7 +69,7 @@ export const SpotForm: React.FC<SpotFormProps> = ({ onSubmit, onCancel }) => {
                                     styles.optionText,
                                     appreciation === app && styles.optionTextSelected
                                 ]}>
-                                    {APPRECIATION_LABELS[app]}
+                                    {APPRECIATION_CONFIG[app].label}
                                 </Text>
                             </TouchableOpacity>
                         ))}
@@ -116,32 +109,20 @@ export const SpotForm: React.FC<SpotFormProps> = ({ onSubmit, onCancel }) => {
 
                     {/* Destinations */}
                     <Text style={styles.label}>Destinations</Text>
-                    <View style={styles.destinationInput}>
-                        <TextInput
-                            style={styles.input}
-                            value={destinationInput}
-                            onChangeText={setDestinationInput}
-                            placeholder="Ex: Paris, Lyon..."
-                            placeholderTextColor={COLORS.textSecondary}
-                            onSubmitEditing={handleAddDestination}
-                        />
-                        <TouchableOpacity
-                            style={styles.addButton}
-                            onPress={handleAddDestination}
-                        >
-                            <Text style={styles.addButtonText}>+</Text>
-                        </TouchableOpacity>
-                    </View>
+                    <DestinationInput
+                        value={destinationInput}
+                        onChangeText={setDestinationInput}
+                        onAdd={handleAddDestination}
+                    />
 
                     {destinations.length > 0 && (
                         <View style={styles.destinationList}>
                             {destinations.map((dest, index) => (
-                                <View key={index} style={styles.destinationChip}>
-                                    <Text style={styles.destinationText}>{dest}</Text>
-                                    <TouchableOpacity onPress={() => handleRemoveDestination(index)}>
-                                        <Text style={styles.removeButton}>✕</Text>
-                                    </TouchableOpacity>
-                                </View>
+                                <DestinationChip
+                                    key={index}
+                                    destination={dest}
+                                    onRemove={() => handleRemoveDestination(index)}
+                                />
                             ))}
                         </View>
                     )}
@@ -264,48 +245,11 @@ const styles = StyleSheet.create({
     directionTextSelected: {
         color: COLORS.background,
     },
-    destinationInput: {
-        flexDirection: 'row',
-        gap: SPACING.sm,
-        alignItems: 'center',
-    },
-    addButton: {
-        width: 48,
-        height: 48,
-        borderRadius: 8,
-        backgroundColor: COLORS.primary,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    addButtonText: {
-        fontSize: 24,
-        color: COLORS.background,
-        fontWeight: 'bold',
-    },
     destinationList: {
         flexDirection: 'row',
         flexWrap: 'wrap',
         gap: SPACING.sm,
         marginTop: SPACING.sm,
-    },
-    destinationChip: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: COLORS.secondary,
-        paddingVertical: SPACING.sm,
-        paddingHorizontal: SPACING.md,
-        borderRadius: 20,
-        gap: SPACING.sm,
-    },
-    destinationText: {
-        fontSize: 14,
-        color: COLORS.background,
-        fontWeight: '500',
-    },
-    removeButton: {
-        fontSize: 16,
-        color: COLORS.background,
-        fontWeight: 'bold',
     },
     actions: {
         flexDirection: 'row',
