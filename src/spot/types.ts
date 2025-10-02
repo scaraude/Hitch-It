@@ -14,7 +14,7 @@ export interface Location {
 
 export interface SpotMarkerData {
     id: string;
-    coordinate: Location;
+    coordinates: Location;
     title: string;
     description?: string;
     color?: string;
@@ -26,7 +26,7 @@ export interface Spot {
     roadName: string;
     direction: Direction;
     destinations: string[];
-    location: Location;
+    coordinates: Location;
     createdAt: Date;
     updatedAt: Date;
     createdBy: string;
