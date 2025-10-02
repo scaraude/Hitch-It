@@ -9,6 +9,7 @@ interface MapViewComponentProps {
     initialRegion?: MapRegion;
     markers?: SpotMarkerData[];
     onRegionChange?: (region: Region) => void;
+    onMarkerPress?: (markerId: string) => void;
     showUserLocation?: boolean;
     followUserLocation?: boolean;
 }
@@ -17,6 +18,7 @@ const MapViewComponent: React.FC<MapViewComponentProps> = ({
     initialRegion = MAP_CONFIG.defaultRegion,
     markers = [],
     onRegionChange,
+    onMarkerPress,
     showUserLocation = true,
     followUserLocation = false,
 }) => {
@@ -25,6 +27,13 @@ const MapViewComponent: React.FC<MapViewComponentProps> = ({
             onRegionChange?.(newRegion);
         },
         [onRegionChange],
+    );
+
+    const handleMarkerPress = useCallback(
+        (markerId: string) => {
+            onMarkerPress?.(markerId);
+        },
+        [onMarkerPress],
     );
 
     return (
@@ -52,6 +61,7 @@ const MapViewComponent: React.FC<MapViewComponentProps> = ({
                     description={marker.description}
                     pinColor={marker.color || MAP_CONFIG.defaultMarkerColor}
                     tracksViewChanges={false}
+                    onPress={() => handleMarkerPress(marker.id)}
                 />
             ))}
         </MapView>

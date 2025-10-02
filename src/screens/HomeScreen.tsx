@@ -5,7 +5,7 @@ import Toast from 'react-native-toast-message';
 import { ActionButtons, Header, LoadingSpinner, MapViewComponent } from '../components';
 import { COLORS } from '../constants';
 import { useLocation } from '../hooks';
-import { CreateSpotButton, SpotForm } from '../spot/components';
+import { CreateSpotButton, SpotDetailsSheet, SpotForm } from '../spot/components';
 import { useSpots } from '../spot/hooks';
 import { MapRegion } from '../types';
 
@@ -13,18 +13,25 @@ const HomeScreen: React.FC = () => {
     const { currentRegion, locationLoading } = useLocation();
     const {
         spots,
+        selectedSpot,
         isPlacingSpot,
         isShowingForm,
         startPlacingSpot,
         confirmSpotPlacement,
         cancelSpotPlacement,
         submitSpotForm,
-        cancelSpotForm
+        cancelSpotForm,
+        selectSpot,
+        deselectSpot
     } = useSpots();
     const [mapRegion, setMapRegion] = useState<MapRegion>(currentRegion);
 
     const handleRegionChange = (region: MapRegion) => {
         setMapRegion(region);
+    };
+
+    const handleMarkerPress = (markerId: string) => {
+        selectSpot(markerId);
     };
 
     const onConfirmSpotPlacement = () => {
@@ -44,6 +51,7 @@ const HomeScreen: React.FC = () => {
                             initialRegion={currentRegion}
                             markers={spots}
                             onRegionChange={handleRegionChange}
+                            onMarkerPress={handleMarkerPress}
                         />
                         {isPlacingSpot && (
                             <View style={styles.centerMarker}>
@@ -69,6 +77,13 @@ const HomeScreen: React.FC = () => {
                 <SpotForm
                     onSubmit={submitSpotForm}
                     onCancel={cancelSpotForm}
+                />
+            )}
+
+            {selectedSpot && !isShowingForm && (
+                <SpotDetailsSheet
+                    spot={selectedSpot}
+                    onClose={deselectSpot}
                 />
             )}
 
