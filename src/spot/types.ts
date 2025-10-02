@@ -1,11 +1,22 @@
 // Branded UUID type
 export type SpotId = string & { readonly brand: unique symbol };
 
-export type Direction =
-    | "North" | "North-East" | "East" | "South-East"
-    | "South" | "South-West" | "West" | "North-West";
+export enum Direction {
+    North = "North",
+    NorthEast = "North-East",
+    East = "East",
+    SouthEast = "South-East",
+    South = "South",
+    SouthWest = "South-West",
+    West = "West",
+    NorthWest = "North-West"
+}
 
-export type Appreciation = "perfect" | "good" | "bad";
+export enum Appreciation {
+    Perfect = "perfect",
+    Good = "good",
+    Bad = "bad"
+}
 
 export interface Location {
     latitude: number;

@@ -5,13 +5,22 @@ import Toast from 'react-native-toast-message';
 import { ActionButtons, Header, LoadingSpinner, MapViewComponent } from '../components';
 import { COLORS } from '../constants';
 import { useLocation } from '../hooks';
-import { CreateSpotButton } from '../spot/components';
+import { CreateSpotButton, SpotForm } from '../spot/components';
 import { useSpots } from '../spot/hooks';
 import { MapRegion } from '../types';
 
 const HomeScreen: React.FC = () => {
     const { currentRegion, locationLoading } = useLocation();
-    const { spots, isPlacingSpot, startPlacingSpot, confirmSpotPlacement, cancelSpotPlacement } = useSpots();
+    const {
+        spots,
+        isPlacingSpot,
+        isShowingForm,
+        startPlacingSpot,
+        confirmSpotPlacement,
+        cancelSpotPlacement,
+        submitSpotForm,
+        cancelSpotForm
+    } = useSpots();
     const [mapRegion, setMapRegion] = useState<MapRegion>(currentRegion);
 
     const handleRegionChange = (region: MapRegion) => {
@@ -50,11 +59,19 @@ const HomeScreen: React.FC = () => {
                     onConfirm={onConfirmSpotPlacement}
                     onCancel={cancelSpotPlacement}
                 />
-            ) : (
+            ) : !isShowingForm ? (
                 <CreateSpotButton
                     onPress={startPlacingSpot}
                 />
+            ) : null}
+
+            {isShowingForm && (
+                <SpotForm
+                    onSubmit={submitSpotForm}
+                    onCancel={cancelSpotForm}
+                />
             )}
+
             <Toast />
         </SafeAreaView>
     );
