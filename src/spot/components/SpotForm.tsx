@@ -18,9 +18,9 @@ interface SpotFormProps {
 }
 
 export const SpotForm: React.FC<SpotFormProps> = ({ onSubmit, onCancel }) => {
-    const [appreciation, setAppreciation] = useState<Appreciation>(Appreciation.Good);
+    const [appreciation, setAppreciation] = useState<Appreciation | undefined>(undefined);
     const [roadName, setRoadName] = useState('');
-    const [direction, setDirection] = useState<Direction>(Direction.North);
+    const [direction, setDirection] = useState<Direction | undefined>(undefined);
     const [destinationInput, setDestinationInput] = useState('');
     const [destinations, setDestinations] = useState<string[]>([]);
 
@@ -36,7 +36,7 @@ export const SpotForm: React.FC<SpotFormProps> = ({ onSubmit, onCancel }) => {
     };
 
     const handleSubmit = () => {
-        if (!roadName.trim()) {
+        if (!roadName.trim() || !direction || destinations.length === 0 || appreciation === undefined) {
             return;
         }
         onSubmit({
@@ -108,7 +108,7 @@ export const SpotForm: React.FC<SpotFormProps> = ({ onSubmit, onCancel }) => {
                     </View>
 
                     {/* Destinations */}
-                    <Text style={styles.label}>Destinations</Text>
+                    <Text style={styles.label}>Destinations *</Text>
                     <DestinationInput
                         value={destinationInput}
                         onChangeText={setDestinationInput}
@@ -137,9 +137,9 @@ export const SpotForm: React.FC<SpotFormProps> = ({ onSubmit, onCancel }) => {
                         <Text style={styles.cancelButtonText}>Annuler</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
-                        style={[styles.button, styles.submitButton, !roadName.trim() && styles.submitButtonDisabled]}
+                        style={[styles.button, styles.submitButton, (!roadName.trim() || !direction || destinations.length === 0) && styles.submitButtonDisabled]}
                         onPress={handleSubmit}
-                        disabled={!roadName.trim()}
+                        disabled={!roadName.trim() || !direction || destinations.length === 0}
                     >
                         <Text style={styles.submitButtonText}>Créer le spot</Text>
                     </TouchableOpacity>

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { toastUtils } from '../../components/ui';
 import { COLORS, MAP_CONFIG } from '../../constants';
 import type { MapRegion } from '../../types';
-import type { Location, Spot, SpotId, SpotMarkerData } from '../types';
+import type { Location, Spot, SpotMarkerData } from '../types';
 import { Appreciation, Direction } from '../types';
 import { createSpotId } from '../utils';
 
