@@ -64,7 +64,7 @@ export const SpotForm: React.FC<SpotFormProps> = ({ onSubmit, onCancel }) => {
 	};
 
 	return (
-		<View style={styles.container}>
+		<View style={styles.container} testID="spot-form">
 			<View style={styles.formContent}>
 				<ScrollView
 					style={styles.scrollView}
@@ -109,6 +109,7 @@ export const SpotForm: React.FC<SpotFormProps> = ({ onSubmit, onCancel }) => {
 						placeholderTextColor={COLORS.textSecondary}
 						accessibilityLabel={A11Y_LABELS.roadNameInput}
 						accessibilityHint={A11Y_LABELS.roadNamePlaceholder}
+						testID="spot-form-road-name"
 					/>
 
 					{/* Direction */}
@@ -169,6 +170,7 @@ export const SpotForm: React.FC<SpotFormProps> = ({ onSubmit, onCancel }) => {
 						accessibilityLabel={A11Y_LABELS.cancelAction}
 						accessibilityHint={A11Y_LABELS.cancelSpotHint}
 						accessibilityRole="button"
+						testID="spot-form-cancel"
 					>
 						<Text style={styles.cancelButtonText}>Annuler</Text>
 					</TouchableOpacity>
@@ -186,6 +188,7 @@ export const SpotForm: React.FC<SpotFormProps> = ({ onSubmit, onCancel }) => {
 						accessibilityLabel={A11Y_LABELS.confirmSpot}
 						accessibilityHint={A11Y_LABELS.confirmSpotHint}
 						accessibilityRole="button"
+						testID="spot-form-submit"
 					>
 						<Text style={styles.submitButtonText}>Créer le spot</Text>
 					</TouchableOpacity>

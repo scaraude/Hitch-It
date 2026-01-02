@@ -53,6 +53,7 @@ const MapViewComponent: React.FC<MapViewComponentProps> = ({
 			rotateEnabled={true}
 			scrollEnabled={true}
 			zoomEnabled={true}
+			testID="map-view"
 		>
 			{markers.map(marker => (
 				<Marker

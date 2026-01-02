@@ -57,7 +57,7 @@ export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 	};
 
 	return (
-		<View style={styles.container}>
+		<View style={styles.container} testID="spot-details-sheet">
 			<View style={styles.header}>
 				<View style={styles.dragHandle} />
 				<TouchableOpacity
@@ -66,6 +66,7 @@ export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 					accessibilityLabel={A11Y_LABELS.closeButton}
 					accessibilityHint={A11Y_LABELS.closeSheetHint}
 					accessibilityRole="button"
+					testID="spot-details-close"
 				>
 					<Text style={styles.closeButtonText}>✕</Text>
 				</TouchableOpacity>

@@ -7,14 +7,16 @@ import { A11Y_LABELS } from '../../../constants/accessibility';
 interface DestinationChipProps {
 	destination: string;
 	onRemove?: () => void;
+	testID?: string;
 }
 
 const DestinationChipComponent: React.FC<DestinationChipProps> = ({
 	destination,
 	onRemove,
+	testID,
 }) => {
 	return (
-		<View style={styles.chip}>
+		<View style={styles.chip} testID={testID ?? `destination-chip-${destination}`}>
 			<Text style={styles.text}>{destination}</Text>
 			{onRemove && (
 				<TouchableOpacity
@@ -22,6 +24,7 @@ const DestinationChipComponent: React.FC<DestinationChipProps> = ({
 					accessibilityLabel={`${A11Y_LABELS.removeDestination} ${destination}`}
 					accessibilityHint={A11Y_LABELS.removeDestinationHint}
 					accessibilityRole="button"
+					testID={`${testID ?? `destination-chip-${destination}`}-remove`}
 				>
 					<Text style={styles.removeButton}>✕</Text>
 				</TouchableOpacity>

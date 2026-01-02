@@ -33,6 +33,7 @@ export const DestinationInput: React.FC<DestinationInputProps> = ({
 				onSubmitEditing={onAdd}
 				accessibilityLabel={A11Y_LABELS.destinationInput}
 				accessibilityHint={A11Y_LABELS.destinationPlaceholder}
+				testID="destination-input"
 			/>
 			<TouchableOpacity
 				style={styles.addButton}
@@ -40,6 +41,7 @@ export const DestinationInput: React.FC<DestinationInputProps> = ({
 				accessibilityLabel={A11Y_LABELS.addDestination}
 				accessibilityHint={A11Y_LABELS.addDestinationHint}
 				accessibilityRole="button"
+				testID="destination-add-button"
 			>
 				<Text style={styles.addButtonText}>+</Text>
 			</TouchableOpacity>
