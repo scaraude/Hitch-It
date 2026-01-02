@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Linking, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { COLORS, SPACING } from '../../constants';
 import { formatDate } from '../../utils';
 import { APPRECIATION_CONFIG, DIRECTION_CONFIG } from '../constants';
@@ -15,6 +15,33 @@ interface SpotDetailsSheetProps {
 export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({ spot, onClose, onAddComment }) => {
     const appreciationConfig = APPRECIATION_CONFIG[spot.appreciation];
     const directionEmoji = DIRECTION_CONFIG[spot.direction].emoji;
+
+    const handleOpenMap = () => {
+        const { latitude, longitude } = spot.coordinates;
+        const label = encodeURIComponent(spot.roadName);
+
+        const url = Platform.select({
+            ios: `maps:?q=${label}&ll=${latitude},${longitude}`,
+            android: `geo:0,0?q=${latitude},${longitude}(${label})`,
+        });
+
+        if (url) {
+            Linking.openURL(url);
+        }
+    };
+
+    const handleGetDirections = () => {
+        const { latitude, longitude } = spot.coordinates;
+
+        const url = Platform.select({
+            ios: `maps:?daddr=${latitude},${longitude}`,
+            android: `google.navigation:q=${latitude},${longitude}`,
+        });
+
+        if (url) {
+            Linking.openURL(url);
+        }
+    };
 
     return (
         <View style={styles.container}>
@@ -58,10 +85,13 @@ export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({ spot, onClos
 
                 {/* Location */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Coordonnées</Text>
-                    <Text style={styles.coordinates}>
-                        {spot.coordinates.latitude.toFixed(6)}, {spot.coordinates.longitude.toFixed(6)}
-                    </Text>
+                    <Text style={styles.sectionTitle}>Localisation</Text>
+                    <TouchableOpacity style={styles.mapButton} onPress={handleOpenMap}>
+                        <Text style={styles.mapButtonText}>📍 Voir sur la carte</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.directionsButton} onPress={handleGetDirections}>
+                        <Text style={styles.directionsButtonText}>🧭 Itinéraire</Text>
+                    </TouchableOpacity>
                 </View>
 
                 {/* Metadata */}
@@ -205,10 +235,32 @@ const styles = StyleSheet.create({
         flexWrap: 'wrap',
         gap: SPACING.sm,
     },
-    coordinates: {
-        fontSize: 14,
-        color: COLORS.textSecondary,
-        fontFamily: 'monospace',
+    mapButton: {
+        backgroundColor: COLORS.primary,
+        paddingVertical: SPACING.md,
+        paddingHorizontal: SPACING.lg,
+        borderRadius: 8,
+        alignItems: 'center',
+        marginBottom: SPACING.sm,
+    },
+    mapButtonText: {
+        fontSize: 16,
+        color: COLORS.background,
+        fontWeight: '600',
+    },
+    directionsButton: {
+        backgroundColor: COLORS.surface,
+        paddingVertical: SPACING.md,
+        paddingHorizontal: SPACING.lg,
+        borderRadius: 8,
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: COLORS.primary,
+    },
+    directionsButtonText: {
+        fontSize: 16,
+        color: COLORS.primary,
+        fontWeight: '600',
     },
     metadata: {
         marginTop: SPACING.lg,
