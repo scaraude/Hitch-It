@@ -1,13 +1,14 @@
 import type React from 'react';
+import { memo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { COLORS, SPACING } from '../../../constants';
+import { COLORS, SIZES, SPACING } from '../../../constants';
 
 interface DestinationChipProps {
 	destination: string;
 	onRemove?: () => void;
 }
 
-export const DestinationChip: React.FC<DestinationChipProps> = ({
+const DestinationChipComponent: React.FC<DestinationChipProps> = ({
 	destination,
 	onRemove,
 }) => {
@@ -23,6 +24,8 @@ export const DestinationChip: React.FC<DestinationChipProps> = ({
 	);
 };
 
+export const DestinationChip = memo(DestinationChipComponent);
+
 const styles = StyleSheet.create({
 	chip: {
 		flexDirection: 'row',
@@ -30,16 +33,16 @@ const styles = StyleSheet.create({
 		backgroundColor: COLORS.secondary,
 		paddingVertical: SPACING.sm,
 		paddingHorizontal: SPACING.md,
-		borderRadius: 20,
+		borderRadius: SIZES.radiusXLarge,
 		gap: SPACING.sm,
 	},
 	text: {
-		fontSize: 14,
+		fontSize: SIZES.fontSm,
 		color: COLORS.background,
 		fontWeight: '500',
 	},
 	removeButton: {
-		fontSize: 16,
+		fontSize: SIZES.fontMd,
 		color: COLORS.background,
 		fontWeight: 'bold',
 	},

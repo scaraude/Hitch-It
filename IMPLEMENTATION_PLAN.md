@@ -575,19 +575,20 @@ const SPOT_SCHEMA = `
 
 ## Implementation Checklist
 
-### Phase 1: Tooling Migration
-- [ ] Remove ESLint/Prettier packages
-- [ ] Delete config files
-- [ ] Install Biome
-- [ ] Create biome.json
-- [ ] Update package.json scripts
-- [ ] Run initial format
+### Phase 1: Tooling Migration ✅ COMPLETED
+- [x] Remove ESLint/Prettier packages
+- [x] Delete config files
+- [x] Install Biome
+- [x] Create biome.json
+- [x] Update package.json scripts
+- [x] Run initial format
+- [x] Fix all linting warnings (useCallback, array keys, import types, isNaN)
 
-### Phase 2: Performance
-- [ ] Replace ScrollView+map with FlatList in SpotDetailsSheet
-- [ ] Replace ScrollView+map with FlatList in SpotForm
-- [ ] Memoize DestinationChip
-- [ ] Extract magic numbers to SIZES constant
+### Phase 2: Performance ✅ COMPLETED
+- [x] ~~Replace ScrollView+map with FlatList in SpotDetailsSheet~~ (N/A - destinations use flexWrap in View, not ScrollView+map pattern)
+- [x] ~~Replace ScrollView+map with FlatList in SpotForm~~ (N/A - destinations use flexWrap in View, not ScrollView+map pattern)
+- [x] Memoize DestinationChip
+- [x] Extract magic numbers to SIZES constant (applied to 7 files: SpotDetailsSheet, SpotForm, DestinationChip, DestinationInput, FloatingButton, Header)
 
 ### Phase 3: Accessibility
 - [ ] Add accessibilityLabel to FloatingButton

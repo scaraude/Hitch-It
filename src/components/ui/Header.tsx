@@ -1,6 +1,6 @@
 import type React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { COLORS, SPACING } from '../../constants';
+import { COLORS, SIZES, SPACING } from '../../constants';
 
 interface HeaderProps {
 	title: string;
@@ -22,13 +22,13 @@ const styles = StyleSheet.create({
 		backgroundColor: COLORS.primary,
 	},
 	title: {
-		fontSize: 24,
+		fontSize: SIZES.font2Xl,
 		fontWeight: 'bold',
 		color: COLORS.background,
 		textAlign: 'center',
 	},
 	subtitle: {
-		fontSize: 16,
+		fontSize: SIZES.fontMd,
 		color: COLORS.background,
 		textAlign: 'center',
 		marginTop: SPACING.xs,

@@ -1,6 +1,6 @@
 import type React from 'react';
 import { StyleSheet, Text, TouchableOpacity } from 'react-native';
-import { COLORS } from '../../constants';
+import { COLORS, SIZES } from '../../constants';
 
 interface FloatingButtonProps {
 	onPress: () => void;
@@ -33,9 +33,9 @@ export const FloatingButton: React.FC<FloatingButtonProps> = ({
 
 const styles = StyleSheet.create({
 	button: {
-		width: 60,
-		height: 60,
-		borderRadius: 30,
+		width: SIZES.fabSize + 4,
+		height: SIZES.fabSize + 4,
+		borderRadius: SIZES.radiusRound,
 		justifyContent: 'center',
 		alignItems: 'center',
 		elevation: 8,
@@ -44,10 +44,10 @@ const styles = StyleSheet.create({
 		alignSelf: 'center',
 	},
 	right: {
-		right: 20,
+		right: SIZES.radiusXLarge,
 	},
 	left: {
-		left: 20,
+		left: SIZES.radiusXLarge,
 	},
 	icon: {
 		color: COLORS.background,

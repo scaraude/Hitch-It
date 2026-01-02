@@ -34,3 +34,5 @@ export const SPACING = {
 	xl: 32,
 	xxl: 48,
 } as const;
+
+export { SIZES } from './sizes';

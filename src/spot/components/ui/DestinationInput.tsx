@@ -6,7 +6,7 @@ import {
 	TouchableOpacity,
 	View,
 } from 'react-native';
-import { COLORS, SPACING } from '../../../constants';
+import { COLORS, SIZES, SPACING } from '../../../constants';
 
 interface DestinationInputProps {
 	value: string;
@@ -49,21 +49,21 @@ const styles = StyleSheet.create({
 		borderWidth: 1,
 		borderColor: COLORS.surface,
 		backgroundColor: COLORS.surface,
-		borderRadius: 8,
+		borderRadius: SIZES.radiusMedium,
 		padding: SPACING.md,
-		fontSize: 16,
+		fontSize: SIZES.fontMd,
 		color: COLORS.text,
 	},
 	addButton: {
-		width: 48,
-		height: 48,
-		borderRadius: 8,
+		width: SIZES.buttonHeight,
+		height: SIZES.buttonHeight,
+		borderRadius: SIZES.radiusMedium,
 		backgroundColor: COLORS.primary,
 		alignItems: 'center',
 		justifyContent: 'center',
 	},
 	addButtonText: {
-		fontSize: 24,
+		fontSize: SIZES.font2Xl,
 		color: COLORS.background,
 		fontWeight: 'bold',
 	},

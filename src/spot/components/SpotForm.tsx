@@ -8,7 +8,7 @@ import {
 	TouchableOpacity,
 	View,
 } from 'react-native';
-import { COLORS, SPACING } from '../../constants';
+import { COLORS, SIZES, SPACING } from '../../constants';
 import { APPRECIATION_CONFIG, APPRECIATIONS, DIRECTIONS } from '../constants';
 import type { Appreciation, Direction } from '../types';
 import { DestinationChip, DestinationInput } from './ui';
@@ -187,12 +187,12 @@ const styles = StyleSheet.create({
 		left: 0,
 		right: 0,
 		backgroundColor: COLORS.background,
-		borderTopLeftRadius: 20,
-		borderTopRightRadius: 20,
+		borderTopLeftRadius: SIZES.radiusXLarge,
+		borderTopRightRadius: SIZES.radiusXLarge,
 		shadowColor: '#000',
 		shadowOffset: { width: 0, height: -2 },
-		shadowOpacity: 0.1,
-		shadowRadius: 8,
+		shadowOpacity: SIZES.shadowOpacity,
+		shadowRadius: SIZES.shadowRadius,
 		elevation: 5,
 		maxHeight: '80%',
 	},
@@ -203,13 +203,13 @@ const styles = StyleSheet.create({
 		maxHeight: 500,
 	},
 	title: {
-		fontSize: 24,
+		fontSize: SIZES.font2Xl,
 		fontWeight: 'bold',
 		color: COLORS.text,
 		marginBottom: SPACING.lg,
 	},
 	label: {
-		fontSize: 16,
+		fontSize: SIZES.fontMd,
 		fontWeight: '600',
 		color: COLORS.text,
 		marginTop: SPACING.md,
@@ -219,9 +219,9 @@ const styles = StyleSheet.create({
 		borderWidth: 1,
 		borderColor: COLORS.surface,
 		backgroundColor: COLORS.surface,
-		borderRadius: 8,
+		borderRadius: SIZES.radiusMedium,
 		padding: SPACING.md,
-		fontSize: 16,
+		fontSize: SIZES.fontMd,
 		color: COLORS.text,
 	},
 	buttonGroup: {
@@ -232,7 +232,7 @@ const styles = StyleSheet.create({
 		flex: 1,
 		paddingVertical: SPACING.md,
 		paddingHorizontal: SPACING.sm,
-		borderRadius: 8,
+		borderRadius: SIZES.radiusMedium,
 		borderWidth: 1,
 		borderColor: COLORS.surface,
 		backgroundColor: COLORS.surface,
@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
 		borderColor: COLORS.primary,
 	},
 	optionText: {
-		fontSize: 14,
+		fontSize: SIZES.fontSm,
 		color: COLORS.text,
 		fontWeight: '600',
 	},
@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
 	directionButton: {
 		width: '23%',
 		paddingVertical: SPACING.sm,
-		borderRadius: 8,
+		borderRadius: SIZES.radiusMedium,
 		borderWidth: 1,
 		borderColor: COLORS.surface,
 		backgroundColor: COLORS.surface,
@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
 		borderColor: COLORS.primary,
 	},
 	directionText: {
-		fontSize: 12,
+		fontSize: SIZES.fontXs,
 		color: COLORS.text,
 		fontWeight: '500',
 	},
@@ -290,14 +290,14 @@ const styles = StyleSheet.create({
 	button: {
 		flex: 1,
 		paddingVertical: SPACING.md,
-		borderRadius: 8,
+		borderRadius: SIZES.radiusMedium,
 		alignItems: 'center',
 	},
 	cancelButton: {
 		backgroundColor: COLORS.surface,
 	},
 	cancelButtonText: {
-		fontSize: 16,
+		fontSize: SIZES.fontMd,
 		fontWeight: '600',
 		color: COLORS.text,
 	},
@@ -308,7 +308,7 @@ const styles = StyleSheet.create({
 		backgroundColor: COLORS.textSecondary,
 	},
 	submitButtonText: {
-		fontSize: 16,
+		fontSize: SIZES.fontMd,
 		fontWeight: '600',
 		color: COLORS.background,
 	},
