@@ -3,8 +3,13 @@ import { toastUtils } from '../../components/ui';
 import { COLORS } from '../../constants';
 import type { MapRegion } from '../../types';
 import { createSpot, getAllSpots } from '../services';
-import type { Location, Spot, SpotMarkerData } from '../types';
-import { Appreciation, Direction } from '../types';
+import type {
+	Appreciation,
+	Direction,
+	Location,
+	Spot,
+	SpotMarkerData,
+} from '../types';
 import { createSpotId } from '../utils';
 
 export interface SpotFormData {

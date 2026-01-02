@@ -47,9 +47,7 @@ const runStatements = async (
 		);
 	});
 
-const getUserVersion = async (
-	database: SQLiteDatabase
-): Promise<number> => {
+const getUserVersion = async (database: SQLiteDatabase): Promise<number> => {
 	const [result] = await database.executeSql('PRAGMA user_version;');
 	const row = result.rows.item(0) as { user_version?: number } | undefined;
 	return row?.user_version ?? 0;

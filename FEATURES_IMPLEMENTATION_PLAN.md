@@ -2,6 +2,31 @@
 
 > Advanced features roadmap for the hitchhiking companion app
 > Date: January 2026
+> **Last Updated**: January 2, 2026
+
+---
+
+## 📊 Implementation Progress
+
+### Phase 1: 🔴 Critical Foundation
+- ✅ **F11: Journey Recording & Navigation** - COMPLETED
+- ⬜ **F12: Save Journey Feature** - Not started
+- ⬜ **F8: User Profile & Travel History** - Not started
+
+### Phase 2: 🟠 High-Value Features
+- ⬜ **F1: Spot Pictures** - Not started
+- ⬜ **F2: Highway Rest Areas** - Not started
+- ⬜ **F6: External Location Sharing** - Not started
+- ⬜ **F7: Dynamic Destination Suggestions** - Not started
+
+### Phase 3: 🟡 Advanced Features
+- ⬜ **F3: Double Itinerary Calculator** - Not started
+- ⬜ **F4: Longway** - Not started
+- ⬜ **F5: Group Tracking** - Not started
+- ⬜ **F9: Community Section** - Not started
+- ⬜ **F10: User Badges** - Not started
+
+**Overall Progress**: 1/12 features completed (8.3%)
 
 ---
 
@@ -667,9 +692,37 @@ enum BadgeTier {
 
 ---
 
-## Feature 11: Journey Recording & Navigation
+## Feature 11: Journey Recording & Navigation ✅ COMPLETED
+
+**Status**: ✅ Fully implemented on January 2, 2026
 
 **Goal**: Passive navigation that records your journey like a flight tracker.
+
+### ✨ Implementation Summary
+
+**Module**: `src/journey/`
+
+**Components Delivered**:
+- `NavigationBar` - Compact journey progress bar
+- `JourneyTimeline` - Vertical step-by-step timeline
+- `NavigationSheet` - Full journey details modal
+- `VehicleChangePrompt` - Vehicle change confirmation
+
+**Services**:
+- `locationTrackingService` - Background/foreground location tracking with expo-location & expo-task-manager
+- `journeyDetector` - AI-powered state detection (Waiting/InVehicle/Break/Walking)
+
+**Context**: `JourneyProvider` - Centralized journey state management
+
+**Features**:
+- ✅ Battery-efficient tracking (5s/50m intervals)
+- ✅ Automatic vehicle change detection
+- ✅ Nearby spot detection (100m radius)
+- ✅ Configurable thresholds
+- ✅ TypeScript branded types for safety
+- ✅ Full French localization
+
+**Dependencies Added**: `expo-task-manager@14.0.9`
 
 ### 11.1 Concept
 
@@ -946,16 +999,16 @@ CREATE TABLE user_badges (...);
 
 ### Phase 1: 🔴 Critical Foundation (F11, F12, F8)
 
-#### F11: Journey Recording & Navigation
-- [ ] Create `src/navigation/` feature module
-- [ ] Implement background location tracking service
-- [ ] Create journey state detection algorithm (waiting/in_vehicle/break)
-- [ ] Build `NavigationBar` component
-- [ ] Build `JourneyTimeline` component
-- [ ] Build `NavigationSheet` component
-- [ ] Implement vehicle change detection
-- [ ] Add `VehicleChangePrompt` component
-- [ ] Test battery-efficient location tracking
+#### F11: Journey Recording & Navigation ✅ COMPLETED
+- [x] Create `src/journey/` feature module (created with full DDD structure)
+- [x] Implement background location tracking service (with foreground fallback)
+- [x] Create journey state detection algorithm (waiting/in_vehicle/break/walking)
+- [x] Build `NavigationBar` component (compact top bar with journey progress)
+- [x] Build `JourneyTimeline` component (vertical timeline with step details)
+- [x] Build `NavigationSheet` component (full-screen bottom sheet with stats)
+- [x] Implement vehicle change detection (automatic state detection)
+- [x] Add `VehicleChangePrompt` component (modal for confirming vehicle changes)
+- [x] Test battery-efficient location tracking (5s/50m intervals, configurable)
 
 #### F12: Save Journey Feature
 - [ ] Create journey review screen
