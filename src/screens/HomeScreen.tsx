@@ -16,7 +16,7 @@ import {
 	SpotDetailsSheet,
 	SpotForm,
 } from '../spot/components';
-import { useSpots } from '../spot/hooks';
+import { useSpotContext } from '../spot/context';
 import type { MapRegion } from '../types';
 
 const HomeScreen: React.FC = () => {
@@ -33,7 +33,7 @@ const HomeScreen: React.FC = () => {
 		cancelSpotForm,
 		selectSpot,
 		deselectSpot,
-	} = useSpots();
+	} = useSpotContext();
 	const [mapRegion, setMapRegion] = useState<MapRegion>(currentRegion);
 
 	const handleRegionChange = (region: MapRegion) => {

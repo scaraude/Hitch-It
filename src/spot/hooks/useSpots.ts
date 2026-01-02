@@ -13,7 +13,7 @@ export interface SpotFormData {
 	destinations: string[];
 }
 
-interface UseSpotsReturn {
+export interface UseSpotsReturn {
 	spots: SpotMarkerData[];
 	fullSpots: Spot[];
 	selectedSpot: Spot | null;

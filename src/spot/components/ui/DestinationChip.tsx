@@ -16,7 +16,10 @@ const DestinationChipComponent: React.FC<DestinationChipProps> = ({
 	testID,
 }) => {
 	return (
-		<View style={styles.chip} testID={testID ?? `destination-chip-${destination}`}>
+		<View
+			style={styles.chip}
+			testID={testID ?? `destination-chip-${destination}`}
+		>
 			<Text style={styles.text}>{destination}</Text>
 			{onRemove && (
 				<TouchableOpacity
