@@ -590,14 +590,14 @@ const SPOT_SCHEMA = `
 - [x] Memoize DestinationChip
 - [x] Extract magic numbers to SIZES constant (applied to 7 files: SpotDetailsSheet, SpotForm, DestinationChip, DestinationInput, FloatingButton, Header)
 
-### Phase 3: Accessibility
-- [ ] Add accessibilityLabel to FloatingButton
-- [ ] Add accessibilityLabel to SpotDetailsSheet buttons
-- [ ] Add accessibilityLabel to SpotForm buttons
-- [ ] Add accessibilityLabel to DestinationChip
-- [ ] Add accessibilityLabel to DestinationInput
-- [ ] Add accessibilityRole to all TouchableOpacity
-- [ ] Create A11Y_LABELS constants
+### Phase 3: Accessibility ✅ COMPLETED
+- [x] Add accessibilityLabel to FloatingButton
+- [x] Add accessibilityLabel to SpotDetailsSheet buttons
+- [x] Add accessibilityLabel to SpotForm buttons
+- [x] Add accessibilityLabel to DestinationChip
+- [x] Add accessibilityLabel to DestinationInput
+- [x] Add accessibilityRole to all TouchableOpacity
+- [x] Create A11Y_LABELS constants
 
 ### Phase 4: Testing
 - [ ] Install Jest + Testing Library

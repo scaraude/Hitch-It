@@ -9,6 +9,7 @@ import {
 	View,
 } from 'react-native';
 import { COLORS, SIZES, SPACING } from '../../constants';
+import { A11Y_LABELS } from '../../constants/accessibility';
 import { APPRECIATION_CONFIG, APPRECIATIONS, DIRECTIONS } from '../constants';
 import type { Appreciation, Direction } from '../types';
 import { DestinationChip, DestinationInput } from './ui';
@@ -82,6 +83,9 @@ export const SpotForm: React.FC<SpotFormProps> = ({ onSubmit, onCancel }) => {
 									appreciation === app && styles.optionButtonSelected,
 								]}
 								onPress={() => setAppreciation(app)}
+								accessibilityLabel={`${A11Y_LABELS[`appreciation${app.charAt(0).toUpperCase()}${app.slice(1)}` as keyof typeof A11Y_LABELS]}`}
+								accessibilityRole="button"
+								accessibilityState={{ selected: appreciation === app }}
 							>
 								<Text
 									style={[
@@ -103,6 +107,8 @@ export const SpotForm: React.FC<SpotFormProps> = ({ onSubmit, onCancel }) => {
 						onChangeText={setRoadName}
 						placeholder="Ex: A6, D907, Route de Lyon..."
 						placeholderTextColor={COLORS.textSecondary}
+						accessibilityLabel={A11Y_LABELS.roadNameInput}
+						accessibilityHint={A11Y_LABELS.roadNamePlaceholder}
 					/>
 
 					{/* Direction */}
@@ -116,6 +122,9 @@ export const SpotForm: React.FC<SpotFormProps> = ({ onSubmit, onCancel }) => {
 									direction === dir && styles.directionButtonSelected,
 								]}
 								onPress={() => setDirection(dir)}
+								accessibilityLabel={`${A11Y_LABELS.direction} : ${dir}`}
+								accessibilityRole="button"
+								accessibilityState={{ selected: direction === dir }}
 							>
 								<Text
 									style={[
@@ -157,6 +166,9 @@ export const SpotForm: React.FC<SpotFormProps> = ({ onSubmit, onCancel }) => {
 					<TouchableOpacity
 						style={[styles.button, styles.cancelButton]}
 						onPress={onCancel}
+						accessibilityLabel={A11Y_LABELS.cancelAction}
+						accessibilityHint={A11Y_LABELS.cancelSpotHint}
+						accessibilityRole="button"
 					>
 						<Text style={styles.cancelButtonText}>Annuler</Text>
 					</TouchableOpacity>
@@ -171,6 +183,9 @@ export const SpotForm: React.FC<SpotFormProps> = ({ onSubmit, onCancel }) => {
 						disabled={
 							!roadName.trim() || !direction || destinations.length === 0
 						}
+						accessibilityLabel={A11Y_LABELS.confirmSpot}
+						accessibilityHint={A11Y_LABELS.confirmSpotHint}
+						accessibilityRole="button"
 					>
 						<Text style={styles.submitButtonText}>Créer le spot</Text>
 					</TouchableOpacity>

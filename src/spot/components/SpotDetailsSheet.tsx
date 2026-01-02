@@ -9,6 +9,7 @@ import {
 	View,
 } from 'react-native';
 import { COLORS, SIZES, SPACING } from '../../constants';
+import { A11Y_LABELS } from '../../constants/accessibility';
 import { formatDate } from '../../utils';
 import { APPRECIATION_CONFIG, DIRECTION_CONFIG } from '../constants';
 import type { Spot } from '../types';
@@ -59,7 +60,13 @@ export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 		<View style={styles.container}>
 			<View style={styles.header}>
 				<View style={styles.dragHandle} />
-				<TouchableOpacity onPress={onClose} style={styles.closeButton}>
+				<TouchableOpacity
+					onPress={onClose}
+					style={styles.closeButton}
+					accessibilityLabel={A11Y_LABELS.closeButton}
+					accessibilityHint={A11Y_LABELS.closeSheetHint}
+					accessibilityRole="button"
+				>
 					<Text style={styles.closeButtonText}>✕</Text>
 				</TouchableOpacity>
 			</View>
@@ -107,12 +114,19 @@ export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 				{/* Location */}
 				<View style={styles.section}>
 					<Text style={styles.sectionTitle}>Localisation</Text>
-					<TouchableOpacity style={styles.mapButton} onPress={handleOpenMap}>
+					<TouchableOpacity
+						style={styles.mapButton}
+						onPress={handleOpenMap}
+						accessibilityLabel={A11Y_LABELS.openMap}
+						accessibilityRole="button"
+					>
 						<Text style={styles.mapButtonText}>📍 Voir sur la carte</Text>
 					</TouchableOpacity>
 					<TouchableOpacity
 						style={styles.directionsButton}
 						onPress={handleGetDirections}
+						accessibilityLabel={A11Y_LABELS.getDirections}
+						accessibilityRole="button"
 					>
 						<Text style={styles.directionsButtonText}>🧭 Itinéraire</Text>
 					</TouchableOpacity>
@@ -136,6 +150,8 @@ export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 						<TouchableOpacity
 							style={styles.addCommentButton}
 							onPress={onAddComment}
+							accessibilityLabel={A11Y_LABELS.addComment}
+							accessibilityRole="button"
 						>
 							<Text style={styles.addCommentButtonText}>
 								+ Ajouter un commentaire

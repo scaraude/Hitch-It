@@ -7,6 +7,7 @@ import {
 	View,
 } from 'react-native';
 import { COLORS, SIZES, SPACING } from '../../../constants';
+import { A11Y_LABELS } from '../../../constants/accessibility';
 
 interface DestinationInputProps {
 	value: string;
@@ -30,8 +31,16 @@ export const DestinationInput: React.FC<DestinationInputProps> = ({
 				placeholder={placeholder}
 				placeholderTextColor={COLORS.textSecondary}
 				onSubmitEditing={onAdd}
+				accessibilityLabel={A11Y_LABELS.destinationInput}
+				accessibilityHint={A11Y_LABELS.destinationPlaceholder}
 			/>
-			<TouchableOpacity style={styles.addButton} onPress={onAdd}>
+			<TouchableOpacity
+				style={styles.addButton}
+				onPress={onAdd}
+				accessibilityLabel={A11Y_LABELS.addDestination}
+				accessibilityHint={A11Y_LABELS.addDestinationHint}
+				accessibilityRole="button"
+			>
 				<Text style={styles.addButtonText}>+</Text>
 			</TouchableOpacity>
 		</View>

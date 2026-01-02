@@ -2,6 +2,7 @@ import type React from 'react';
 import { memo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { COLORS, SIZES, SPACING } from '../../../constants';
+import { A11Y_LABELS } from '../../../constants/accessibility';
 
 interface DestinationChipProps {
 	destination: string;
@@ -16,7 +17,12 @@ const DestinationChipComponent: React.FC<DestinationChipProps> = ({
 		<View style={styles.chip}>
 			<Text style={styles.text}>{destination}</Text>
 			{onRemove && (
-				<TouchableOpacity onPress={onRemove}>
+				<TouchableOpacity
+					onPress={onRemove}
+					accessibilityLabel={`${A11Y_LABELS.removeDestination} ${destination}`}
+					accessibilityHint={A11Y_LABELS.removeDestinationHint}
+					accessibilityRole="button"
+				>
 					<Text style={styles.removeButton}>✕</Text>
 				</TouchableOpacity>
 			)}

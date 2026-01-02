@@ -7,6 +7,8 @@ interface FloatingButtonProps {
 	icon: string;
 	backgroundColor?: string;
 	position?: 'center' | 'right' | 'left';
+	accessibilityLabel: string;
+	accessibilityHint?: string;
 }
 
 export const FloatingButton: React.FC<FloatingButtonProps> = ({
@@ -14,6 +16,8 @@ export const FloatingButton: React.FC<FloatingButtonProps> = ({
 	icon,
 	backgroundColor = COLORS.primary,
 	position = 'center',
+	accessibilityLabel,
+	accessibilityHint,
 }) => {
 	return (
 		<TouchableOpacity
@@ -25,6 +29,9 @@ export const FloatingButton: React.FC<FloatingButtonProps> = ({
 				position === 'left' && styles.left,
 			]}
 			onPress={onPress}
+			accessibilityLabel={accessibilityLabel}
+			accessibilityHint={accessibilityHint}
+			accessibilityRole="button"
 		>
 			<Text style={styles.icon}>{icon}</Text>
 		</TouchableOpacity>
