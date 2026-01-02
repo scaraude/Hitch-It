@@ -1,8 +1,0 @@
-node_modules/
-.expo/
-dist/
-build/
-*.log
-*.lock
-pnpm-lock.yaml
-package-lock.json
