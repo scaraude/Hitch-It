@@ -1,7 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import type React from 'react';
 import { ErrorBoundary } from './src/components';
-import { HomeScreen } from './src/screens';
+import { RootNavigator } from './src/navigation';
 import { SpotProvider } from './src/spot/context';
 
 const App: React.FC = () => {
@@ -9,7 +9,7 @@ const App: React.FC = () => {
 		<ErrorBoundary>
 			<SpotProvider>
 				<StatusBar style="light" />
-				<HomeScreen />
+				<RootNavigator />
 			</SpotProvider>
 		</ErrorBoundary>
 	);
