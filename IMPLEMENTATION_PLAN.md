@@ -106,6 +106,7 @@ pnpm format
 ### 2.1 Replace ScrollView + .map() with FlatList
 
 **Files affected**:
+
 - `src/spot/components/SpotDetailsSheet.tsx` (destinations list)
 - `src/spot/components/SpotForm.tsx` (destinations list)
 
@@ -186,6 +187,7 @@ export const SIZES = {
 ### 3.1 Add accessibilityLabel to Interactive Elements
 
 **Files affected**:
+
 - `FloatingButton.tsx`
 - `SpotDetailsSheet.tsx`
 - `SpotForm.tsx`
@@ -213,12 +215,12 @@ export const SIZES = {
 
 ### 3.2 Add accessibilityRole to All Buttons
 
-| Component | Role |
-|-----------|------|
-| `TouchableOpacity` (buttons) | `"button"` |
-| `TextInput` | `"text"` (default) |
-| `ScrollView` | `"scrollview"` |
-| Close buttons | `"button"` + `accessibilityLabel="Fermer"` |
+| Component                    | Role                                       |
+| ---------------------------- | ------------------------------------------ |
+| `TouchableOpacity` (buttons) | `"button"`                                 |
+| `TextInput`                  | `"text"` (default)                         |
+| `ScrollView`                 | `"scrollview"`                             |
+| Close buttons                | `"button"` + `accessibilityLabel="Fermer"` |
 
 ### 3.3 Support Font Scaling
 
@@ -237,18 +239,18 @@ Create `src/constants/accessibility.ts`:
 ```typescript
 export const A11Y_LABELS = {
   // Buttons
-  closeButton: 'Fermer',
-  addSpot: 'Ajouter un spot',
-  confirmSpot: 'Confirmer le spot',
-  cancelAction: 'Annuler',
-  openMap: 'Ouvrir dans l\'application Cartes',
-  getDirections: 'Obtenir l\'itinéraire',
-  addComment: 'Ajouter un commentaire',
-  removeDestination: 'Supprimer la destination',
+  closeButton: "Fermer",
+  addSpot: "Ajouter un spot",
+  confirmSpot: "Confirmer le spot",
+  cancelAction: "Annuler",
+  openMap: "Ouvrir dans l'application Cartes",
+  getDirections: "Obtenir l'itinéraire",
+  addComment: "Ajouter un commentaire",
+  removeDestination: "Supprimer la destination",
 
   // Hints
-  addSpotHint: 'Appuyez pour commencer à placer un nouveau spot',
-  mapHint: 'Carte interactive des spots de stop',
+  addSpotHint: "Appuyez pour commencer à placer un nouveau spot",
+  mapHint: "Carte interactive des spots de stop",
 } as const;
 ```
 
@@ -256,7 +258,7 @@ export const A11Y_LABELS = {
 
 ## Phase 4: Testing Infrastructure
 
-**Goal**: Set up testing framework and add tests for critical components.
+**Goal**: Set up lean, effective testing with Jest + React Testing Library.
 
 ### 4.1 Install Testing Dependencies
 
@@ -272,21 +274,21 @@ Create `jest.config.js`:
 
 ```javascript
 module.exports = {
-  preset: 'jest-expo',
-  setupFilesAfterEnv: ['@testing-library/jest-native/extend-expect'],
+  preset: "jest-expo",
+  setupFilesAfterEnv: ["@testing-library/jest-native/extend-expect"],
   transformIgnorePatterns: [
-    'node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg)',
+    "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg)",
   ],
   moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/src/$1',
-    '^@components/(.*)$': '<rootDir>/src/components/$1',
-    '^@screens/(.*)$': '<rootDir>/src/screens/$1',
-    '^@utils/(.*)$': '<rootDir>/src/utils/$1',
+    "^@/(.*)$": "<rootDir>/src/$1",
+    "^@components/(.*)$": "<rootDir>/src/components/$1",
+    "^@screens/(.*)$": "<rootDir>/src/screens/$1",
+    "^@utils/(.*)$": "<rootDir>/src/utils/$1",
   },
   collectCoverageFrom: [
-    'src/**/*.{ts,tsx}',
-    '!src/**/*.d.ts',
-    '!src/**/index.ts',
+    "src/**/*.{ts,tsx}",
+    "!src/**/*.d.ts",
+    "!src/**/index.ts",
   ],
   coverageThreshold: {
     global: {
@@ -303,48 +305,40 @@ module.exports = {
 
 **Priority components**:
 
-| Component | testID |
-|-----------|--------|
-| `FloatingButton` | `floating-button-{position}` |
-| `SpotForm` | `spot-form`, `spot-form-submit`, `spot-form-cancel` |
-| `SpotDetailsSheet` | `spot-details-sheet`, `spot-details-close` |
-| `DestinationInput` | `destination-input`, `destination-add-button` |
-| `DestinationChip` | `destination-chip-{index}` |
-| `MapView` | `map-view` |
+| Component          | testID                                              |
+| ------------------ | --------------------------------------------------- |
+| `FloatingButton`   | `floating-button-{position}`                        |
+| `SpotForm`         | `spot-form`, `spot-form-submit`, `spot-form-cancel` |
+| `SpotDetailsSheet` | `spot-details-sheet`, `spot-details-close`          |
+| `DestinationInput` | `destination-input`, `destination-add-button`       |
+| `DestinationChip`  | `destination-chip-{index}`                          |
+| `MapView`          | `map-view`                                          |
 
 ### 4.4 Create Test Files
 
-**Files to create** (27 missing):
+**Start with critical paths** (add more as needed):
 
 ```
 src/
-├── components/
-│   ├── __tests__/
-│   │   ├── MapView.test.tsx
-│   │   └── ui/
-│   │       ├── FloatingButton.test.tsx
-│   │       ├── Header.test.tsx
-│   │       ├── LoadingSpinner.test.tsx
-│   │       └── ActionButtons.test.tsx
 ├── hooks/
 │   └── __tests__/
-│       └── useLocation.test.ts
-├── screens/
-│   └── __tests__/
-│       └── HomeScreen.test.tsx
+│       ├── useSpots.test.ts       # Priority 1: Core business logic
+│       └── useLocation.test.ts    # Priority 2: Location handling
 └── spot/
-    ├── components/
-    │   └── __tests__/
-    │       ├── SpotForm.test.tsx
-    │       ├── SpotDetailsSheet.test.tsx
-    │       ├── CreateSpotButton.test.tsx
-    │       └── ui/
-    │           ├── DestinationChip.test.tsx
-    │           └── DestinationInput.test.tsx
-    └── hooks/
+    └── components/
         └── __tests__/
-            └── useSpots.test.ts
+            ├── SpotForm.test.tsx           # Priority 1: Critical user flow
+            ├── SpotDetailsSheet.test.tsx   # Priority 2: Data display
+            └── ui/
+                ├── DestinationInput.test.tsx  # Priority 3: Complex input
+                └── DestinationChip.test.tsx   # Priority 3: Simple component
 ```
+
+**Focus areas:**
+
+- Business logic (hooks)
+- Critical user flows (form submission)
+- Complex components (inputs with state)
 
 ### 4.5 Add Test Scripts
 
@@ -371,24 +365,24 @@ src/
 Create `src/spot/context/SpotContext.tsx`:
 
 ```typescript
-import React, { createContext, useContext, ReactNode } from 'react';
-import { useSpots, UseSpotsReturn } from '../hooks/useSpots';
+import React, { createContext, useContext, ReactNode } from "react";
+import { useSpots, UseSpotsReturn } from "../hooks/useSpots";
 
 const SpotContext = createContext<UseSpotsReturn | null>(null);
 
-export const SpotProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const SpotProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
   const spotsState = useSpots();
   return (
-    <SpotContext.Provider value={spotsState}>
-      {children}
-    </SpotContext.Provider>
+    <SpotContext.Provider value={spotsState}>{children}</SpotContext.Provider>
   );
 };
 
 export const useSpotContext = (): UseSpotsReturn => {
   const context = useContext(SpotContext);
   if (!context) {
-    throw new Error('useSpotContext must be used within SpotProvider');
+    throw new Error("useSpotContext must be used within SpotProvider");
   }
   return context;
 };
@@ -404,7 +398,7 @@ pnpm add zustand
 
 ```typescript
 // src/spot/store/spotStore.ts
-import { create } from 'zustand';
+import { create } from "zustand";
 
 interface SpotState {
   spots: Spot[];
@@ -426,8 +420,8 @@ export const useSpotStore = create<SpotState>((set) => ({
 Create `src/components/ErrorBoundary.tsx`:
 
 ```typescript
-import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { Component, ErrorInfo, ReactNode } from "react";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 
 interface Props {
   children: ReactNode;
@@ -447,7 +441,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('ErrorBoundary caught:', error, errorInfo);
+    console.error("ErrorBoundary caught:", error, errorInfo);
     // TODO: Send to error reporting service
   }
 
@@ -457,13 +451,15 @@ export class ErrorBoundary extends Component<Props, State> {
 
   render() {
     if (this.state.hasError) {
-      return this.props.fallback ?? (
-        <View style={styles.container}>
-          <Text style={styles.title}>Oups ! Une erreur est survenue</Text>
-          <TouchableOpacity style={styles.button} onPress={this.handleRetry}>
-            <Text style={styles.buttonText}>Réessayer</Text>
-          </TouchableOpacity>
-        </View>
+      return (
+        this.props.fallback ?? (
+          <View style={styles.container}>
+            <Text style={styles.title}>Oups ! Une erreur est survenue</Text>
+            <TouchableOpacity style={styles.button} onPress={this.handleRetry}>
+              <Text style={styles.buttonText}>Réessayer</Text>
+            </TouchableOpacity>
+          </View>
+        )
       );
     }
     return this.props.children;
@@ -491,10 +487,10 @@ src/
 
 ```typescript
 // src/navigation/RootNavigator.tsx
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
-import { HomeScreen } from '@screens';
-import { RootStackParamList } from './types';
+import { NavigationContainer } from "@react-navigation/native";
+import { createStackNavigator } from "@react-navigation/stack";
+import { HomeScreen } from "@screens";
+import { RootStackParamList } from "./types";
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -576,6 +572,7 @@ const SPOT_SCHEMA = `
 ## Implementation Checklist
 
 ### Phase 1: Tooling Migration ✅ COMPLETED
+
 - [x] Remove ESLint/Prettier packages
 - [x] Delete config files
 - [x] Install Biome
@@ -585,12 +582,14 @@ const SPOT_SCHEMA = `
 - [x] Fix all linting warnings (useCallback, array keys, import types, isNaN)
 
 ### Phase 2: Performance ✅ COMPLETED
+
 - [x] ~~Replace ScrollView+map with FlatList in SpotDetailsSheet~~ (N/A - destinations use flexWrap in View, not ScrollView+map pattern)
 - [x] ~~Replace ScrollView+map with FlatList in SpotForm~~ (N/A - destinations use flexWrap in View, not ScrollView+map pattern)
 - [x] Memoize DestinationChip
 - [x] Extract magic numbers to SIZES constant (applied to 7 files: SpotDetailsSheet, SpotForm, DestinationChip, DestinationInput, FloatingButton, Header)
 
 ### Phase 3: Accessibility ✅ COMPLETED
+
 - [x] Add accessibilityLabel to FloatingButton
 - [x] Add accessibilityLabel to SpotDetailsSheet buttons
 - [x] Add accessibilityLabel to SpotForm buttons
@@ -600,6 +599,7 @@ const SPOT_SCHEMA = `
 - [x] Create A11Y_LABELS constants
 
 ### Phase 4: Testing
+
 - [ ] Install Jest + Testing Library
 - [ ] Configure Jest
 - [ ] Add testID to components
@@ -609,6 +609,7 @@ const SPOT_SCHEMA = `
 - [ ] Write SpotDetailsSheet.test.tsx
 
 ### Phase 5: Code Quality
+
 - [ ] Create SpotContext
 - [ ] Wrap App with SpotProvider
 - [ ] Refactor HomeScreen to use context
@@ -616,11 +617,13 @@ const SPOT_SCHEMA = `
 - [ ] Wrap App with ErrorBoundary
 
 ### Phase 6: Navigation
+
 - [ ] Create navigation folder structure
 - [ ] Implement RootNavigator
 - [ ] Update App.tsx to use navigator
 
 ### Phase 7: Database
+
 - [ ] Create database service
 - [ ] Create spotRepository
 - [ ] Migrate useSpots to use repository
@@ -630,16 +633,16 @@ const SPOT_SCHEMA = `
 
 ## Priority Order
 
-| Priority | Phase | Effort | Impact |
-|----------|-------|--------|--------|
-| 🔴 High | Phase 1: Biome Migration | Low | High (DX) |
-| 🔴 High | Phase 2: Performance | Medium | High (UX) |
-| 🟠 Medium | Phase 3: Accessibility | Medium | High (Inclusivity) |
-| 🟠 Medium | Phase 4: Testing | High | High (Reliability) |
-| 🟡 Low | Phase 5: Code Quality | Medium | Medium (Maintainability) |
-| 🟡 Low | Phase 6: Navigation | Low | Medium (Scalability) |
-| 🟢 Future | Phase 7: Database | High | High (Functionality) |
-| 🟢 Future | Phase 8: Enhancements | High | High (Features) |
+| Priority  | Phase                    | Effort | Impact                   |
+| --------- | ------------------------ | ------ | ------------------------ |
+| 🔴 High   | Phase 1: Biome Migration | Low    | High (DX)                |
+| 🔴 High   | Phase 2: Performance     | Medium | High (UX)                |
+| 🟠 Medium | Phase 3: Accessibility   | Medium | High (Inclusivity)       |
+| 🟠 Medium | Phase 4: Testing         | High   | High (Reliability)       |
+| 🟡 Low    | Phase 5: Code Quality    | Medium | Medium (Maintainability) |
+| 🟡 Low    | Phase 6: Navigation      | Low    | Medium (Scalability)     |
+| 🟢 Future | Phase 7: Database        | High   | High (Functionality)     |
+| 🟢 Future | Phase 8: Enhancements    | High   | High (Features)          |
 
 ---
 
