@@ -1,2 +1,2 @@
-export { DestinationInput } from './DestinationInput';
 export { DestinationChip } from './DestinationChip';
+export { DestinationInput } from './DestinationInput';

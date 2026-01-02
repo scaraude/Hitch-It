@@ -2,43 +2,43 @@
 export type SpotId = string & { readonly brand: unique symbol };
 
 export enum Direction {
-    North = "North",
-    NorthEast = "North-East",
-    East = "East",
-    SouthEast = "South-East",
-    South = "South",
-    SouthWest = "South-West",
-    West = "West",
-    NorthWest = "North-West"
+	North = 'North',
+	NorthEast = 'North-East',
+	East = 'East',
+	SouthEast = 'South-East',
+	South = 'South',
+	SouthWest = 'South-West',
+	West = 'West',
+	NorthWest = 'North-West',
 }
 
 export enum Appreciation {
-    Perfect = "perfect",
-    Good = "good",
-    Bad = "bad"
+	Perfect = 'perfect',
+	Good = 'good',
+	Bad = 'bad',
 }
 
 export interface Location {
-    latitude: number;
-    longitude: number;
+	latitude: number;
+	longitude: number;
 }
 
 export interface SpotMarkerData {
-    id: string;
-    coordinates: Location;
-    title: string;
-    description?: string;
-    color?: string;
+	id: string;
+	coordinates: Location;
+	title: string;
+	description?: string;
+	color?: string;
 }
 
 export interface Spot {
-    id: SpotId;
-    appreciation: Appreciation;
-    roadName: string;
-    direction: Direction;
-    destinations: string[];
-    coordinates: Location;
-    createdAt: Date;
-    updatedAt: Date;
-    createdBy: string;
+	id: SpotId;
+	appreciation: Appreciation;
+	roadName: string;
+	direction: Direction;
+	destinations: string[];
+	coordinates: Location;
+	createdAt: Date;
+	updatedAt: Date;
+	createdBy: string;
 }

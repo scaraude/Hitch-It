@@ -1,4 +1,4 @@
-import { Location } from '../types';
+import type { Location } from '../types';
 
 /**
  * Calculate distance between two coordinates in kilometers
@@ -43,14 +43,14 @@ import { Location } from '../types';
  * Check if location is valid
  */
 export const isValidLocation = (location: Location): boolean => {
-    return (
-        typeof location.latitude === 'number' &&
-        typeof location.longitude === 'number' &&
-        !isNaN(location.latitude) &&
-        !isNaN(location.longitude) &&
-        location.latitude >= -90 &&
-        location.latitude <= 90 &&
-        location.longitude >= -180 &&
-        location.longitude <= 180
-    );
+	return (
+		typeof location.latitude === 'number' &&
+		typeof location.longitude === 'number' &&
+		!Number.isNaN(location.latitude) &&
+		!Number.isNaN(location.longitude) &&
+		location.latitude >= -90 &&
+		location.latitude <= 90 &&
+		location.longitude >= -180 &&
+		location.longitude <= 180
+	);
 };
