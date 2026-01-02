@@ -83,3 +83,5 @@ pnpm-debug.*
 # Temporary files
 *.tmp
 *.temp
+
+old_FEATURES_IMPLEMENTATION_PLAN.md
