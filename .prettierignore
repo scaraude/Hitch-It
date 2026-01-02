@@ -4,5 +4,5 @@ dist/
 build/
 *.log
 *.lock
-yarn.lock
+pnpm-lock.yaml
 package-lock.json

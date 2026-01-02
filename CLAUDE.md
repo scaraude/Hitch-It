@@ -6,26 +6,26 @@
 - the app is for french people and french territory
 
 ### Package manager
-project package manager: 
+project package manager:
 ```
-yarn
+pnpm
 ```
 
 ### Development
 ```bash
 # Start Metro bundler
-yarn start
+pnpm start
 
 # Run on specific platforms
-yarn ios
-yarn android
-yarn web
+pnpm ios
+pnpm android
+pnpm web
 ```
 
 ### Code Quality
 ```bash
 # Lint code
-yarn lint
+pnpm lint
 
 # TypeScript check
 npx tsc --noEmit

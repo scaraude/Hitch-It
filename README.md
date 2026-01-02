@@ -15,7 +15,7 @@ A modern React Native app for hitchhiking built with Expo and TypeScript.
 ## Prerequisites
 
 - Node.js >= 18.0.0
-- npm or yarn
+- pnpm
 - Expo CLI
 - iOS Simulator (for iOS development)
 - Android Studio (for Android development)
@@ -30,16 +30,12 @@ A modern React Native app for hitchhiking built with Expo and TypeScript.
 
 2. **Install dependencies**
    ```bash
-   npm install
-   # or
-   yarn install
+   pnpm install
    ```
 
 3. **Start the development server**
    ```bash
-   npm start
-   # or
-   yarn start
+   pnpm start
    ```
 
 ## Development
