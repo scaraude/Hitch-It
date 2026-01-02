@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toastUtils } from '../../components/ui';
-import { COLORS, MAP_CONFIG } from '../../constants';
+import { COLORS } from '../../constants';
 import type { MapRegion } from '../../types';
+import { createSpot, getAllSpots } from '../services';
 import type { Location, Spot, SpotMarkerData } from '../types';
 import { Appreciation, Direction } from '../types';
 import { createSpotId } from '../utils';
@@ -30,22 +31,7 @@ export interface UseSpotsReturn {
 }
 
 export const useSpots = (): UseSpotsReturn => {
-	const [fullSpots, setFullSpots] = useState<Spot[]>([
-		{
-			id: createSpotId('1'),
-			coordinates: {
-				latitude: MAP_CONFIG.defaultRegion.latitude,
-				longitude: MAP_CONFIG.defaultRegion.longitude,
-			},
-			roadName: 'A6 Paris-Lyon',
-			appreciation: Appreciation.Good,
-			direction: Direction.South,
-			destinations: ['Lyon', 'Marseille'],
-			createdAt: new Date('2025-01-15T10:30:00'),
-			updatedAt: new Date('2025-01-15T10:30:00'),
-			createdBy: 'User123',
-		},
-	]);
+	const [fullSpots, setFullSpots] = useState<Spot[]>([]);
 	const [isPlacingSpot, setIsPlacingSpot] = useState(false);
 	const [isShowingForm, setIsShowingForm] = useState(false);
 	const [pendingLocation, setPendingLocation] = useState<Location | null>(null);
@@ -58,6 +44,32 @@ export const useSpots = (): UseSpotsReturn => {
 		description: `${spot.appreciation} - ${spot.direction}`,
 		color: COLORS.secondary,
 	}));
+
+	useEffect(() => {
+		let isMounted = true;
+
+		const loadSpots = async () => {
+			try {
+				const spots = await getAllSpots();
+				if (isMounted) {
+					setFullSpots(spots);
+				}
+			} catch (error) {
+				if (isMounted) {
+					toastUtils.error(
+						'Chargement échoué',
+						'Impossible de charger les spots hors ligne.'
+					);
+				}
+			}
+		};
+
+		void loadSpots();
+
+		return () => {
+			isMounted = false;
+		};
+	}, []);
 
 	const startPlacingSpot = () => {
 		setIsPlacingSpot(true);
@@ -76,6 +88,7 @@ export const useSpots = (): UseSpotsReturn => {
 	const submitSpotForm = (formData: SpotFormData) => {
 		if (!pendingLocation) return;
 
+		const now = new Date();
 		const newSpot: Spot = {
 			id: createSpotId(Date.now().toString()),
 			coordinates: pendingLocation,
@@ -83,14 +96,27 @@ export const useSpots = (): UseSpotsReturn => {
 			appreciation: formData.appreciation,
 			direction: formData.direction,
 			destinations: formData.destinations,
-			createdAt: new Date(),
-			updatedAt: new Date(),
+			createdAt: now,
+			updatedAt: now,
 			createdBy: 'CurrentUser',
 		};
-		setFullSpots([...fullSpots, newSpot]);
 		setIsShowingForm(false);
 		setPendingLocation(null);
-		toastUtils.success('Spot créé', `Nouveau spot sur ${formData.roadName}`);
+
+		void createSpot(newSpot)
+			.then(() => {
+				setFullSpots(previous => [...previous, newSpot]);
+				toastUtils.success(
+					'Spot créé',
+					`Nouveau spot sur ${formData.roadName}`
+				);
+			})
+			.catch(() => {
+				toastUtils.error(
+					'Création impossible',
+					'Le spot n’a pas pu être enregistré.'
+				);
+			});
 	};
 
 	const cancelSpotPlacement = () => {
