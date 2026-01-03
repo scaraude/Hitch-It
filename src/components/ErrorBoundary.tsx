@@ -1,6 +1,7 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { COLORS, SIZES, SPACING } from '../constants';
+import { logger } from '../utils';
 
 interface Props {
 	children: ReactNode;
@@ -20,11 +21,14 @@ export class ErrorBoundary extends Component<Props, State> {
 	}
 
 	componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-		console.error('ErrorBoundary caught:', error, errorInfo);
+		logger.ui.error('ErrorBoundary caught an error', error, {
+			componentStack: errorInfo.componentStack,
+		});
 		// TODO: Send to error reporting service (Sentry, etc.)
 	}
 
 	handleRetry = () => {
+		logger.ui.info('User retrying after error boundary caught error');
 		this.setState({ hasError: false, error: undefined });
 	};
 

@@ -1,3 +1,4 @@
+import { logger } from '@/utils';
 import type { Spot } from '../../spot/types';
 import {
 	DEFAULT_JOURNEY_CONFIG,
@@ -29,6 +30,9 @@ export class JourneyDetector {
 	 * Update the list of nearby spots for detection
 	 */
 	setNearbySpots(spots: Spot[]): void {
+		logger.journey.debug('Setting nearby spots for detection', {
+			count: spots.length,
+		});
 		this.nearbySpots = spots;
 	}
 
@@ -39,6 +43,14 @@ export class JourneyDetector {
 		location: LocationUpdate,
 		currentState: JourneyState
 	): DetectionResult {
+		logger.journey.debug('Processing location update', {
+			latitude: location.latitude,
+			longitude: location.longitude,
+			speed: location.speed,
+			accuracy: location.accuracy,
+			currentStatus: currentState.status,
+		});
+
 		this.locationHistory.push(location);
 		this.keepRecentHistory();
 
@@ -46,9 +58,16 @@ export class JourneyDetector {
 		const nearbySpot = this.findNearbySpot(location);
 		const isAtSpot = nearbySpot !== undefined;
 
+		logger.journey.debug('Movement and spot detection', {
+			isMoving,
+			isAtSpot,
+			nearbySpotId: nearbySpot?.id,
+		});
+
 		// Update stationary tracking
 		if (!isMoving) {
 			if (this.stationaryStartTime === null) {
+				logger.journey.debug('User became stationary');
 				this.stationaryStartTime = location.timestamp;
 			}
 		} else {
@@ -56,14 +75,30 @@ export class JourneyDetector {
 		}
 
 		const stationaryMinutes = this.getStationaryMinutes(location.timestamp);
+		if (stationaryMinutes > 0) {
+			logger.journey.debug('User stationary duration', {
+				minutes: stationaryMinutes,
+			});
+		}
 
-		return this.determineState(
+		const result = this.determineState(
 			isMoving,
 			isAtSpot,
 			stationaryMinutes,
 			currentState,
 			nearbySpot
 		);
+
+		if (result.newStatus !== currentState.status) {
+			logger.journey.info('Journey state transition', {
+				from: currentState.status,
+				to: result.newStatus,
+				shouldCreateNewStep: result.shouldCreateNewStep,
+				stepType: result.stepType,
+			});
+		}
+
+		return result;
 	}
 
 	/**

@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
 import { MAP_CONFIG } from '../constants';
 import type { Location as LocationType, MapRegion } from '../types';
+import { logger } from '../utils';
 
 interface UseLocationReturn {
 	userLocation: LocationType | null;
@@ -19,11 +20,13 @@ export const useLocation = (): UseLocationReturn => {
 	const [locationLoading, setLocationLoading] = useState(true);
 
 	const getCurrentLocation = useCallback(async () => {
+		logger.location.info('Getting current location from useLocation hook');
 		try {
 			setLocationLoading(true);
 			const { status } = await Location.requestForegroundPermissionsAsync();
 
 			if (status !== 'granted') {
+				logger.location.warn('Location permission denied by user', { status });
 				Alert.alert(
 					'Permission Denied',
 					'Location permission is required to show your current location on the map.',
@@ -32,11 +35,18 @@ export const useLocation = (): UseLocationReturn => {
 				return;
 			}
 
+			logger.location.info('Location permission granted, fetching position');
 			const location = await Location.getCurrentPositionAsync({});
 			const userCoordinate: LocationType = {
 				latitude: location.coords.latitude,
 				longitude: location.coords.longitude,
 			};
+
+			logger.location.info('User location retrieved', {
+				latitude: userCoordinate.latitude,
+				longitude: userCoordinate.longitude,
+				accuracy: location.coords.accuracy,
+			});
 
 			setUserLocation(userCoordinate);
 			const newRegion = {
@@ -47,7 +57,10 @@ export const useLocation = (): UseLocationReturn => {
 			};
 			setCurrentRegion(newRegion);
 		} catch (error) {
-			console.error('Error getting location:', error);
+			logger.location.error(
+				'Error getting location from useLocation hook',
+				error
+			);
 			Alert.alert(
 				'Location Error',
 				'Unable to get your current location. Using default location.',

@@ -1,6 +1,7 @@
 import type React from 'react';
 import { createContext, useCallback, useContext, useState } from 'react';
 import type { Spot } from '../../spot/types';
+import { logger } from '../../utils';
 import { JourneyDetector } from '../services/journeyDetector';
 import { locationTrackingService } from '../services/locationTrackingService';
 import {
@@ -72,6 +73,11 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 
 			// Update journey state if changed
 			if (detectionResult.newStatus !== journeyState.status) {
+				logger.journey.info('Journey state changed', {
+					previousStatus: journeyState.status,
+					newStatus: detectionResult.newStatus,
+				});
+
 				const newState: JourneyState = {
 					...journeyState,
 					status: detectionResult.newStatus,
@@ -79,6 +85,12 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 
 				// Create new step if needed
 				if (detectionResult.shouldCreateNewStep && detectionResult.stepType) {
+					logger.journey.info('Creating new travel step', {
+						stepType: detectionResult.stepType,
+						nearbySpotId: detectionResult.nearbySpot?.id,
+						vehicleChanges: journeyState.detectedVehicleChanges + 1,
+					});
+
 					const newStep: TravelStep = {
 						id: crypto.randomUUID() as TravelStepId,
 						travelId: currentJourney.id,
@@ -91,6 +103,9 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 
 					// End the current step
 					if (journeyState.currentStep) {
+						logger.journey.debug('Ending previous step', {
+							stepId: journeyState.currentStep.id,
+						});
 						journeyState.currentStep.endTime = new Date();
 					}
 
@@ -114,7 +129,7 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 	);
 
 	const handleLocationError = useCallback((error: Error) => {
-		console.error('Location tracking error:', error);
+		logger.journey.error('Location tracking error in journey', error);
 		// TODO: Show error to user
 	}, []);
 
@@ -125,9 +140,17 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 			userId: UserId
 		): Promise<boolean> => {
 			if (isTracking) {
-				console.warn('Journey already in progress');
+				logger.journey.warn(
+					'Cannot start journey: Journey already in progress'
+				);
 				return false;
 			}
+
+			logger.journey.info('Starting new journey', {
+				origin,
+				destination,
+				userId,
+			});
 
 			// Start location tracking
 			const started = await locationTrackingService.startTracking({
@@ -136,6 +159,9 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 			});
 
 			if (!started) {
+				logger.journey.error(
+					'Failed to start journey: Location tracking could not be started'
+				);
 				return false;
 			}
 
@@ -152,6 +178,10 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 				totalDistance: 0,
 				totalWaitTime: 0,
 			};
+
+			logger.journey.info('Journey created successfully', {
+				journeyId: newJourney.id,
+			});
 
 			const initialState: JourneyState = {
 				status: JourneyStateStatus.Idle,
@@ -171,15 +201,25 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 	);
 
 	const stopJourney = useCallback(async () => {
+		logger.journey.info('Stopping journey', { journeyId: currentJourney?.id });
+
 		await locationTrackingService.stopTracking();
 
 		// End current step if exists
 		if (journeyState.currentStep) {
+			logger.journey.debug('Ending current step', {
+				stepId: journeyState.currentStep.id,
+			});
 			journeyState.currentStep.endTime = new Date();
 		}
 
 		// Mark journey as completed
 		if (currentJourney) {
+			logger.journey.info('Marking journey as completed', {
+				journeyId: currentJourney.id,
+				stepsCount: currentJourney.steps.length,
+				totalDistance: currentJourney.totalDistance,
+			});
 			setCurrentJourney(prev => {
 				if (!prev) return null;
 				return {
@@ -192,18 +232,23 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 
 		setIsTracking(false);
 		journeyDetector.reset();
+		logger.journey.info('Journey stopped successfully');
 	}, [currentJourney, journeyState, journeyDetector]);
 
 	const pauseJourney = useCallback(async () => {
+		logger.journey.info('Pausing journey', { journeyId: currentJourney?.id });
 		await locationTrackingService.stopTracking();
 		setIsTracking(false);
-	}, []);
+		logger.journey.info('Journey paused successfully');
+	}, [currentJourney]);
 
 	const resumeJourney = useCallback(async () => {
 		if (!currentJourney) {
+			logger.journey.warn('Cannot resume journey: No journey in progress');
 			return;
 		}
 
+		logger.journey.info('Resuming journey', { journeyId: currentJourney.id });
 		const started = await locationTrackingService.startTracking({
 			onLocationUpdate: handleLocationUpdate,
 			onError: handleLocationError,
@@ -211,14 +256,25 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 
 		if (started) {
 			setIsTracking(true);
+			logger.journey.info('Journey resumed successfully');
+		} else {
+			logger.journey.error(
+				'Failed to resume journey: Location tracking could not be started'
+			);
 		}
 	}, [currentJourney, handleLocationUpdate, handleLocationError]);
 
 	const addManualStep = useCallback(
 		(stepData: Partial<TravelStep>) => {
 			if (!currentJourney) {
+				logger.journey.warn('Cannot add manual step: No journey in progress');
 				return;
 			}
+
+			logger.journey.info('Adding manual step', {
+				journeyId: currentJourney.id,
+				stepType: stepData.type,
+			});
 
 			const newStep: TravelStep = {
 				id: crypto.randomUUID() as TravelStepId,
@@ -237,12 +293,17 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 					steps: [...prev.steps, newStep],
 				};
 			});
+
+			logger.journey.info('Manual step added successfully', {
+				stepId: newStep.id,
+			});
 		},
 		[currentJourney]
 	);
 
 	const updateNearbySpots = useCallback(
 		(spots: Spot[]) => {
+			logger.journey.debug('Updating nearby spots', { count: spots.length });
 			journeyDetector.setNearbySpots(spots);
 		},
 		[journeyDetector]

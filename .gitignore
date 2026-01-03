@@ -85,4 +85,4 @@ pnpm-debug.*
 *.tmp
 *.temp
 
-old_FEATURES_IMPLEMENTATION_PLAN.md
+bugreport*

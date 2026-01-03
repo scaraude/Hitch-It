@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { toastUtils } from '../../components/ui';
 import { COLORS } from '../../constants';
 import type { MapRegion } from '../../types';
+import { logger } from '../../utils';
 import { createSpot, getAllSpots } from '../services';
 import type {
 	Appreciation,
@@ -54,12 +55,17 @@ export const useSpots = (): UseSpotsReturn => {
 		let isMounted = true;
 
 		const loadSpots = async () => {
+			logger.spot.info('Loading spots on mount');
 			try {
 				const spots = await getAllSpots();
 				if (isMounted) {
 					setFullSpots(spots);
+					logger.spot.info('Spots loaded successfully', {
+						count: spots.length,
+					});
 				}
 			} catch (error) {
+				logger.spot.error('Failed to load spots', error);
 				if (isMounted) {
 					toastUtils.error(
 						'Chargement échoué',
@@ -77,6 +83,7 @@ export const useSpots = (): UseSpotsReturn => {
 	}, []);
 
 	const startPlacingSpot = () => {
+		logger.spot.info('User started placing spot');
 		setIsPlacingSpot(true);
 	};
 
@@ -85,13 +92,20 @@ export const useSpots = (): UseSpotsReturn => {
 			latitude: region.latitude,
 			longitude: region.longitude,
 		};
+		logger.spot.info('Spot placement confirmed', {
+			latitude: location.latitude,
+			longitude: location.longitude,
+		});
 		setPendingLocation(location);
 		setIsPlacingSpot(false);
 		setIsShowingForm(true);
 	};
 
 	const submitSpotForm = (formData: SpotFormData) => {
-		if (!pendingLocation) return;
+		if (!pendingLocation) {
+			logger.spot.warn('Submit spot form called without pending location');
+			return;
+		}
 
 		const now = new Date();
 		const newSpot: Spot = {
@@ -105,31 +119,43 @@ export const useSpots = (): UseSpotsReturn => {
 			updatedAt: now,
 			createdBy: 'CurrentUser',
 		};
+
+		logger.spot.info('Submitting spot form', {
+			roadName: formData.roadName,
+			direction: formData.direction,
+			appreciation: formData.appreciation,
+			destinationsCount: formData.destinations.length,
+		});
+
 		setIsShowingForm(false);
 		setPendingLocation(null);
 
 		void createSpot(newSpot)
 			.then(() => {
 				setFullSpots(previous => [...previous, newSpot]);
+				logger.spot.info('Spot created and added to state', { id: newSpot.id });
 				toastUtils.success(
 					'Spot créé',
 					`Nouveau spot sur ${formData.roadName}`
 				);
 			})
-			.catch(() => {
+			.catch(error => {
+				logger.spot.error('Failed to create spot in database', error);
 				toastUtils.error(
 					'Création impossible',
-					'Le spot n’a pas pu être enregistré.'
+					"Le spot n'a pas pu être enregistré."
 				);
 			});
 	};
 
 	const cancelSpotPlacement = () => {
+		logger.spot.info('User cancelled spot placement');
 		setIsPlacingSpot(false);
 		setPendingLocation(null);
 	};
 
 	const cancelSpotForm = () => {
+		logger.spot.info('User cancelled spot form');
 		setIsShowingForm(false);
 		setPendingLocation(null);
 	};
@@ -138,11 +164,15 @@ export const useSpots = (): UseSpotsReturn => {
 		const spotIdBranded = createSpotId(spotId);
 		const spot = fullSpots.find(s => s.id === spotIdBranded);
 		if (spot) {
+			logger.spot.info('Spot selected', { spotId });
 			setSelectedSpot(spot);
+		} else {
+			logger.spot.warn('Spot not found for selection', { spotId });
 		}
 	};
 
 	const deselectSpot = () => {
+		logger.spot.info('Spot deselected');
 		setSelectedSpot(null);
 	};
 
