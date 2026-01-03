@@ -1,10 +1,10 @@
 import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import type React from 'react';
 import { HomeScreen } from '../screens';
 import type { RootStackParamList } from './types';
 
-const Stack = createStackNavigator<RootStackParamList>();
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 /**
  * Root navigation stack
@@ -15,7 +15,6 @@ export const RootNavigator: React.FC = () => (
 		<Stack.Navigator
 			screenOptions={{
 				headerShown: false,
-				cardStyle: { backgroundColor: 'transparent' },
 			}}
 		>
 			<Stack.Screen name="Home" component={HomeScreen} />

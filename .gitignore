@@ -76,6 +76,7 @@ pnpm-debug.*
 
 # local env files
 .env*.local
+.env
 
 # typescript
 *.tsbuildinfo
