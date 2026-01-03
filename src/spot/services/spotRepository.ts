@@ -1,7 +1,7 @@
+import { supabase } from '@/lib/supabaseClient';
 import { logger } from '@/utils';
 import type { Spot } from '../types';
 import { createSpotId } from '../utils';
-import { getDatabase } from './database';
 
 type SpotRow = {
 	id: string;
@@ -10,7 +10,7 @@ type SpotRow = {
 	road_name: string;
 	appreciation: string;
 	direction: string;
-	destinations: string;
+	destinations: string[] | null;
 	created_at: string;
 	updated_at: string;
 	created_by: string;
@@ -25,7 +25,7 @@ const mapRowToSpot = (row: SpotRow): Spot => ({
 	roadName: row.road_name,
 	appreciation: row.appreciation as Spot['appreciation'],
 	direction: row.direction as Spot['direction'],
-	destinations: JSON.parse(row.destinations) as string[],
+	destinations: row.destinations ?? [],
 	createdAt: new Date(row.created_at),
 	updatedAt: new Date(row.updated_at),
 	createdBy: row.created_by,
@@ -34,12 +34,14 @@ const mapRowToSpot = (row: SpotRow): Spot => ({
 export const getAllSpots = async (): Promise<Spot[]> => {
 	logger.repository.debug('Fetching all spots');
 	try {
-		const database = await getDatabase();
-		const [result] = await database.executeSql(
-			'SELECT * FROM spots ORDER BY created_at DESC;'
-		);
-		const rows = result.rows.raw() as SpotRow[];
-		const spots = rows.map(mapRowToSpot);
+		const { data, error } = await supabase
+			.from('spots')
+			.select('*')
+			.order('created_at', { ascending: false });
+		if (error) {
+			throw error;
+		}
+		const spots = (data ?? []).map(row => mapRowToSpot(row as SpotRow));
 		logger.repository.info('Spots fetched successfully', {
 			count: spots.length,
 		});
@@ -53,16 +55,19 @@ export const getAllSpots = async (): Promise<Spot[]> => {
 export const getSpotById = async (id: string): Promise<Spot | null> => {
 	logger.repository.debug('Fetching spot by ID', { id });
 	try {
-		const database = await getDatabase();
-		const [result] = await database.executeSql(
-			'SELECT * FROM spots WHERE id = ? LIMIT 1;',
-			[id]
-		);
-		if (result.rows.length === 0) {
+		const { data, error } = await supabase
+			.from('spots')
+			.select('*')
+			.eq('id', id)
+			.maybeSingle();
+		if (error) {
+			throw error;
+		}
+		if (!data) {
 			logger.repository.info('Spot not found', { id });
 			return null;
 		}
-		const spot = mapRowToSpot(result.rows.item(0) as SpotRow);
+		const spot = mapRowToSpot(data as SpotRow);
 		logger.repository.info('Spot fetched successfully', { id });
 		return spot;
 	} catch (error) {
@@ -78,33 +83,21 @@ export const createSpot = async (spot: Spot): Promise<void> => {
 		direction: spot.direction,
 	});
 	try {
-		const database = await getDatabase();
-		await database.executeSql(
-			`INSERT INTO spots (
-				id,
-				latitude,
-				longitude,
-				road_name,
-				appreciation,
-				direction,
-				destinations,
-				created_at,
-				updated_at,
-				created_by
-			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
-			[
-				spot.id,
-				spot.coordinates.latitude,
-				spot.coordinates.longitude,
-				spot.roadName,
-				spot.appreciation,
-				spot.direction,
-				JSON.stringify(spot.destinations),
-				spot.createdAt.toISOString(),
-				spot.updatedAt.toISOString(),
-				spot.createdBy,
-			]
-		);
+		const { error } = await supabase.from('spots').insert({
+			id: spot.id,
+			latitude: spot.coordinates.latitude,
+			longitude: spot.coordinates.longitude,
+			road_name: spot.roadName,
+			appreciation: spot.appreciation,
+			direction: spot.direction,
+			destinations: spot.destinations,
+			created_at: spot.createdAt.toISOString(),
+			updated_at: spot.updatedAt.toISOString(),
+			created_by: spot.createdBy,
+		});
+		if (error) {
+			throw error;
+		}
 		logger.repository.info('Spot created successfully', { id: spot.id });
 	} catch (error) {
 		logger.repository.error('Failed to create spot', error, { id: spot.id });
@@ -115,30 +108,22 @@ export const createSpot = async (spot: Spot): Promise<void> => {
 export const updateSpot = async (spot: Spot): Promise<void> => {
 	logger.repository.info('Updating spot', { id: spot.id });
 	try {
-		const database = await getDatabase();
-		await database.executeSql(
-			`UPDATE spots
-				SET latitude = ?,
-					longitude = ?,
-					road_name = ?,
-					appreciation = ?,
-					direction = ?,
-					destinations = ?,
-					updated_at = ?,
-					created_by = ?
-				WHERE id = ?;`,
-			[
-				spot.coordinates.latitude,
-				spot.coordinates.longitude,
-				spot.roadName,
-				spot.appreciation,
-				spot.direction,
-				JSON.stringify(spot.destinations),
-				spot.updatedAt.toISOString(),
-				spot.createdBy,
-				spot.id,
-			]
-		);
+		const { error } = await supabase
+			.from('spots')
+			.update({
+				latitude: spot.coordinates.latitude,
+				longitude: spot.coordinates.longitude,
+				road_name: spot.roadName,
+				appreciation: spot.appreciation,
+				direction: spot.direction,
+				destinations: spot.destinations,
+				updated_at: spot.updatedAt.toISOString(),
+				created_by: spot.createdBy,
+			})
+			.eq('id', spot.id);
+		if (error) {
+			throw error;
+		}
 		logger.repository.info('Spot updated successfully', { id: spot.id });
 	} catch (error) {
 		logger.repository.error('Failed to update spot', error, { id: spot.id });
@@ -149,8 +134,10 @@ export const updateSpot = async (spot: Spot): Promise<void> => {
 export const deleteSpot = async (id: string): Promise<void> => {
 	logger.repository.info('Deleting spot', { id });
 	try {
-		const database = await getDatabase();
-		await database.executeSql('DELETE FROM spots WHERE id = ?;', [id]);
+		const { error } = await supabase.from('spots').delete().eq('id', id);
+		if (error) {
+			throw error;
+		}
 		logger.repository.info('Spot deleted successfully', { id });
 	} catch (error) {
 		logger.repository.error('Failed to delete spot', error, { id });

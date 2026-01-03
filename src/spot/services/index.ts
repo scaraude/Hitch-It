@@ -1,4 +1,3 @@
-export { getDatabase } from './database';
 export {
 	createSpot,
 	deleteSpot,
