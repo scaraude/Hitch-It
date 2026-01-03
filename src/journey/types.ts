@@ -1,5 +1,8 @@
 import type { SpotId } from '../spot/types';
 
+// Re-export SpotId for convenience
+export type { SpotId } from '../spot/types';
+
 // Branded types for journey domain
 export type TravelId = string & { readonly brand: unique symbol };
 export type TravelStepId = string & { readonly brand: unique symbol };

@@ -1,8 +1,22 @@
+import * as Crypto from 'expo-crypto';
 import type React from 'react';
-import { createContext, useCallback, useContext, useState } from 'react';
+import {
+	createContext,
+	useCallback,
+	useContext,
+	useEffect,
+	useRef,
+	useState,
+} from 'react';
+import { AppState, type AppStateStatus } from 'react-native';
 import type { Spot } from '../../spot/types';
 import { logger } from '../../utils';
 import { JourneyDetector } from '../services/journeyDetector';
+import {
+	getActiveTravel,
+	saveTravelStep,
+	saveTravelWithSteps,
+} from '../services/journeyRepository';
 import { locationTrackingService } from '../services/locationTrackingService';
 import {
 	type JourneyState,
@@ -56,30 +70,125 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 		null
 	);
 	const [journeyDetector] = useState(() => new JourneyDetector());
+	const currentJourneyRef = useRef<Travel | null>(null);
+	const journeyStateRef = useRef<JourneyState>({
+		status: JourneyStateStatus.Idle,
+		currentStep: null,
+		detectedVehicleChanges: 0,
+		startTime: new Date(),
+	});
+
+	useEffect(() => {
+		currentJourneyRef.current = currentJourney;
+	}, [currentJourney]);
+
+	useEffect(() => {
+		journeyStateRef.current = journeyState;
+	}, [journeyState]);
+
+	const restoreActiveJourney = useCallback(async () => {
+		const isTrackingActive =
+			await locationTrackingService.isCurrentlyTracking();
+		logger.journey.info('Checking for active journey', {
+			isTrackingActive,
+		});
+
+		if (isTrackingActive) {
+			logger.journey.info(
+				'Background tracking is active, attempting to restore active journey'
+			);
+
+			try {
+				const userId = 'anonymous-user';
+				const activeTravel = await getActiveTravel(userId);
+
+				if (activeTravel) {
+					logger.journey.info('Active journey restored from database', {
+						journeyId: activeTravel.id,
+						stepsCount: activeTravel.steps.length,
+					});
+					setCurrentJourney(activeTravel);
+					currentJourneyRef.current = activeTravel;
+
+					// Restore journey state
+					const lastStep = activeTravel.steps[activeTravel.steps.length - 1];
+					const restoredState: JourneyState = {
+						status: JourneyStateStatus.Idle,
+						currentStep: lastStep ?? null,
+						detectedVehicleChanges: activeTravel.steps.length,
+						startTime: activeTravel.startDate,
+					};
+					setJourneyState(restoredState);
+					journeyStateRef.current = restoredState;
+
+					// Sync tracking state
+					setIsTracking(true);
+				} else {
+					logger.journey.warn(
+						'Background tracking is active but no active journey found in database, stopping tracking'
+					);
+					await locationTrackingService.stopTracking();
+					setIsTracking(false);
+				}
+			} catch (error) {
+				logger.journey.error('Failed to restore active journey', error);
+				// Stop orphaned tracking on error
+				await locationTrackingService.stopTracking();
+				setIsTracking(false);
+			}
+		}
+	}, []);
+
+	// Restore active journey on mount if background tracking is running
+	useEffect(() => {
+		restoreActiveJourney();
+	}, [restoreActiveJourney]);
+
+	// Listen for app state changes to sync journey state when returning from permission dialogs
+	useEffect(() => {
+		const handleAppStateChange = (nextAppState: AppStateStatus) => {
+			if (nextAppState === 'active') {
+				logger.journey.debug('App became active, syncing journey state');
+				restoreActiveJourney();
+			}
+		};
+
+		const subscription = AppState.addEventListener(
+			'change',
+			handleAppStateChange
+		);
+
+		return () => {
+			subscription.remove();
+		};
+	}, [restoreActiveJourney]);
 
 	const handleLocationUpdate = useCallback(
 		(location: LocationUpdate) => {
 			setCurrentLocation(location);
 
-			if (!currentJourney) {
+			const activeJourney = currentJourneyRef.current;
+			if (!activeJourney) {
 				return;
 			}
+
+			const currentState = journeyStateRef.current;
 
 			// Process location with journey detector
 			const detectionResult = journeyDetector.processLocation(
 				location,
-				journeyState
+				currentState
 			);
 
 			// Update journey state if changed
-			if (detectionResult.newStatus !== journeyState.status) {
+			if (detectionResult.newStatus !== currentState.status) {
 				logger.journey.info('Journey state changed', {
-					previousStatus: journeyState.status,
+					previousStatus: currentState.status,
 					newStatus: detectionResult.newStatus,
 				});
 
 				const newState: JourneyState = {
-					...journeyState,
+					...currentState,
 					status: detectionResult.newStatus,
 				};
 
@@ -88,12 +197,12 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 					logger.journey.info('Creating new travel step', {
 						stepType: detectionResult.stepType,
 						nearbySpotId: detectionResult.nearbySpot?.id,
-						vehicleChanges: journeyState.detectedVehicleChanges + 1,
+						vehicleChanges: currentState.detectedVehicleChanges + 1,
 					});
 
 					const newStep: TravelStep = {
-						id: crypto.randomUUID() as TravelStepId,
-						travelId: currentJourney.id,
+						id: Crypto.randomUUID() as TravelStepId,
+						travelId: activeJourney.id,
 						type: detectionResult.stepType,
 						spotId: detectionResult.nearbySpot?.id,
 						startTime: new Date(),
@@ -102,11 +211,11 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 					};
 
 					// End the current step
-					if (journeyState.currentStep) {
+					if (currentState.currentStep) {
 						logger.journey.debug('Ending previous step', {
-							stepId: journeyState.currentStep.id,
+							stepId: currentState.currentStep.id,
 						});
-						journeyState.currentStep.endTime = new Date();
+						currentState.currentStep.endTime = new Date();
 					}
 
 					newState.currentStep = newStep;
@@ -115,22 +224,35 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 					// Add step to journey
 					setCurrentJourney(prev => {
 						if (!prev) return null;
-						return {
+						const updatedJourney = {
 							...prev,
 							steps: [...prev.steps, newStep],
 						};
+						currentJourneyRef.current = updatedJourney;
+						return updatedJourney;
+					});
+
+					// Persist the new step to database
+					saveTravelStep(newStep).catch(error => {
+						logger.journey.error('Failed to persist travel step', error);
 					});
 				}
 
+				journeyStateRef.current = newState;
 				setJourneyState(newState);
 			}
 		},
-		[currentJourney, journeyState, journeyDetector]
+		[journeyDetector]
 	);
 
 	const handleLocationError = useCallback((error: Error) => {
 		logger.journey.error('Location tracking error in journey', error);
 		// TODO: Show error to user
+	}, []);
+
+	const syncTrackingState = useCallback(async () => {
+		const tracking = await locationTrackingService.isCurrentlyTracking();
+		setIsTracking(tracking);
 	}, []);
 
 	const startJourney = useCallback(
@@ -139,65 +261,78 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 			destination: string,
 			userId: UserId
 		): Promise<boolean> => {
-			if (isTracking) {
-				logger.journey.warn(
-					'Cannot start journey: Journey already in progress'
-				);
+			try {
+				if (await locationTrackingService.isCurrentlyTracking()) {
+					logger.journey.warn(
+						'Cannot start journey: Journey already in progress'
+					);
+					return false;
+				}
+
+				logger.journey.info('Starting new journey', {
+					origin,
+					destination,
+					userId,
+				});
+
+				// Start location tracking
+				const started = await locationTrackingService.startTracking({
+					onLocationUpdate: handleLocationUpdate,
+					onError: handleLocationError,
+				});
+
+				if (!started) {
+					logger.journey.error(
+						'Failed to start journey: Location tracking could not be started'
+					);
+					syncTrackingState();
+					return false;
+				}
+
+				// Create new journey
+				const newJourney: Travel = {
+					id: Crypto.randomUUID() as TravelId,
+					userId: userId,
+					startDate: new Date(),
+					endDate: undefined,
+					origin,
+					destination,
+					status: TravelStatus.InProgress,
+					steps: [],
+					totalDistance: 0,
+					totalWaitTime: 0,
+				};
+
+				logger.journey.info('Journey created successfully', {
+					journeyId: newJourney.id,
+				});
+
+				const initialState: JourneyState = {
+					status: JourneyStateStatus.Idle,
+					currentStep: null,
+					detectedVehicleChanges: 0,
+					startTime: new Date(),
+				};
+
+				setCurrentJourney(newJourney);
+				currentJourneyRef.current = newJourney;
+				setJourneyState(initialState);
+				journeyStateRef.current = initialState;
+				syncTrackingState();
+				journeyDetector.reset();
+
+				// Persist journey to database
+				saveTravelWithSteps(newJourney).catch(error => {
+					logger.journey.error('Failed to persist journey', error);
+				});
+
+				return true;
+			} catch (error) {
+				logger.journey.error('Error starting journey', error);
 				return false;
 			}
-
-			logger.journey.info('Starting new journey', {
-				origin,
-				destination,
-				userId,
-			});
-
-			// Start location tracking
-			const started = await locationTrackingService.startTracking({
-				onLocationUpdate: handleLocationUpdate,
-				onError: handleLocationError,
-			});
-
-			if (!started) {
-				logger.journey.error(
-					'Failed to start journey: Location tracking could not be started'
-				);
-				return false;
-			}
-
-			// Create new journey
-			const newJourney: Travel = {
-				id: crypto.randomUUID() as TravelId,
-				userId: userId,
-				startDate: new Date(),
-				endDate: undefined,
-				origin,
-				destination,
-				status: TravelStatus.InProgress,
-				steps: [],
-				totalDistance: 0,
-				totalWaitTime: 0,
-			};
-
-			logger.journey.info('Journey created successfully', {
-				journeyId: newJourney.id,
-			});
-
-			const initialState: JourneyState = {
-				status: JourneyStateStatus.Idle,
-				currentStep: null,
-				detectedVehicleChanges: 0,
-				startTime: new Date(),
-			};
-
-			setCurrentJourney(newJourney);
-			setJourneyState(initialState);
-			setIsTracking(true);
-			journeyDetector.reset();
-
-			return true;
 		},
-		[isTracking, handleLocationUpdate, handleLocationError, journeyDetector]
+		[handleLocationUpdate, handleLocationError, journeyDetector, syncTrackingState]
 	);
 
 	const stopJourney = useCallback(async () => {
@@ -220,27 +355,33 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 				stepsCount: currentJourney.steps.length,
 				totalDistance: currentJourney.totalDistance,
 			});
-			setCurrentJourney(prev => {
-				if (!prev) return null;
-				return {
-					...prev,
-					endDate: new Date(),
-					status: TravelStatus.Completed,
-				};
+
+			const completedJourney: Travel = {
+				...currentJourney,
+				endDate: new Date(),
+				status: TravelStatus.Completed,
+			};
+
+			setCurrentJourney(completedJourney);
+			currentJourneyRef.current = completedJourney;
+
+			// Persist completed journey to database
+			saveTravelWithSteps(completedJourney).catch(error => {
+				logger.journey.error('Failed to persist completed journey', error);
 			});
 		}
 
-		setIsTracking(false);
+		syncTrackingState();
 		journeyDetector.reset();
 		logger.journey.info('Journey stopped successfully');
-	}, [currentJourney, journeyState, journeyDetector]);
+	}, [currentJourney, journeyState, journeyDetector, syncTrackingState]);
 
 	const pauseJourney = useCallback(async () => {
 		logger.journey.info('Pausing journey', { journeyId: currentJourney?.id });
 		await locationTrackingService.stopTracking();
-		setIsTracking(false);
+		syncTrackingState();
 		logger.journey.info('Journey paused successfully');
-	}, [currentJourney]);
+	}, [currentJourney, syncTrackingState]);
 
 	const resumeJourney = useCallback(async () => {
 		if (!currentJourney) {
@@ -255,14 +396,15 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 		});
 
 		if (started) {
-			setIsTracking(true);
+			syncTrackingState();
 			logger.journey.info('Journey resumed successfully');
 		} else {
 			logger.journey.error(
 				'Failed to resume journey: Location tracking could not be started'
 			);
+			syncTrackingState();
 		}
-	}, [currentJourney, handleLocationUpdate, handleLocationError]);
+	}, [currentJourney, handleLocationUpdate, handleLocationError, syncTrackingState]);
 
 	const addManualStep = useCallback(
 		(stepData: Partial<TravelStep>) => {
@@ -277,7 +419,7 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 			});
 
 			const newStep: TravelStep = {
-				id: crypto.randomUUID() as TravelStepId,
+				id: Crypto.randomUUID() as TravelStepId,
 				travelId: currentJourney.id,
 				type: stepData.type ?? StepType.Waiting,
 				spotId: stepData.spotId,
@@ -288,10 +430,17 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 
 			setCurrentJourney(prev => {
 				if (!prev) return null;
-				return {
+				const updatedJourney = {
 					...prev,
 					steps: [...prev.steps, newStep],
 				};
+				currentJourneyRef.current = updatedJourney;
+				return updatedJourney;
+			});
+
+			// Persist manual step to database
+			saveTravelStep(newStep).catch(error => {
+				logger.journey.error('Failed to persist manual step', error);
 			});
 
 			logger.journey.info('Manual step added successfully', {

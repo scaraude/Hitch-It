@@ -11,6 +11,7 @@ import {
 } from '../components';
 import { COLORS } from '../constants';
 import { useLocation } from '../hooks';
+import { JourneyControls, NavigationBar } from '../journey/components';
 import {
 	CreateSpotButton,
 	SpotDetailsSheet,
@@ -71,6 +72,9 @@ const HomeScreen: React.FC = () => {
 					</>
 				)}
 			</View>
+
+			<NavigationBar />
+			<JourneyControls />
 
 			{isPlacingSpot ? (
 				<ActionButtons

@@ -10,10 +10,13 @@ export const COLORS = {
 	success: '#4CAF50',
 	warning: '#FF9800',
 	error: '#F44336',
+	danger: '#F44336',
 	background: '#FFFFFF',
 	surface: '#F5F5F5',
 	text: '#212121',
 	textSecondary: '#757575',
+	textLight: '#FFFFFF',
+	border: '#E0E0E0',
 } as const;
 
 export const MAP_CONFIG = {

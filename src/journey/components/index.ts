@@ -1,3 +1,4 @@
+export * from './JourneyControls';
 export * from './JourneyTimeline';
 export * from './NavigationBar';
 export * from './NavigationSheet';

@@ -107,6 +107,25 @@ export class JourneyDetector {
 	private detectMovement(location: LocationUpdate): boolean {
 		// Check speed if available
 		if (location.speed !== undefined) {
+			if (this.locationHistory.length < 2) {
+				return false;
+			}
+
+			const previousLocation =
+				this.locationHistory[this.locationHistory.length - 2];
+			const distance = this.calculateDistance(
+				previousLocation.latitude,
+				previousLocation.longitude,
+				location.latitude,
+				location.longitude
+			);
+			const accuracyBuffer =
+				(location.accuracy ?? 0) + (previousLocation.accuracy ?? 0);
+			const minMovementDistance = Math.max(10, accuracyBuffer);
+			if (distance < minMovementDistance) {
+				return false;
+			}
+
 			const speedKmh = location.speed * 3.6; // Convert m/s to km/h
 			return speedKmh >= this.config.movingSpeedThresholdKmh;
 		}

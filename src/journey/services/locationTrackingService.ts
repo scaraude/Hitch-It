@@ -1,6 +1,6 @@
+import { logger } from '@/utils';
 import * as Location from 'expo-location';
 import * as TaskManager from 'expo-task-manager';
-import { logger } from '@/utils';
 import type { LocationUpdate } from '../types';
 
 const LOCATION_TASK_NAME = 'BACKGROUND_LOCATION_TRACKING';
@@ -63,8 +63,12 @@ class LocationTrackingService {
 	}
 
 	async startTracking(callbacks: LocationTrackingCallbacks): Promise<boolean> {
-		if (this.isTracking) {
+		// Check if background task is already running (e.g., after app restart)
+		const alreadyTracking = await this.isCurrentlyTracking();
+		if (alreadyTracking) {
 			logger.location.warn('Location tracking is already active');
+			// Update callbacks so new listeners can receive updates
+			this.callbacks = callbacks;
 			return true;
 		}
 
@@ -209,7 +213,7 @@ class LocationTrackingService {
 		logger.location.info('Stopping location tracking');
 		try {
 			// Stop background tracking if active
-			const isTaskDefined = await TaskManager.isTaskDefined(LOCATION_TASK_NAME);
+			const isTaskDefined = TaskManager.isTaskDefined(LOCATION_TASK_NAME);
 			if (isTaskDefined) {
 				const isTaskRegistered =
 					await TaskManager.isTaskRegisteredAsync(LOCATION_TASK_NAME);
@@ -265,8 +269,32 @@ class LocationTrackingService {
 		}
 	}
 
-	isCurrentlyTracking(): boolean {
-		return this.isTracking;
+	async isCurrentlyTracking(): Promise<boolean> {
+		logger.location.debug('isCurrentlyTracking - Checking if location tracking is currently active');
+		// Check in-memory flag first
+		if (this.isTracking) {
+			return true;
+		}
+
+		// Check if background task is actually registered (survives app restart)
+		try {
+			const isTaskDefined = TaskManager.isTaskDefined(LOCATION_TASK_NAME);
+			if (isTaskDefined) {
+				const isTaskRegistered =
+					await TaskManager.isTaskRegisteredAsync(LOCATION_TASK_NAME);
+				if (isTaskRegistered) {
+					logger.location.info(
+						'Background location task is registered, restoring tracking state'
+					);
+					this.isTracking = true;
+					return true;
+				}
+			}
+		} catch (error) {
+			logger.location.error('Error checking background task status', error);
+		}
+
+		return false;
 	}
 }
 
