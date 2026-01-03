@@ -86,3 +86,6 @@ pnpm-debug.*
 *.temp
 
 bugreport*
+
+# IA
+AGENTS.md
