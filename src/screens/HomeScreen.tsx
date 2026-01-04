@@ -20,6 +20,7 @@ import {
 import { useSpotContext } from '../spot/context';
 import type { MapRegion } from '../types';
 
+const FEATURE_JOURNEY_ENABLED = false;
 const HomeScreen: React.FC = () => {
 	const { currentRegion, locationLoading } = useLocation();
 	const {
@@ -73,8 +74,11 @@ const HomeScreen: React.FC = () => {
 				)}
 			</View>
 
-			<NavigationBar />
-			<JourneyControls />
+			{
+				FEATURE_JOURNEY_ENABLED && (
+					<>	<NavigationBar />
+						<JourneyControls /></>
+				)}
 
 			{isPlacingSpot ? (
 				<ActionButtons

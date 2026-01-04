@@ -7,6 +7,7 @@ import { RootNavigator } from './src/navigation';
 import { SpotProvider } from './src/spot/context';
 import { logger } from './src/utils';
 
+const FEATURE_JOURNEY_ENABLED = false;
 const App: React.FC = () => {
 	useEffect(() => {
 		logger.app.info('App initialized');
@@ -18,10 +19,17 @@ const App: React.FC = () => {
 	return (
 		<ErrorBoundary>
 			<SpotProvider>
-				<JourneyProvider>
-					<StatusBar style="light" />
-					<RootNavigator />
-				</JourneyProvider>
+				{FEATURE_JOURNEY_ENABLED ? (
+					<JourneyProvider>
+						<StatusBar style="light" />
+						<RootNavigator />
+					</JourneyProvider>
+				) : (
+					<>
+						<StatusBar style="light" />
+						<RootNavigator />
+					</>
+				)}
 			</SpotProvider>
 		</ErrorBoundary>
 	);
