@@ -89,3 +89,7 @@ bugreport*
 
 # IA
 AGENTS.md
+
+data/
+spots.geojson
+spots.json
