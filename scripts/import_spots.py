@@ -33,10 +33,11 @@ CONFIG = {
     "cluster_min_distance_km": 0.3,  # Points within this distance may cluster
     "cluster_min_samples": 2,        # Min points to form a cluster
 
-    # Scoring weights
-    "weight_rating": 0.1,            # Original rating importance
-    "weight_recency": 0.6,           # Recent = better
-    "weight_isolation": 0.3,         # Isolated points = more valuable
+    # Scoring weights (for picking best point in nearby-but-different clusters)
+    "weight_comment_length": 0.4,    # Detailed comments = more useful
+    "weight_recency": 0.3,           # Recent = better (infrastructure changes)
+    "weight_has_wait_time": 0.2,     # Objective data beats subjective
+    "weight_rating": 0.1,            # Weak tiebreaker
 
     # Filtering
     "min_rating": 1.0,               # Exclude low ratings
@@ -167,17 +168,19 @@ def compute_scores(df: pd.DataFrame) -> pd.DataFrame:
     days_old = (now - df["parsed_date"]).dt.days
     df["score_recency"] = np.exp(-days_old / 365)  # Half-life ~1 year
 
-    # Isolation score (inverse of cluster size)
-    cluster_sizes = df.groupby("cluster_id").size()
-    df["cluster_size"] = df["cluster_id"].map(cluster_sizes)
-    df.loc[df["cluster_id"] == -1, "cluster_size"] = 1  # Noise points are isolated
-    df["score_isolation"] = 1 / df["cluster_size"]
+    # Comment length score (cap at 200 chars for diminishing returns)
+    comment_lengths = df["comment"].fillna("").str.len()
+    df["score_comment_length"] = np.minimum(comment_lengths, 200) / 200
+
+    # Has wait time score (binary: objective data is valuable)
+    df["score_has_wait_time"] = df["wait"].notna().astype(float)
 
     # Composite score
     df["score_total"] = (
-        CONFIG["weight_rating"] * df["score_rating"] +
+        CONFIG["weight_comment_length"] * df["score_comment_length"] +
         CONFIG["weight_recency"] * df["score_recency"] +
-        CONFIG["weight_isolation"] * df["score_isolation"]
+        CONFIG["weight_has_wait_time"] * df["score_has_wait_time"] +
+        CONFIG["weight_rating"] * df["score_rating"]
     )
 
     return df
@@ -371,8 +374,8 @@ def upload_to_supabase(spots: list[dict]):
 
         load_dotenv()
 
-        url = os.getenv("EXPO_PUBLIC_SUPABASE_URL")
-        key = os.getenv("SUPABASE_SERVICE_ROLE_KEY")  # Need service role for bulk insert
+        url = os.getenv("SUPABASE_URL")
+        key = os.getenv("SUPABASE_ANON_KEY")  # Need service role for bulk insert
 
         if not url or not key:
             print("Error: Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in .env")
