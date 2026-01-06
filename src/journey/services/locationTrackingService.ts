@@ -1,6 +1,6 @@
-import { logger } from '@/utils';
 import * as Location from 'expo-location';
 import * as TaskManager from 'expo-task-manager';
+import { logger } from '@/utils';
 import type { LocationUpdate } from '../types';
 
 const LOCATION_TASK_NAME = 'BACKGROUND_LOCATION_TRACKING';
@@ -270,7 +270,9 @@ class LocationTrackingService {
 	}
 
 	async isCurrentlyTracking(): Promise<boolean> {
-		logger.location.debug('isCurrentlyTracking - Checking if location tracking is currently active');
+		logger.location.debug(
+			'isCurrentlyTracking - Checking if location tracking is currently active'
+		);
 		// Check in-memory flag first
 		if (this.isTracking) {
 			return true;

@@ -17,11 +17,19 @@ import {
 	SpotDetailsSheet,
 	SpotForm,
 } from '../spot/components';
-import { useSpotContext } from '../spot/context';
-import type { MapRegion } from '../types';
+import { SpotProvider, useSpotContext } from '../spot/context';
+import type { MapBounds, MapRegion } from '../types';
+import { calculateZoomLevel, regionToBounds } from '../utils';
 
 const FEATURE_JOURNEY_ENABLED = false;
-const HomeScreen: React.FC = () => {
+
+interface HomeScreenContentProps {
+	onRegionChange: (region: MapRegion) => void;
+}
+
+const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
+	onRegionChange,
+}) => {
 	const { currentRegion, locationLoading } = useLocation();
 	const {
 		spots,
@@ -40,6 +48,7 @@ const HomeScreen: React.FC = () => {
 
 	const handleRegionChange = (region: MapRegion) => {
 		setMapRegion(region);
+		onRegionChange(region);
 	};
 
 	const handleMarkerPress = (markerId: string) => {
@@ -74,11 +83,13 @@ const HomeScreen: React.FC = () => {
 				)}
 			</View>
 
-			{
-				FEATURE_JOURNEY_ENABLED && (
-					<>	<NavigationBar />
-						<JourneyControls /></>
-				)}
+			{FEATURE_JOURNEY_ENABLED && (
+				<>
+					{' '}
+					<NavigationBar />
+					<JourneyControls />
+				</>
+			)}
 
 			{isPlacingSpot ? (
 				<ActionButtons
@@ -99,6 +110,22 @@ const HomeScreen: React.FC = () => {
 
 			<Toast />
 		</SafeAreaView>
+	);
+};
+
+const HomeScreen: React.FC = () => {
+	const [bounds, setBounds] = useState<MapBounds | null>(null);
+	const [zoomLevel, setZoomLevel] = useState<number>(0);
+
+	const handleRegionChange = (region: MapRegion) => {
+		setBounds(regionToBounds(region));
+		setZoomLevel(calculateZoomLevel(region));
+	};
+
+	return (
+		<SpotProvider bounds={bounds} zoomLevel={zoomLevel}>
+			<HomeScreenContent onRegionChange={handleRegionChange} />
+		</SpotProvider>
 	);
 };
 

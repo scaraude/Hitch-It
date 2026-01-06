@@ -3,5 +3,6 @@ export {
 	deleteSpot,
 	getAllSpots,
 	getSpotById,
+	getSpotsInBounds,
 	updateSpot,
 } from './spotRepository';

@@ -332,7 +332,12 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 				return false;
 			}
 		},
-		[handleLocationUpdate, handleLocationError, journeyDetector, syncTrackingState]
+		[
+			handleLocationUpdate,
+			handleLocationError,
+			journeyDetector,
+			syncTrackingState,
+		]
 	);
 
 	const stopJourney = useCallback(async () => {
@@ -404,7 +409,12 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 			);
 			syncTrackingState();
 		}
-	}, [currentJourney, handleLocationUpdate, handleLocationError, syncTrackingState]);
+	}, [
+		currentJourney,
+		handleLocationUpdate,
+		handleLocationError,
+		syncTrackingState,
+	]);
 
 	const addManualStep = useCallback(
 		(stepData: Partial<TravelStep>) => {

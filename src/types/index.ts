@@ -10,6 +10,13 @@ export interface MapRegion {
 	longitudeDelta: number;
 }
 
+export interface MapBounds {
+	north: number;
+	south: number;
+	east: number;
+	west: number;
+}
+
 export interface UserLocation {
 	latitude: number;
 	longitude: number;

@@ -1,5 +1,11 @@
 import { supabase } from '@/lib/supabaseClient';
-import { logger } from '@/utils';
+import type { MapBounds } from '@/types';
+import {
+	expandBounds,
+	isFullyContained,
+	isSpotInBounds,
+	logger,
+} from '@/utils';
 import type { Spot } from '../types';
 import { createSpotId } from '../utils';
 
@@ -30,6 +36,74 @@ const mapRowToSpot = (row: SpotRow): Spot => ({
 	updatedAt: new Date(row.updated_at),
 	createdBy: row.created_by,
 });
+
+type CachedRegion = {
+	bounds: MapBounds;
+	spots: Spot[];
+	fetchedAt: Date;
+};
+
+const cache: CachedRegion[] = [];
+const CACHE_PADDING = 0.1;
+
+export const getSpotsInBounds = async (bounds: MapBounds): Promise<Spot[]> => {
+	logger.repository.debug('Fetching spots in bounds', {
+		north: bounds.north,
+		south: bounds.south,
+		east: bounds.east,
+		west: bounds.west,
+	});
+
+	const cachedRegion = cache.find(region =>
+		isFullyContained(bounds, region.bounds)
+	);
+
+	if (cachedRegion) {
+		logger.repository.debug('Cache hit - filtering from cached spots');
+		const filteredSpots = cachedRegion.spots.filter(spot =>
+			isSpotInBounds(spot.coordinates, bounds)
+		);
+		logger.repository.info('Spots filtered from cache', {
+			count: filteredSpots.length,
+		});
+		return filteredSpots;
+	}
+
+	logger.repository.debug('Cache miss - fetching from database');
+	try {
+		const { data, error } = await supabase
+			.from('spots')
+			.select('*')
+			.gte('latitude', bounds.south)
+			.lte('latitude', bounds.north)
+			.gte('longitude', bounds.west)
+			.lte('longitude', bounds.east)
+			.limit(1000);
+
+		if (error) {
+			throw error;
+		}
+
+		const spots = (data ?? []).map(row => mapRowToSpot(row as SpotRow));
+
+		const expandedBounds = expandBounds(bounds, CACHE_PADDING);
+		cache.push({
+			bounds: expandedBounds,
+			spots,
+			fetchedAt: new Date(),
+		});
+
+		logger.repository.info('Spots fetched and cached', {
+			count: spots.length,
+			cacheSize: cache.length,
+		});
+
+		return spots;
+	} catch (error) {
+		logger.repository.error('Failed to fetch spots in bounds', error);
+		throw error;
+	}
+};
 
 export const getAllSpots = async (): Promise<Spot[]> => {
 	logger.repository.debug('Fetching all spots');

@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { toastUtils } from '../../components/ui';
 import { COLORS } from '../../constants';
-import type { MapRegion } from '../../types';
+import { useDebouncedValue } from '../../hooks';
+import type { MapBounds, MapRegion } from '../../types';
 import { logger } from '../../utils';
-import { createSpot, getAllSpots } from '../services';
+import { createSpot, getSpotsInBounds } from '../services';
 import type {
 	Appreciation,
 	Direction,
@@ -36,12 +37,19 @@ export interface UseSpotsReturn {
 	deselectSpot: () => void;
 }
 
-export const useSpots = (): UseSpotsReturn => {
+const MIN_ZOOM_LEVEL = 10;
+
+export const useSpots = (
+	bounds: MapBounds | null,
+	zoomLevel: number
+): UseSpotsReturn => {
 	const [fullSpots, setFullSpots] = useState<Spot[]>([]);
 	const [isPlacingSpot, setIsPlacingSpot] = useState(false);
 	const [isShowingForm, setIsShowingForm] = useState(false);
 	const [pendingLocation, setPendingLocation] = useState<Location | null>(null);
 	const [selectedSpot, setSelectedSpot] = useState<Spot | null>(null);
+
+	const debouncedBounds = useDebouncedValue(bounds, 300);
 
 	const spotMarkers: SpotMarkerData[] = fullSpots.map(spot => ({
 		id: spot.id as string,
@@ -52,12 +60,25 @@ export const useSpots = (): UseSpotsReturn => {
 	}));
 
 	useEffect(() => {
+		if (zoomLevel < MIN_ZOOM_LEVEL) {
+			setFullSpots([]);
+			logger.spot.debug('Zoom level too low, clearing spots', { zoomLevel });
+			return;
+		}
+
+		if (!debouncedBounds) {
+			return;
+		}
+
 		let isMounted = true;
 
-		const loadSpots = async () => {
-			logger.spot.info('Loading spots on mount');
+		const loadSpotsInView = async () => {
+			logger.spot.info('Loading spots for viewport', {
+				zoomLevel,
+				bounds: debouncedBounds,
+			});
 			try {
-				const spots = await getAllSpots();
+				const spots = await getSpotsInBounds(debouncedBounds);
 				if (isMounted) {
 					setFullSpots(spots);
 					logger.spot.info('Spots loaded successfully', {
@@ -69,18 +90,18 @@ export const useSpots = (): UseSpotsReturn => {
 				if (isMounted) {
 					toastUtils.error(
 						'Chargement échoué',
-						'Impossible de charger les spots hors ligne.'
+						'Impossible de charger les spots.'
 					);
 				}
 			}
 		};
 
-		void loadSpots();
+		void loadSpotsInView();
 
 		return () => {
 			isMounted = false;
 		};
-	}, []);
+	}, [debouncedBounds, zoomLevel]);
 
 	const startPlacingSpot = () => {
 		logger.spot.info('User started placing spot');
