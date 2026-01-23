@@ -9,9 +9,14 @@ import {
 	LoadingSpinner,
 	MapViewComponent,
 } from '../components';
-import { COLORS } from '../constants';
+import { COLORS, SPACING } from '../constants';
 import { useLocation } from '../hooks';
-import { JourneyControls, NavigationBar } from '../journey/components';
+import {
+	ActiveJourneyIndicator,
+	JourneyRecordingButton,
+	MarkStopButton,
+} from '../journey/components';
+import { JourneyProvider } from '../journey/context';
 import {
 	CreateSpotButton,
 	SpotDetailsSheet,
@@ -21,7 +26,7 @@ import { SpotProvider, useSpotContext } from '../spot/context';
 import type { MapBounds, MapRegion } from '../types';
 import { calculateZoomLevel, regionToBounds } from '../utils';
 
-const FEATURE_JOURNEY_ENABLED = false;
+const FEATURE_JOURNEY_ENABLED = true;
 
 interface HomeScreenContentProps {
 	onRegionChange: (region: MapRegion) => void;
@@ -81,15 +86,19 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 						)}
 					</>
 				)}
-			</View>
 
-			{FEATURE_JOURNEY_ENABLED && (
-				<>
-					{' '}
-					<NavigationBar />
-					<JourneyControls />
-				</>
-			)}
+				{FEATURE_JOURNEY_ENABLED && (
+					<View style={styles.journeyOverlay}>
+						<View style={styles.journeyTopRow}>
+							<ActiveJourneyIndicator />
+							<MarkStopButton />
+						</View>
+						<View style={styles.journeyBottomRow}>
+							<JourneyRecordingButton />
+						</View>
+					</View>
+				)}
+			</View>
 
 			{isPlacingSpot ? (
 				<ActionButtons
@@ -122,11 +131,17 @@ const HomeScreen: React.FC = () => {
 		setZoomLevel(calculateZoomLevel(region));
 	};
 
-	return (
+	const content = (
 		<SpotProvider bounds={bounds} zoomLevel={zoomLevel}>
 			<HomeScreenContent onRegionChange={handleRegionChange} />
 		</SpotProvider>
 	);
+
+	if (FEATURE_JOURNEY_ENABLED) {
+		return <JourneyProvider>{content}</JourneyProvider>;
+	}
+
+	return content;
 };
 
 const styles = StyleSheet.create({
@@ -152,6 +167,32 @@ const styles = StyleSheet.create({
 		borderRadius: 12,
 		borderWidth: 3,
 		borderColor: COLORS.background,
+	},
+	journeyOverlay: {
+		position: 'absolute',
+		top: 0,
+		left: 0,
+		right: 0,
+		bottom: 0,
+		pointerEvents: 'box-none',
+	},
+	journeyTopRow: {
+		position: 'absolute',
+		top: SPACING.md,
+		left: SPACING.md,
+		right: SPACING.md,
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+		alignItems: 'flex-start',
+		pointerEvents: 'box-none',
+	},
+	journeyBottomRow: {
+		position: 'absolute',
+		bottom: SPACING.xxl,
+		left: 0,
+		right: 0,
+		alignItems: 'center',
+		pointerEvents: 'box-none',
 	},
 });
 

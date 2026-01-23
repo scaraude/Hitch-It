@@ -1,308 +1,297 @@
 import { supabase } from '@/lib/supabaseClient';
 import { logger } from '@/utils';
 import type {
+	Journey,
+	JourneyId,
+	JourneyPoint,
+	JourneyPointId,
 	SpotId,
-	Travel,
-	TravelId,
-	TravelStep,
-	TravelStepId,
+	UserId,
 } from '../types';
+import { JourneyPointType, JourneyStatus } from '../types';
 
-type TravelRow = {
+type JourneyRow = {
 	id: string;
 	user_id: string;
-	start_date: string;
-	end_date: string | null;
-	origin: string;
-	destination: string;
 	status: string;
-	total_distance: number;
-	total_wait_time: number;
+	started_at: string;
+	ended_at: string | null;
+	title: string | null;
+	notes: string | null;
+	total_distance_km: number | null;
+	is_shared: boolean;
+	share_token: string | null;
 	created_at: string;
 	updated_at: string;
 };
 
-type TravelStepRow = {
+type JourneyPointRow = {
 	id: string;
-	travel_id: string;
+	journey_id: string;
 	type: string;
+	latitude: number;
+	longitude: number;
+	timestamp: string;
 	spot_id: string | null;
-	start_time: string;
-	end_time: string | null;
+	wait_time_minutes: number | null;
 	notes: string | null;
 	created_at: string;
-	updated_at: string;
 };
 
-const mapRowToTravel = (row: TravelRow, steps: TravelStep[] = []): Travel => ({
-	id: row.id as TravelId,
-	userId: row.user_id as Travel['userId'],
-	startDate: new Date(row.start_date),
-	endDate: row.end_date ? new Date(row.end_date) : undefined,
-	origin: row.origin,
-	destination: row.destination,
-	status: row.status as Travel['status'],
-	steps,
-	totalDistance: row.total_distance,
-	totalWaitTime: row.total_wait_time,
+const mapRowToJourney = (
+	row: JourneyRow,
+	points: JourneyPoint[] = []
+): Journey => ({
+	id: row.id as JourneyId,
+	userId: row.user_id as UserId,
+	status: row.status as JourneyStatus,
+	startedAt: new Date(row.started_at),
+	endedAt: row.ended_at ? new Date(row.ended_at) : undefined,
+	title: row.title ?? undefined,
+	notes: row.notes ?? undefined,
+	totalDistanceKm: row.total_distance_km ?? undefined,
+	isShared: row.is_shared,
+	shareToken: row.share_token ?? undefined,
+	points,
 });
 
-const mapRowToTravelStep = (row: TravelStepRow): TravelStep => ({
-	id: row.id as TravelStepId,
-	travelId: row.travel_id as TravelId,
-	type: row.type as TravelStep['type'],
+const mapRowToJourneyPoint = (row: JourneyPointRow): JourneyPoint => ({
+	id: row.id as JourneyPointId,
+	journeyId: row.journey_id as JourneyId,
+	type: row.type as JourneyPointType,
+	latitude: row.latitude,
+	longitude: row.longitude,
+	timestamp: new Date(row.timestamp),
 	spotId: row.spot_id ? (row.spot_id as SpotId) : undefined,
-	startTime: new Date(row.start_time),
-	endTime: row.end_time ? new Date(row.end_time) : undefined,
+	waitTimeMinutes: row.wait_time_minutes ?? undefined,
 	notes: row.notes ?? undefined,
 });
 
-export const saveTravel = async (travel: Travel): Promise<void> => {
-	logger.repository.info('Saving travel', {
-		id: travel.id,
-		origin: travel.origin,
-		destination: travel.destination,
+export const saveJourney = async (journey: Journey): Promise<void> => {
+	logger.repository.info('Saving journey', { id: journey.id });
+
+	const { error } = await supabase.from('journeys').upsert({
+		id: journey.id,
+		user_id: journey.userId,
+		status: journey.status,
+		started_at: journey.startedAt.toISOString(),
+		ended_at: journey.endedAt?.toISOString() ?? null,
+		title: journey.title ?? null,
+		notes: journey.notes ?? null,
+		total_distance_km: journey.totalDistanceKm ?? null,
+		is_shared: journey.isShared ?? false,
+		share_token: journey.shareToken ?? null,
+		updated_at: new Date().toISOString(),
 	});
 
-	try {
-		const { error } = await supabase.from('travels').upsert({
-			id: travel.id,
-			user_id: travel.userId,
-			start_date: travel.startDate.toISOString(),
-			end_date: travel.endDate?.toISOString() ?? null,
-			origin: travel.origin,
-			destination: travel.destination,
-			status: travel.status,
-			total_distance: travel.totalDistance,
-			total_wait_time: travel.totalWaitTime,
-			updated_at: new Date().toISOString(),
+	if (error) {
+		logger.repository.error('Failed to save journey', error, {
+			id: journey.id,
 		});
-
-		if (error) {
-			throw error;
-		}
-
-		logger.repository.info('Travel saved successfully', { id: travel.id });
-	} catch (error) {
-		logger.repository.error('Failed to save travel', error, { id: travel.id });
 		throw error;
 	}
+
+	logger.repository.info('Journey saved successfully', { id: journey.id });
 };
 
-export const saveTravelStep = async (step: TravelStep): Promise<void> => {
-	logger.repository.debug('Saving travel step', {
-		id: step.id,
-		travelId: step.travelId,
-		type: step.type,
+export const saveJourneyPoint = async (point: JourneyPoint): Promise<void> => {
+	logger.repository.debug('Saving journey point', {
+		id: point.id,
+		journeyId: point.journeyId,
+		type: point.type,
 	});
 
-	try {
-		const { error } = await supabase.from('travel_steps').upsert({
-			id: step.id,
-			travel_id: step.travelId,
-			type: step.type,
-			spot_id: step.spotId ?? null,
-			start_time: step.startTime.toISOString(),
-			end_time: step.endTime?.toISOString() ?? null,
-			notes: step.notes ?? null,
-			updated_at: new Date().toISOString(),
-		});
+	const { error } = await supabase.from('journey_points').upsert({
+		id: point.id,
+		journey_id: point.journeyId,
+		type: point.type,
+		latitude: point.latitude,
+		longitude: point.longitude,
+		timestamp: point.timestamp.toISOString(),
+		spot_id: point.spotId ?? null,
+		wait_time_minutes: point.waitTimeMinutes ?? null,
+		notes: point.notes ?? null,
+	});
 
-		if (error) {
-			throw error;
-		}
-
-		logger.repository.debug('Travel step saved successfully', { id: step.id });
-	} catch (error) {
-		logger.repository.error('Failed to save travel step', error, {
-			id: step.id,
+	if (error) {
+		logger.repository.error('Failed to save journey point', error, {
+			id: point.id,
 		});
 		throw error;
 	}
 };
 
-export const saveTravelWithSteps = async (travel: Travel): Promise<void> => {
-	logger.repository.info('Saving travel with steps', {
-		id: travel.id,
-		stepsCount: travel.steps.length,
+export const saveJourneyPoints = async (
+	points: JourneyPoint[]
+): Promise<void> => {
+	if (points.length === 0) return;
+
+	logger.repository.debug('Saving journey points batch', {
+		count: points.length,
 	});
 
-	try {
-		await saveTravel(travel);
+	const rows = points.map(point => ({
+		id: point.id,
+		journey_id: point.journeyId,
+		type: point.type,
+		latitude: point.latitude,
+		longitude: point.longitude,
+		timestamp: point.timestamp.toISOString(),
+		spot_id: point.spotId ?? null,
+		wait_time_minutes: point.waitTimeMinutes ?? null,
+		notes: point.notes ?? null,
+	}));
 
-		for (const step of travel.steps) {
-			await saveTravelStep(step);
-		}
+	const { error } = await supabase.from('journey_points').upsert(rows);
 
-		logger.repository.info('Travel with steps saved successfully', {
-			id: travel.id,
-			stepsCount: travel.steps.length,
-		});
-	} catch (error) {
-		logger.repository.error('Failed to save travel with steps', error, {
-			id: travel.id,
-		});
+	if (error) {
+		logger.repository.error('Failed to save journey points batch', error);
 		throw error;
 	}
 };
 
-export const getTravelById = async (id: TravelId): Promise<Travel | null> => {
-	logger.repository.debug('Fetching travel by ID', { id });
+export const getJourneyById = async (
+	id: JourneyId
+): Promise<Journey | null> => {
+	logger.repository.debug('Fetching journey by ID', { id });
 
-	try {
-		const { data: travelData, error: travelError } = await supabase
-			.from('travels')
-			.select('*')
-			.eq('id', id)
-			.maybeSingle();
+	const { data: journeyData, error: journeyError } = await supabase
+		.from('journeys')
+		.select('*')
+		.eq('id', id)
+		.maybeSingle();
 
-		if (travelError) {
-			throw travelError;
-		}
+	if (journeyError) {
+		logger.repository.error('Failed to fetch journey', journeyError, { id });
+		throw journeyError;
+	}
 
-		if (!travelData) {
-			logger.repository.info('Travel not found', { id });
-			return null;
-		}
+	if (!journeyData) {
+		return null;
+	}
 
-		const { data: stepsData, error: stepsError } = await supabase
-			.from('travel_steps')
-			.select('*')
-			.eq('travel_id', id)
-			.order('start_time', { ascending: true });
+	const { data: pointsData, error: pointsError } = await supabase
+		.from('journey_points')
+		.select('*')
+		.eq('journey_id', id)
+		.order('timestamp', { ascending: true });
 
-		if (stepsError) {
-			throw stepsError;
-		}
-
-		const steps = (stepsData ?? []).map(row =>
-			mapRowToTravelStep(row as TravelStepRow)
-		);
-		const travel = mapRowToTravel(travelData as TravelRow, steps);
-
-		logger.repository.info('Travel fetched successfully', {
+	if (pointsError) {
+		logger.repository.error('Failed to fetch journey points', pointsError, {
 			id,
-			stepsCount: steps.length,
 		});
-
-		return travel;
-	} catch (error) {
-		logger.repository.error('Failed to fetch travel by ID', error, { id });
-		throw error;
+		throw pointsError;
 	}
+
+	const points = (pointsData ?? []).map(row =>
+		mapRowToJourneyPoint(row as JourneyPointRow)
+	);
+
+	return mapRowToJourney(journeyData as JourneyRow, points);
 };
 
-export const getTravelsByUserId = async (userId: string): Promise<Travel[]> => {
-	logger.repository.debug('Fetching travels by user ID', { userId });
+export const getActiveJourney = async (
+	userId: UserId
+): Promise<Journey | null> => {
+	logger.repository.debug('Fetching active journey', { userId });
 
-	try {
-		const { data: travelsData, error: travelsError } = await supabase
-			.from('travels')
-			.select('*')
-			.eq('user_id', userId)
-			.order('start_date', { ascending: false });
+	const { data: journeyData, error: journeyError } = await supabase
+		.from('journeys')
+		.select('*')
+		.eq('user_id', userId)
+		.in('status', [JourneyStatus.Recording, JourneyStatus.Paused])
+		.order('started_at', { ascending: false })
+		.limit(1)
+		.maybeSingle();
 
-		if (travelsError) {
-			throw travelsError;
-		}
-
-		const travels: Travel[] = [];
-
-		for (const travelRow of travelsData ?? []) {
-			const { data: stepsData, error: stepsError } = await supabase
-				.from('travel_steps')
-				.select('*')
-				.eq('travel_id', travelRow.id)
-				.order('start_time', { ascending: true });
-
-			if (stepsError) {
-				throw stepsError;
-			}
-
-			const steps = (stepsData ?? []).map(row =>
-				mapRowToTravelStep(row as TravelStepRow)
-			);
-			travels.push(mapRowToTravel(travelRow as TravelRow, steps));
-		}
-
-		logger.repository.info('Travels fetched successfully', {
-			userId,
-			count: travels.length,
-		});
-
-		return travels;
-	} catch (error) {
-		logger.repository.error('Failed to fetch travels by user ID', error, {
+	if (journeyError) {
+		logger.repository.error('Failed to fetch active journey', journeyError, {
 			userId,
 		});
-		throw error;
+		throw journeyError;
 	}
-};
 
-export const deleteTravel = async (id: TravelId): Promise<void> => {
-	logger.repository.info('Deleting travel', { id });
-
-	try {
-		const { error } = await supabase.from('travels').delete().eq('id', id);
-
-		if (error) {
-			throw error;
-		}
-
-		logger.repository.info('Travel deleted successfully', { id });
-	} catch (error) {
-		logger.repository.error('Failed to delete travel', error, { id });
-		throw error;
+	if (!journeyData) {
+		return null;
 	}
-};
 
-export const getActiveTravel = async (
-	userId: string
-): Promise<Travel | null> => {
-	logger.repository.debug('Fetching active travel', { userId });
+	// For active journey, only load Stop points (Location points loaded on demand)
+	const { data: pointsData, error: pointsError } = await supabase
+		.from('journey_points')
+		.select('*')
+		.eq('journey_id', journeyData.id)
+		.eq('type', JourneyPointType.Stop)
+		.order('timestamp', { ascending: true });
 
-	try {
-		const { data: travelData, error: travelError } = await supabase
-			.from('travels')
-			.select('*')
-			.eq('user_id', userId)
-			.eq('status', 'in_progress')
-			.order('start_date', { ascending: false })
-			.limit(1)
-			.maybeSingle();
-
-		if (travelError) {
-			throw travelError;
-		}
-
-		if (!travelData) {
-			logger.repository.info('No active travel found', { userId });
-			return null;
-		}
-
-		const { data: stepsData, error: stepsError } = await supabase
-			.from('travel_steps')
-			.select('*')
-			.eq('travel_id', travelData.id)
-			.order('start_time', { ascending: true });
-
-		if (stepsError) {
-			throw stepsError;
-		}
-
-		const steps = (stepsData ?? []).map(row =>
-			mapRowToTravelStep(row as TravelStepRow)
+	if (pointsError) {
+		logger.repository.error(
+			'Failed to fetch active journey stops',
+			pointsError
 		);
-		const travel = mapRowToTravel(travelData as TravelRow, steps);
+		throw pointsError;
+	}
 
-		logger.repository.info('Active travel fetched successfully', {
-			id: travel.id,
-			stepsCount: steps.length,
+	const points = (pointsData ?? []).map(row =>
+		mapRowToJourneyPoint(row as JourneyPointRow)
+	);
+
+	return mapRowToJourney(journeyData as JourneyRow, points);
+};
+
+export const getJourneysByUserId = async (
+	userId: UserId
+): Promise<Journey[]> => {
+	logger.repository.debug('Fetching journeys by user', { userId });
+
+	const { data: journeysData, error } = await supabase
+		.from('journeys')
+		.select('*')
+		.eq('user_id', userId)
+		.order('started_at', { ascending: false });
+
+	if (error) {
+		logger.repository.error('Failed to fetch journeys', error, { userId });
+		throw error;
+	}
+
+	// Return journeys without points (load points on demand)
+	return (journeysData ?? []).map(row =>
+		mapRowToJourney(row as JourneyRow, [])
+	);
+};
+
+export const deleteJourney = async (id: JourneyId): Promise<void> => {
+	logger.repository.info('Deleting journey', { id });
+
+	const { error } = await supabase.from('journeys').delete().eq('id', id);
+
+	if (error) {
+		logger.repository.error('Failed to delete journey', error, { id });
+		throw error;
+	}
+
+	logger.repository.info('Journey deleted successfully', { id });
+};
+
+export const updateJourneyPoint = async (
+	pointId: JourneyPointId,
+	updates: Partial<Pick<JourneyPoint, 'spotId' | 'waitTimeMinutes' | 'notes'>>
+): Promise<void> => {
+	logger.repository.debug('Updating journey point', { pointId, updates });
+
+	const { error } = await supabase
+		.from('journey_points')
+		.update({
+			spot_id: updates.spotId ?? null,
+			wait_time_minutes: updates.waitTimeMinutes ?? null,
+			notes: updates.notes ?? null,
+		})
+		.eq('id', pointId);
+
+	if (error) {
+		logger.repository.error('Failed to update journey point', error, {
+			pointId,
 		});
-
-		return travel;
-	} catch (error) {
-		logger.repository.error('Failed to fetch active travel', error, { userId });
 		throw error;
 	}
 };

@@ -2,11 +2,11 @@
 
 > Advanced features roadmap for the hitchhiking companion app
 > Date: January 2026
-> **Last Updated**: January 3, 2026 (Audit completed)
+> **Last Updated**: January 23, 2026 (Journey feature redesigned)
 
 ---
 
-## 🔍 Code Audit Summary (January 3, 2026)
+## 🔍 Code Audit Summary (January 23, 2026)
 
 ### What's Actually Working ✅
 1. **Spot Management System** (Fully Functional)
@@ -18,22 +18,22 @@
    - Supabase database with RLS policies
    - TypeScript with branded types for type safety
 
-2. **Journey Infrastructure** (✅ Fully Functional)
-   - [JourneyProvider](/src/journey/context/JourneyContext.tsx) context integrated
-   - [locationTrackingService](/src/journey/services/locationTrackingService.ts) with background/foreground tracking
-   - [JourneyDetector](/src/journey/services/journeyDetector.ts) algorithm (AI-powered state detection)
-   - UI components: [NavigationBar](/src/journey/components/NavigationBar.tsx), [JourneyControls](/src/journey/components/JourneyControls.tsx), [JourneyTimeline](/src/journey/components/JourneyTimeline.tsx), [NavigationSheet](/src/journey/components/NavigationSheet.tsx), [VehicleChangePrompt](/src/journey/components/VehicleChangePrompt.tsx)
-   - ✅ Components are rendered in [HomeScreen](/src/screens/HomeScreen.tsx)
-   - ✅ Database tables created: `travels` and `travel_steps`
-   - ✅ Journey persistence via [journeyRepository](/src/journey/services/journeyRepository.ts)
+2. **Journey Recording** (✅ Redesigned v2 - January 23, 2026)
+   - [JourneyProvider](src/journey/context/JourneyContext.tsx) - Simplified state management
+   - [locationTrackingService](src/journey/services/locationTrackingService.ts) - Background/foreground GPS tracking
+   - [journeyRepository](src/journey/services/journeyRepository.ts) - Supabase persistence
+   - UI: [JourneyRecordingButton](src/journey/components/JourneyRecordingButton.tsx), [ActiveJourneyIndicator](src/journey/components/ActiveJourneyIndicator.tsx), [MarkStopButton](src/journey/components/MarkStopButton.tsx)
+   - ✅ Integrated in [HomeScreen](src/screens/HomeScreen.tsx) with feature flag enabled
+   - ✅ New database tables: `journeys` and `journey_points`
+   - **Note**: Previous v1 implementation with auto-detection was removed (over-engineered)
 
 ### What's Missing ❌
 1. **Comments System**
-   - UI placeholder exists in [SpotDetailsSheet](/src/spot/components/SpotDetailsSheet.tsx:145-162)
+   - UI placeholder exists in [SpotDetailsSheet](src/spot/components/SpotDetailsSheet.tsx:145-162)
    - No database table for comments
    - No comment model or service layer
 
-3. **All Phase 2 & 3 Features**
+2. **All Phase 2 & 3 Features**
    - Spot pictures, rest areas, external sharing, destination suggestions
    - Double itinerary, longway, group tracking
    - Community section, badges system
@@ -41,8 +41,9 @@
 
 ### Database Status
 - ✅ `spots` table exists with proper schema
-- ✅ `travels` table created with RLS policies
-- ✅ `travel_steps` table created with foreign keys
+- ✅ `journeys` table (new v2 schema)
+- ✅ `journey_points` table (new v2 schema)
+- ⚠️ `travels` / `travel_steps` tables (old v1, to be removed)
 - ❌ No `comments` table
 - ❌ No `user_profiles` table
 - ❌ No tables for Phase 2/3 features
@@ -70,11 +71,12 @@
   - ❌ Comments system (UI exists, no backend implementation)
 
 ### Phase 1: 🔴 Critical Foundation
-- ✅ **F11: Journey Recording & Navigation** - FULLY IMPLEMENTED (100%)
-  - All services, components, and database integration complete
-  - UI integrated into HomeScreen with journey controls
-  - Persistence to Supabase working
+- ✅ **F11: Journey Recording** - REDESIGNED & IMPLEMENTED (v2)
+  - Simplified GPS path recorder with manual stop marking
+  - No auto-detection (user marks stops manually)
+  - Foundation for sharing features (F5, F6)
 - ❌ **F12: Save Journey Feature** - Not started (0%)
+  - Post-trip enrichment: link stops to spots, add notes
 - ❌ **F8: User Profile & Travel History** - Not started (0%)
 
 ### Phase 2: 🟠 High-Value Features
@@ -91,7 +93,7 @@
 - ❌ **F10: User Badges** - Not started (0%)
 
 **Overall Advanced Features Progress**: 1/12 features completed (8.3%)
-**Core App Status**: Basic spot management + Journey Recording are fully functional ✅
+**Core App Status**: Spot management + Journey Recording (v2) are functional ✅
 
 ---
 
@@ -757,104 +759,133 @@ enum BadgeTier {
 
 ---
 
-## Feature 11: Journey Recording & Navigation ✅ COMPLETED
+## Feature 11: Journey Recording ✅ IMPLEMENTED (v2)
 
-**Status**: ✅ Fully implemented on January 2, 2026
+**Status**: ✅ Redesigned and implemented on January 23, 2026
 
-**Goal**: Passive navigation that records your journey like a flight tracker.
+**Goal**: Simple GPS path recorder for hitchhiking trips with manual stop marking.
 
-### ✨ Implementation Summary
+> **Note**: Previous implementation (v1) was over-engineered with automatic state detection.
+> This version (v2) is simplified: just record GPS path + let user mark stops manually.
+
+### ✨ Implementation Summary (v2)
 
 **Module**: `src/journey/`
 
-**Components Delivered**:
-- `NavigationBar` - Compact journey progress bar
-- `JourneyTimeline` - Vertical step-by-step timeline
-- `NavigationSheet` - Full journey details modal
-- `VehicleChangePrompt` - Vehicle change confirmation
+**Components**:
+- `JourneyRecordingButton` - Start/pause/stop recording FAB
+- `ActiveJourneyIndicator` - Shows recording status, duration, stops count
+- `MarkStopButton` - User marks current position as a stop
 
 **Services**:
-- `locationTrackingService` - Background/foreground location tracking with expo-location & expo-task-manager
-- `journeyDetector` - AI-powered state detection (Waiting/InVehicle/Break/Walking)
+- `locationTrackingService` - Background/foreground GPS tracking (unchanged from v1)
+- `journeyRepository` - Supabase persistence for journeys + points
 
-**Context**: `JourneyProvider` - Centralized journey state management
+**Context**: `JourneyProvider` - Simplified state management (no auto-detection)
 
 **Features**:
-- ✅ Battery-efficient tracking (5s/50m intervals)
-- ✅ Automatic vehicle change detection
-- ✅ Nearby spot detection (100m radius)
-- ✅ Configurable thresholds
+- ✅ Battery-efficient GPS tracking (5s/50m intervals)
+- ✅ Manual stop marking (user decides when they stopped)
+- ✅ Background recording survives app restarts
+- ✅ Points batched for efficient DB writes
 - ✅ TypeScript branded types for safety
 - ✅ Full French localization
 
-**Dependencies Added**: `expo-task-manager@14.0.9`
+**Dependencies**: `expo-task-manager`, `expo-location`
 
-### 11.1 Concept
+### 11.1 Concept (Simplified)
 
-Unlike car GPS, hitchhiking navigation is passive:
-- No turn-by-turn directions
-- Show your route, not commands
-- Auto-detect vehicle changes (stopped for X minutes = new ride)
-- Record journey for later review
+Record the hitchhiker's journey as a GPS path, with user-marked stops:
+- **Simple recording** - Just track GPS coordinates over time
+- **Manual stops** - User marks when they stop (no automatic detection)
+- **Post-trip enrichment** - Add spot links, notes, ratings after journey (F12)
+- **Foundation for sharing** - Same Journey entity powers F5 (Group) & F6 (External sharing)
 
 ```
 ┌────────────────────────────────┐
-│ 🧭 En route vers Bayonne       │
-│                                │
-│    Bordeaux                    │
-│        ↓ (Voiture 1)           │
-│    Aire de Cestas              │
-│        ↓ (Voiture 2)           │
-│    📍 Position actuelle        │
-│        ⋮                       │
-│    Bayonne                     │
-│                                │
-│ ══════════════════             │
-│ 180 km parcourus | 2h15        │
-│ Arrivée estimée: 16h30         │
+│ 🔴 Enregistrement   00:45      │
+│ ─────────────────              │
+│ Durée: 2h15  |  Arrêts: 3      │
 └────────────────────────────────┘
+
+        [📍 Arrêt]
+
+      [🎬 Enregistrer]
 ```
 
-### 11.2 Implementation
-
-- [ ] Create `src/navigation/` feature module
-- [ ] Background location tracking (battery-efficient)
-- [ ] Vehicle change detection algorithm:
-  - Stationary for > 3 min at spot = waiting
-  - Stationary for > 10 min elsewhere = break
-  - Moving = in vehicle
+### 11.2 Data Model
 
 ```typescript
-// src/navigation/services/journeyDetector.ts
-interface JourneyState {
-  status: "idle" | "waiting" | "in_vehicle" | "break";
-  currentStep: TravelStep;
-  detectedVehicleChanges: number;
-  startTime: Date;
+// Simplified domain model
+interface Journey {
+  id: JourneyId;
+  userId: UserId;
+  status: 'Recording' | 'Paused' | 'Completed';
+  startedAt: Date;
+  endedAt?: Date;
+  points: JourneyPoint[];
+  title?: string;  // Added post-trip
+  notes?: string;  // Added post-trip
 }
 
-const DETECTION_CONFIG = {
-  waitingThresholdMinutes: 3,
-  breakThresholdMinutes: 10,
-  movingSpeedThresholdKmh: 15,
-  spotProximityMeters: 100,
-};
+interface JourneyPoint {
+  id: JourneyPointId;
+  journeyId: JourneyId;
+  type: 'Location' | 'Stop';  // Location = GPS, Stop = user-marked
+  latitude: number;
+  longitude: number;
+  timestamp: Date;
+  // Stop enrichment (added post-trip in F12)
+  spotId?: SpotId;
+  waitTimeMinutes?: number;
+  notes?: string;
+}
 ```
 
-### 11.3 UI Components
+### 11.3 Database Schema
 
-- [ ] `NavigationBar` - Compact top bar showing progress
-- [ ] `JourneyTimeline` - Vertical list of steps
-- [ ] `NavigationSheet` - Full journey details
-- [ ] `VehicleChangePrompt` - "Nouveau véhicule détecté?"
+```sql
+-- journeys table
+CREATE TABLE journeys (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  status TEXT NOT NULL,  -- Recording, Paused, Completed
+  started_at TIMESTAMPTZ NOT NULL,
+  ended_at TIMESTAMPTZ,
+  title TEXT,
+  notes TEXT,
+  total_distance_km DOUBLE PRECISION,
+  is_shared BOOLEAN DEFAULT false,
+  share_token TEXT UNIQUE
+);
 
-### 11.4 Post-Journey Editing
+-- journey_points table
+CREATE TABLE journey_points (
+  id TEXT PRIMARY KEY,
+  journey_id TEXT REFERENCES journeys(id) ON DELETE CASCADE,
+  type TEXT NOT NULL,  -- Location, Stop
+  latitude DOUBLE PRECISION NOT NULL,
+  longitude DOUBLE PRECISION NOT NULL,
+  timestamp TIMESTAMPTZ NOT NULL,
+  spot_id TEXT REFERENCES spots(id),
+  wait_time_minutes INTEGER,
+  notes TEXT
+);
+```
 
-- [ ] Review detected steps
-- [ ] Correct misdetections (pause vs. vehicle change)
-- [ ] Add notes to each step
-- [ ] Rate spots used during journey
-- [ ] Save to travel history
+### 11.4 UI Flow
+
+**During Trip**:
+1. Tap "Enregistrer" to start GPS recording
+2. Indicator shows duration and stops count
+3. Tap "📍 Arrêt" when you stop hitchhiking
+4. Long-press recording button to stop
+
+**After Trip** (F12 scope):
+- Review journey path on map
+- Enrich stops with spot links
+- Add notes and title
+- View statistics
 
 ---
 
@@ -1036,16 +1067,16 @@ CREATE TABLE user_badges (...);
 - [ ] Unlock notifications
 - [ ] Badge display components
 
-### Feature 11: Navigation
-- [ ] Background location service
-- [ ] Journey detection algorithm
-- [ ] Navigation UI components
-- [ ] Vehicle change detection
+### Feature 11: Journey Recording ✅
+- [x] Background location service
+- [x] Simple GPS path recording
+- [x] Manual stop marking UI
+- [x] Recording controls (start/pause/stop)
 
 ### Feature 12: Save Journey
-- [ ] Journey review screen
-- [ ] Step editing UI
-- [ ] Correction handling
+- [ ] Journey review screen (show path on map)
+- [ ] Stop enrichment UI (link to spots)
+- [ ] Add notes and title
 - [ ] Statistics display
 
 ---
@@ -1064,54 +1095,52 @@ CREATE TABLE user_badges (...);
 
 ### Phase 1: 🔴 Critical Foundation (F11, F12, F8)
 
-#### F11: Journey Recording & Navigation ✅ FULLY IMPLEMENTED
-**Status**: ✅ **COMPLETE** - Fully implemented and integrated on January 3, 2026
+#### F11: Journey Recording ✅ REDESIGNED (v2)
+**Status**: ✅ **COMPLETE** - Redesigned and implemented on January 23, 2026
 
-**Completed**:
-- [x] Create `src/journey/` feature module (created with full DDD structure)
-- [x] Implement background location tracking service (with foreground fallback)
-- [x] Create journey state detection algorithm (waiting/in_vehicle/break/walking)
-- [x] Build `NavigationBar` component (compact top bar with journey progress)
-- [x] Build `JourneyTimeline` component (vertical timeline with step details)
-- [x] Build `NavigationSheet` component (full-screen bottom sheet with stats)
-- [x] Implement vehicle change detection (automatic state detection)
-- [x] Add `VehicleChangePrompt` component (modal for confirming vehicle changes)
-- [x] Create `JourneyProvider` context for state management
-- [x] **Integrate journey UI components into HomeScreen** ✅ (NavigationBar and JourneyControls added)
-- [x] **Add journey controls to the app** ✅ (JourneyControls component with start/stop/pause buttons)
-- [x] **Create journey database tables** ✅ (travels and travel_steps tables created)
-- [x] **Implement journey persistence** ✅ (journeyRepository service saves to Supabase)
-- [x] **Connect journey tracking with location service** ✅ (integrated in JourneyContext)
+> **Note**: v1 implementation (auto-detection) was removed as over-engineered.
+> v2 is a simple GPS recorder with manual stop marking.
 
-**Database Tables Created**:
-- ✅ `travels` table with RLS policies
-- ✅ `travel_steps` table with foreign keys and RLS policies
+**Completed (v2)**:
+- [x] Create `src/journey/` feature module (DDD structure)
+- [x] Implement background location tracking service
+- [x] Build `JourneyRecordingButton` component (start/pause/stop FAB)
+- [x] Build `ActiveJourneyIndicator` component (status bar)
+- [x] Build `MarkStopButton` component (manual stop marking)
+- [x] Create `JourneyProvider` context (simplified, no auto-detection)
+- [x] Integrate journey UI into HomeScreen
+- [x] Create new database tables (`journeys`, `journey_points`)
+- [x] Implement journey persistence via journeyRepository
+
+**Database Tables (v2)**:
+- ✅ `journeys` table with RLS policies
+- ✅ `journey_points` table (Location + Stop types)
 - ✅ Proper indexes for performance
-- ✅ Auto-updated `updated_at` triggers
+- ⚠️ Old tables (`travels`, `travel_steps`) to be removed later
 
-**Remaining Optional Tasks** (not critical):
-- [ ] Add user onboarding/tutorial for journey feature
-- [ ] Test end-to-end journey recording flow in production
+**Files Removed** (v1 over-engineering):
+- `journeyDetector.ts` - Auto state detection
+- `NavigationBar.tsx`, `NavigationSheet.tsx` - Complex navigation UI
+- `JourneyTimeline.tsx`, `VehicleChangePrompt.tsx` - Auto-detection UI
 
 #### F12: Save Journey Feature - ❌ NOT STARTED
-- [ ] Create journey review screen
-- [ ] Implement step editing UI
-- [ ] Add correction handling logic
-- [ ] Build statistics display component
-- [ ] Implement journey save to database
-- [ ] Add photo attachment to journey steps
-- [ ] Add spot rating after journey completion
+- [ ] Create journey review screen (show recorded path on map)
+- [ ] Display stops as markers on map
+- [ ] Stop enrichment UI:
+  - [ ] Link stop to existing spot (or create new)
+  - [ ] Add wait time
+  - [ ] Add notes
+- [ ] Add journey title and notes
+- [ ] Calculate and display statistics (distance, duration)
+- [ ] Journey history list
 
 #### F8: User Profile & Travel History - ❌ NOT STARTED
 - [ ] Create `src/user/` feature module
-- [ ] Define UserProfile, UserStats, Travel data models
+- [ ] Define UserProfile, UserStats data models
 - [ ] Create user_profiles database table
-- [ ] Create travels database table
-- [ ] Create travel_steps database table
 - [ ] Build profile screen UI
 - [ ] Implement stats calculation service
-- [ ] Build travel history list component
-- [ ] Add manual travel logging feature
+- [ ] Build journey history list component
 - [ ] Integrate with F11 for automatic journey tracking
 
 ---

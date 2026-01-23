@@ -9,46 +9,43 @@ import {
 	useState,
 } from 'react';
 import { AppState, type AppStateStatus } from 'react-native';
-import type { Spot } from '../../spot/types';
 import { logger } from '../../utils';
-import { JourneyDetector } from '../services/journeyDetector';
 import {
-	getActiveTravel,
-	saveTravelStep,
-	saveTravelWithSteps,
+	getActiveJourney,
+	saveJourney,
+	saveJourneyPoint,
+	saveJourneyPoints,
 } from '../services/journeyRepository';
 import { locationTrackingService } from '../services/locationTrackingService';
 import {
-	type JourneyState,
-	JourneyStateStatus,
+	type Journey,
+	type JourneyId,
+	type JourneyPoint,
+	type JourneyPointId,
+	JourneyPointType,
+	JourneyStatus,
 	type LocationUpdate,
-	StepType,
-	type Travel,
-	type TravelId,
-	TravelStatus,
-	type TravelStep,
-	type TravelStepId,
 	type UserId,
 } from '../types';
 
+// Buffer for batching location points before saving
+const POINTS_BUFFER_SIZE = 10;
+
 interface JourneyContextValue {
 	// State
-	isTracking: boolean;
-	currentJourney: Travel | null;
-	journeyState: JourneyState;
+	activeJourney: Journey | null;
+	isRecording: boolean;
 	currentLocation: LocationUpdate | null;
+	stopsCount: number;
 
-	// Actions
-	startJourney: (
-		origin: string,
-		destination: string,
-		userId: UserId
-	) => Promise<boolean>;
-	stopJourney: () => Promise<void>;
-	pauseJourney: () => Promise<void>;
-	resumeJourney: () => Promise<void>;
-	addManualStep: (step: Partial<TravelStep>) => void;
-	updateNearbySpots: (spots: Spot[]) => void;
+	// Core actions
+	startRecording: () => Promise<boolean>;
+	stopRecording: () => Promise<void>;
+	pauseRecording: () => Promise<void>;
+	resumeRecording: () => Promise<void>;
+
+	// During recording
+	markStop: () => void;
 }
 
 const JourneyContext = createContext<JourneyContextValue | undefined>(
@@ -58,97 +55,111 @@ const JourneyContext = createContext<JourneyContextValue | undefined>(
 export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 	children,
 }) => {
-	const [isTracking, setIsTracking] = useState(false);
-	const [currentJourney, setCurrentJourney] = useState<Travel | null>(null);
-	const [journeyState, setJourneyState] = useState<JourneyState>({
-		status: JourneyStateStatus.Idle,
-		currentStep: null,
-		detectedVehicleChanges: 0,
-		startTime: new Date(),
-	});
+	const [activeJourney, setActiveJourney] = useState<Journey | null>(null);
+	const [isRecording, setIsRecording] = useState(false);
 	const [currentLocation, setCurrentLocation] = useState<LocationUpdate | null>(
 		null
 	);
-	const [journeyDetector] = useState(() => new JourneyDetector());
-	const currentJourneyRef = useRef<Travel | null>(null);
-	const journeyStateRef = useRef<JourneyState>({
-		status: JourneyStateStatus.Idle,
-		currentStep: null,
-		detectedVehicleChanges: 0,
-		startTime: new Date(),
-	});
 
+	// Refs for callback access
+	const activeJourneyRef = useRef<Journey | null>(null);
+	const pointsBufferRef = useRef<JourneyPoint[]>([]);
+
+	// Keep ref in sync with state
 	useEffect(() => {
-		currentJourneyRef.current = currentJourney;
-	}, [currentJourney]);
+		activeJourneyRef.current = activeJourney;
+	}, [activeJourney]);
 
-	useEffect(() => {
-		journeyStateRef.current = journeyState;
-	}, [journeyState]);
+	// Calculate stops count from journey
+	const stopsCount =
+		activeJourney?.points.filter(p => p.type === JourneyPointType.Stop)
+			.length ?? 0;
 
-	const restoreActiveJourney = useCallback(async () => {
-		const isTrackingActive =
-			await locationTrackingService.isCurrentlyTracking();
-		logger.journey.info('Checking for active journey', {
-			isTrackingActive,
-		});
+	// Flush points buffer to database
+	const flushPointsBuffer = useCallback(async () => {
+		const points = pointsBufferRef.current;
+		if (points.length === 0) return;
 
-		if (isTrackingActive) {
-			logger.journey.info(
-				'Background tracking is active, attempting to restore active journey'
-			);
-
-			try {
-				const userId = 'anonymous-user';
-				const activeTravel = await getActiveTravel(userId);
-
-				if (activeTravel) {
-					logger.journey.info('Active journey restored from database', {
-						journeyId: activeTravel.id,
-						stepsCount: activeTravel.steps.length,
-					});
-					setCurrentJourney(activeTravel);
-					currentJourneyRef.current = activeTravel;
-
-					// Restore journey state
-					const lastStep = activeTravel.steps[activeTravel.steps.length - 1];
-					const restoredState: JourneyState = {
-						status: JourneyStateStatus.Idle,
-						currentStep: lastStep ?? null,
-						detectedVehicleChanges: activeTravel.steps.length,
-						startTime: activeTravel.startDate,
-					};
-					setJourneyState(restoredState);
-					journeyStateRef.current = restoredState;
-
-					// Sync tracking state
-					setIsTracking(true);
-				} else {
-					logger.journey.warn(
-						'Background tracking is active but no active journey found in database, stopping tracking'
-					);
-					await locationTrackingService.stopTracking();
-					setIsTracking(false);
-				}
-			} catch (error) {
-				logger.journey.error('Failed to restore active journey', error);
-				// Stop orphaned tracking on error
-				await locationTrackingService.stopTracking();
-				setIsTracking(false);
-			}
+		pointsBufferRef.current = [];
+		try {
+			await saveJourneyPoints(points);
+		} catch (error) {
+			logger.journey.error('Failed to flush points buffer', error);
+			// Put points back in buffer on failure
+			pointsBufferRef.current = [...points, ...pointsBufferRef.current];
 		}
 	}, []);
 
-	// Restore active journey on mount if background tracking is running
+	// Handle location updates
+	const handleLocationUpdate = useCallback(
+		(location: LocationUpdate) => {
+			setCurrentLocation(location);
+
+			const journey = activeJourneyRef.current;
+			if (!journey || journey.status !== JourneyStatus.Recording) return;
+
+			// Create location point
+			const point: JourneyPoint = {
+				id: Crypto.randomUUID() as JourneyPointId,
+				journeyId: journey.id,
+				type: JourneyPointType.Location,
+				latitude: location.latitude,
+				longitude: location.longitude,
+				timestamp: location.timestamp,
+			};
+
+			// Add to buffer
+			pointsBufferRef.current.push(point);
+
+			// Flush when buffer is full
+			if (pointsBufferRef.current.length >= POINTS_BUFFER_SIZE) {
+				flushPointsBuffer();
+			}
+		},
+		[flushPointsBuffer]
+	);
+
+	const handleLocationError = useCallback((error: Error) => {
+		logger.journey.error('Location tracking error', error);
+	}, []);
+
+	// Restore active journey on mount
+	const restoreActiveJourney = useCallback(async () => {
+		const isTrackingActive =
+			await locationTrackingService.isCurrentlyTracking();
+
+		if (!isTrackingActive) return;
+
+		logger.journey.info('Background tracking active, restoring journey');
+
+		try {
+			// TODO: Replace with actual user ID when auth is implemented
+			const userId = 'anonymous-user' as UserId;
+			const journey = await getActiveJourney(userId);
+
+			if (journey) {
+				logger.journey.info('Journey restored', { id: journey.id });
+				setActiveJourney(journey);
+				activeJourneyRef.current = journey;
+				setIsRecording(journey.status === JourneyStatus.Recording);
+			} else {
+				logger.journey.warn('No active journey found, stopping tracking');
+				await locationTrackingService.stopTracking();
+			}
+		} catch (error) {
+			logger.journey.error('Failed to restore journey', error);
+			await locationTrackingService.stopTracking();
+		}
+	}, []);
+
 	useEffect(() => {
 		restoreActiveJourney();
 	}, [restoreActiveJourney]);
 
-	// Listen for app state changes to sync journey state when returning from permission dialogs
+	// Sync on app resume
 	useEffect(() => {
-		const handleAppStateChange = (nextAppState: AppStateStatus) => {
-			if (nextAppState === 'active') {
-				logger.journey.debug('App became active, syncing journey state');
+		const handleAppStateChange = (state: AppStateStatus) => {
+			if (state === 'active') {
 				restoreActiveJourney();
 			}
 		};
@@ -157,328 +168,195 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 			'change',
 			handleAppStateChange
 		);
-
-		return () => {
-			subscription.remove();
-		};
+		return () => subscription.remove();
 	}, [restoreActiveJourney]);
 
-	const handleLocationUpdate = useCallback(
-		(location: LocationUpdate) => {
-			setCurrentLocation(location);
-
-			const activeJourney = currentJourneyRef.current;
-			if (!activeJourney) {
-				return;
-			}
-
-			const currentState = journeyStateRef.current;
-
-			// Process location with journey detector
-			const detectionResult = journeyDetector.processLocation(
-				location,
-				currentState
-			);
-
-			// Update journey state if changed
-			if (detectionResult.newStatus !== currentState.status) {
-				logger.journey.info('Journey state changed', {
-					previousStatus: currentState.status,
-					newStatus: detectionResult.newStatus,
-				});
-
-				const newState: JourneyState = {
-					...currentState,
-					status: detectionResult.newStatus,
-				};
-
-				// Create new step if needed
-				if (detectionResult.shouldCreateNewStep && detectionResult.stepType) {
-					logger.journey.info('Creating new travel step', {
-						stepType: detectionResult.stepType,
-						nearbySpotId: detectionResult.nearbySpot?.id,
-						vehicleChanges: currentState.detectedVehicleChanges + 1,
-					});
-
-					const newStep: TravelStep = {
-						id: Crypto.randomUUID() as TravelStepId,
-						travelId: activeJourney.id,
-						type: detectionResult.stepType,
-						spotId: detectionResult.nearbySpot?.id,
-						startTime: new Date(),
-						endTime: undefined,
-						notes: undefined,
-					};
-
-					// End the current step
-					if (currentState.currentStep) {
-						logger.journey.debug('Ending previous step', {
-							stepId: currentState.currentStep.id,
-						});
-						currentState.currentStep.endTime = new Date();
-					}
-
-					newState.currentStep = newStep;
-					newState.detectedVehicleChanges += 1;
-
-					// Add step to journey
-					setCurrentJourney(prev => {
-						if (!prev) return null;
-						const updatedJourney = {
-							...prev,
-							steps: [...prev.steps, newStep],
-						};
-						currentJourneyRef.current = updatedJourney;
-						return updatedJourney;
-					});
-
-					// Persist the new step to database
-					saveTravelStep(newStep).catch(error => {
-						logger.journey.error('Failed to persist travel step', error);
-					});
-				}
-
-				journeyStateRef.current = newState;
-				setJourneyState(newState);
-			}
-		},
-		[journeyDetector]
-	);
-
-	const handleLocationError = useCallback((error: Error) => {
-		logger.journey.error('Location tracking error in journey', error);
-		// TODO: Show error to user
-	}, []);
-
-	const syncTrackingState = useCallback(async () => {
-		const tracking = await locationTrackingService.isCurrentlyTracking();
-		setIsTracking(tracking);
-	}, []);
-
-	const startJourney = useCallback(
-		async (
-			origin: string,
-			destination: string,
-			userId: UserId
-		): Promise<boolean> => {
-			try {
-				if (await locationTrackingService.isCurrentlyTracking()) {
-					logger.journey.warn(
-						'Cannot start journey: Journey already in progress'
-					);
-					return false;
-				}
-
-				logger.journey.info('Starting new journey', {
-					origin,
-					destination,
-					userId,
-				});
-
-				// Start location tracking
-				const started = await locationTrackingService.startTracking({
-					onLocationUpdate: handleLocationUpdate,
-					onError: handleLocationError,
-				});
-
-				if (!started) {
-					logger.journey.error(
-						'Failed to start journey: Location tracking could not be started'
-					);
-					syncTrackingState();
-					return false;
-				}
-
-				// Create new journey
-				const newJourney: Travel = {
-					id: Crypto.randomUUID() as TravelId,
-					userId: userId,
-					startDate: new Date(),
-					endDate: undefined,
-					origin,
-					destination,
-					status: TravelStatus.InProgress,
-					steps: [],
-					totalDistance: 0,
-					totalWaitTime: 0,
-				};
-
-				logger.journey.info('Journey created successfully', {
-					journeyId: newJourney.id,
-				});
-
-				const initialState: JourneyState = {
-					status: JourneyStateStatus.Idle,
-					currentStep: null,
-					detectedVehicleChanges: 0,
-					startTime: new Date(),
-				};
-
-				setCurrentJourney(newJourney);
-				currentJourneyRef.current = newJourney;
-				setJourneyState(initialState);
-				journeyStateRef.current = initialState;
-				syncTrackingState();
-				journeyDetector.reset();
-
-				// Persist journey to database
-				saveTravelWithSteps(newJourney).catch(error => {
-					logger.journey.error('Failed to persist journey', error);
-				});
-
-				return true;
-			} catch (error) {
-				logger.journey.error('Error starting journey', error);
-				return false;
-			}
-		},
-		[
-			handleLocationUpdate,
-			handleLocationError,
-			journeyDetector,
-			syncTrackingState,
-		]
-	);
-
-	const stopJourney = useCallback(async () => {
-		logger.journey.info('Stopping journey', { journeyId: currentJourney?.id });
-
-		await locationTrackingService.stopTracking();
-
-		// End current step if exists
-		if (journeyState.currentStep) {
-			logger.journey.debug('Ending current step', {
-				stepId: journeyState.currentStep.id,
-			});
-			journeyState.currentStep.endTime = new Date();
+	// Start recording a new journey
+	const startRecording = useCallback(async (): Promise<boolean> => {
+		if (await locationTrackingService.isCurrentlyTracking()) {
+			logger.journey.warn('Already recording a journey');
+			return false;
 		}
 
-		// Mark journey as completed
-		if (currentJourney) {
-			logger.journey.info('Marking journey as completed', {
-				journeyId: currentJourney.id,
-				stepsCount: currentJourney.steps.length,
-				totalDistance: currentJourney.totalDistance,
-			});
+		logger.journey.info('Starting journey recording');
 
-			const completedJourney: Travel = {
-				...currentJourney,
-				endDate: new Date(),
-				status: TravelStatus.Completed,
-			};
-
-			setCurrentJourney(completedJourney);
-			currentJourneyRef.current = completedJourney;
-
-			// Persist completed journey to database
-			saveTravelWithSteps(completedJourney).catch(error => {
-				logger.journey.error('Failed to persist completed journey', error);
-			});
-		}
-
-		syncTrackingState();
-		journeyDetector.reset();
-		logger.journey.info('Journey stopped successfully');
-	}, [currentJourney, journeyState, journeyDetector, syncTrackingState]);
-
-	const pauseJourney = useCallback(async () => {
-		logger.journey.info('Pausing journey', { journeyId: currentJourney?.id });
-		await locationTrackingService.stopTracking();
-		syncTrackingState();
-		logger.journey.info('Journey paused successfully');
-	}, [currentJourney, syncTrackingState]);
-
-	const resumeJourney = useCallback(async () => {
-		if (!currentJourney) {
-			logger.journey.warn('Cannot resume journey: No journey in progress');
-			return;
-		}
-
-		logger.journey.info('Resuming journey', { journeyId: currentJourney.id });
 		const started = await locationTrackingService.startTracking({
 			onLocationUpdate: handleLocationUpdate,
 			onError: handleLocationError,
 		});
 
-		if (started) {
-			syncTrackingState();
-			logger.journey.info('Journey resumed successfully');
-		} else {
-			logger.journey.error(
-				'Failed to resume journey: Location tracking could not be started'
-			);
-			syncTrackingState();
+		if (!started) {
+			logger.journey.error('Failed to start location tracking');
+			return false;
 		}
-	}, [
-		currentJourney,
-		handleLocationUpdate,
-		handleLocationError,
-		syncTrackingState,
-	]);
 
-	const addManualStep = useCallback(
-		(stepData: Partial<TravelStep>) => {
-			if (!currentJourney) {
-				logger.journey.warn('Cannot add manual step: No journey in progress');
-				return;
-			}
+		// TODO: Replace with actual user ID when auth is implemented
+		const userId = 'anonymous-user' as UserId;
 
-			logger.journey.info('Adding manual step', {
-				journeyId: currentJourney.id,
-				stepType: stepData.type,
-			});
+		const journey: Journey = {
+			id: Crypto.randomUUID() as JourneyId,
+			userId,
+			status: JourneyStatus.Recording,
+			startedAt: new Date(),
+			points: [],
+		};
 
-			const newStep: TravelStep = {
-				id: Crypto.randomUUID() as TravelStepId,
-				travelId: currentJourney.id,
-				type: stepData.type ?? StepType.Waiting,
-				spotId: stepData.spotId,
-				startTime: stepData.startTime ?? new Date(),
-				endTime: stepData.endTime,
-				notes: stepData.notes,
+		setActiveJourney(journey);
+		activeJourneyRef.current = journey;
+		setIsRecording(true);
+
+		// Persist journey
+		try {
+			await saveJourney(journey);
+		} catch (error) {
+			logger.journey.error('Failed to save journey', error);
+		}
+
+		logger.journey.info('Journey recording started', { id: journey.id });
+		return true;
+	}, [handleLocationUpdate, handleLocationError]);
+
+	// Stop recording
+	const stopRecording = useCallback(async () => {
+		logger.journey.info('Stopping journey recording');
+
+		// Flush remaining points
+		await flushPointsBuffer();
+
+		await locationTrackingService.stopTracking();
+
+		if (activeJourneyRef.current) {
+			const completedJourney: Journey = {
+				...activeJourneyRef.current,
+				status: JourneyStatus.Completed,
+				endedAt: new Date(),
 			};
 
-			setCurrentJourney(prev => {
-				if (!prev) return null;
-				const updatedJourney = {
-					...prev,
-					steps: [...prev.steps, newStep],
-				};
-				currentJourneyRef.current = updatedJourney;
-				return updatedJourney;
-			});
+			setActiveJourney(completedJourney);
+			activeJourneyRef.current = completedJourney;
 
-			// Persist manual step to database
-			saveTravelStep(newStep).catch(error => {
-				logger.journey.error('Failed to persist manual step', error);
-			});
+			try {
+				await saveJourney(completedJourney);
+			} catch (error) {
+				logger.journey.error('Failed to save completed journey', error);
+			}
+		}
 
-			logger.journey.info('Manual step added successfully', {
-				stepId: newStep.id,
-			});
-		},
-		[currentJourney]
-	);
+		setIsRecording(false);
+		logger.journey.info('Journey recording stopped');
+	}, [flushPointsBuffer]);
 
-	const updateNearbySpots = useCallback(
-		(spots: Spot[]) => {
-			logger.journey.debug('Updating nearby spots', { count: spots.length });
-			journeyDetector.setNearbySpots(spots);
-		},
-		[journeyDetector]
-	);
+	// Pause recording
+	const pauseRecording = useCallback(async () => {
+		logger.journey.info('Pausing journey recording');
+
+		// Flush points before pausing
+		await flushPointsBuffer();
+
+		await locationTrackingService.stopTracking();
+
+		if (activeJourneyRef.current) {
+			const pausedJourney: Journey = {
+				...activeJourneyRef.current,
+				status: JourneyStatus.Paused,
+			};
+
+			setActiveJourney(pausedJourney);
+			activeJourneyRef.current = pausedJourney;
+
+			try {
+				await saveJourney(pausedJourney);
+			} catch (error) {
+				logger.journey.error('Failed to save paused journey', error);
+			}
+		}
+
+		setIsRecording(false);
+	}, [flushPointsBuffer]);
+
+	// Resume recording
+	const resumeRecording = useCallback(async () => {
+		if (!activeJourneyRef.current) {
+			logger.journey.warn('No journey to resume');
+			return;
+		}
+
+		logger.journey.info('Resuming journey recording');
+
+		const started = await locationTrackingService.startTracking({
+			onLocationUpdate: handleLocationUpdate,
+			onError: handleLocationError,
+		});
+
+		if (!started) {
+			logger.journey.error('Failed to resume location tracking');
+			return;
+		}
+
+		const resumedJourney: Journey = {
+			...activeJourneyRef.current,
+			status: JourneyStatus.Recording,
+		};
+
+		setActiveJourney(resumedJourney);
+		activeJourneyRef.current = resumedJourney;
+		setIsRecording(true);
+
+		try {
+			await saveJourney(resumedJourney);
+		} catch (error) {
+			logger.journey.error('Failed to save resumed journey', error);
+		}
+	}, [handleLocationUpdate, handleLocationError]);
+
+	// Mark current location as a stop
+	const markStop = useCallback(() => {
+		const journey = activeJourneyRef.current;
+		const location = currentLocation;
+
+		if (!journey || !location) {
+			logger.journey.warn('Cannot mark stop: no active journey or location');
+			return;
+		}
+
+		logger.journey.info('Marking stop at current location');
+
+		const stopPoint: JourneyPoint = {
+			id: Crypto.randomUUID() as JourneyPointId,
+			journeyId: journey.id,
+			type: JourneyPointType.Stop,
+			latitude: location.latitude,
+			longitude: location.longitude,
+			timestamp: new Date(),
+		};
+
+		// Add to journey state
+		const updatedJourney: Journey = {
+			...journey,
+			points: [...journey.points, stopPoint],
+		};
+
+		setActiveJourney(updatedJourney);
+		activeJourneyRef.current = updatedJourney;
+
+		// Persist stop immediately (stops are important)
+		saveJourneyPoint(stopPoint).catch(error => {
+			logger.journey.error('Failed to save stop point', error);
+		});
+
+		logger.journey.info('Stop marked', { id: stopPoint.id });
+	}, [currentLocation]);
 
 	const value: JourneyContextValue = {
-		isTracking,
-		currentJourney,
-		journeyState,
+		activeJourney,
+		isRecording,
 		currentLocation,
-		startJourney,
-		stopJourney,
-		pauseJourney,
-		resumeJourney,
-		addManualStep,
-		updateNearbySpots,
+		stopsCount,
+		startRecording,
+		stopRecording,
+		pauseRecording,
+		resumeRecording,
+		markStop,
 	};
 
 	return (
