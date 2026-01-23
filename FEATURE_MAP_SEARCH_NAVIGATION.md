@@ -4,7 +4,7 @@
 
 Add a Google Maps-inspired search functionality to enable users to search for locations and navigate the map to selected places.
 
-**Status**: 🟡 In Progress (Phase 2/5 Complete)
+**Status**: 🟡 In Progress (Phase 3/5 Complete)
 **Priority**: Medium
 **Complexity**: Medium
 
@@ -351,10 +351,11 @@ export function HomeScreen() {
 - [x] Add loading/empty states
 - [x] Style according to app design
 
-### Phase 3: MapView Ref Support (30min)
-- [ ] Add `forwardRef` to MapView
-- [ ] Expose `animateToRegion()` method
-- [ ] Test ref calls from parent
+### Phase 3: MapView Ref Support ✅ COMPLETED
+- [x] Add `forwardRef` to MapView
+- [x] Expose `animateToRegion()` method
+- [x] Expose `getCurrentRegion()` method
+- [x] Test ref calls from parent
 
 ### Phase 4: HomeScreen Integration (1h)
 - [ ] Add MapSearchBar to HomeScreen
