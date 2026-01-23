@@ -4,7 +4,7 @@
 
 Add a Google Maps-inspired search functionality to enable users to search for locations and navigate the map to selected places.
 
-**Status**: 🟡 In Progress (Phase 1/5 Complete)
+**Status**: 🟡 In Progress (Phase 2/5 Complete)
 **Priority**: Medium
 **Complexity**: Medium
 
@@ -344,12 +344,12 @@ export function HomeScreen() {
 - [x] Add types (SearchSuggestion only - no unused interfaces)
 - [x] Test with sample queries (Paris, Lyon, Bordeaux - all working)
 
-### Phase 2: MapSearchBar Component (2-3h)
-- [ ] Create `src/components/MapSearchBar.tsx`
-- [ ] Implement search input with debounce
-- [ ] Implement suggestions dropdown
-- [ ] Add loading/empty states
-- [ ] Style according to app design
+### Phase 2: MapSearchBar Component ✅ COMPLETED
+- [x] Create `src/components/MapSearchBar.tsx`
+- [x] Implement search input with debounce
+- [x] Implement suggestions dropdown
+- [x] Add loading/empty states
+- [x] Style according to app design
 
 ### Phase 3: MapView Ref Support (30min)
 - [ ] Add `forwardRef` to MapView
