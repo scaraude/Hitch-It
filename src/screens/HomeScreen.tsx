@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
@@ -7,7 +7,9 @@ import {
 	ActionButtons,
 	Header,
 	LoadingSpinner,
+	MapSearchBar,
 	MapViewComponent,
+	type MapViewRef,
 } from '../components';
 import { COLORS, SPACING } from '../constants';
 import { useLocation } from '../hooks';
@@ -23,8 +25,8 @@ import {
 	SpotForm,
 } from '../spot/components';
 import { SpotProvider, useSpotContext } from '../spot/context';
-import type { MapBounds, MapRegion } from '../types';
-import { calculateZoomLevel, regionToBounds } from '../utils';
+import type { Location, MapBounds, MapRegion } from '../types';
+import { calculateZoomLevel, logger, regionToBounds } from '../utils';
 
 const FEATURE_JOURNEY_ENABLED = true;
 
@@ -50,6 +52,7 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 		deselectSpot,
 	} = useSpotContext();
 	const [mapRegion, setMapRegion] = useState<MapRegion>(currentRegion);
+	const mapViewRef = useRef<MapViewRef>(null);
 
 	const handleRegionChange = (region: MapRegion) => {
 		setMapRegion(region);
@@ -64,6 +67,18 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 		confirmSpotPlacement(mapRegion);
 	};
 
+	const handleLocationSelected = (location: Location, name: string) => {
+		const region: MapRegion = {
+			latitude: location.latitude,
+			longitude: location.longitude,
+			latitudeDelta: 0.05,
+			longitudeDelta: 0.05,
+		};
+
+		mapViewRef.current?.animateToRegion(region, 1000);
+		logger.navigation.info(`Map navigated to ${name}`);
+	};
+
 	return (
 		<SafeAreaView style={styles.container}>
 			<Header title="Hitch It" />
@@ -74,6 +89,7 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 				) : (
 					<>
 						<MapViewComponent
+							ref={mapViewRef}
 							initialRegion={currentRegion}
 							markers={spots}
 							onRegionChange={handleRegionChange}
@@ -86,6 +102,8 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 						)}
 					</>
 				)}
+
+				<MapSearchBar onLocationSelected={handleLocationSelected} />
 
 				{FEATURE_JOURNEY_ENABLED && (
 					<View style={styles.journeyOverlay}>
@@ -175,6 +193,7 @@ const styles = StyleSheet.create({
 		right: 0,
 		bottom: 0,
 		pointerEvents: 'box-none',
+		zIndex: 500,
 	},
 	journeyTopRow: {
 		position: 'absolute',

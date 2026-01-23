@@ -4,7 +4,7 @@
 
 Add a Google Maps-inspired search functionality to enable users to search for locations and navigate the map to selected places.
 
-**Status**: 🟡 In Progress (Phase 3/5 Complete)
+**Status**: 🟡 In Progress (Phase 4/5 Complete)
 **Priority**: Medium
 **Complexity**: Medium
 
@@ -357,11 +357,11 @@ export function HomeScreen() {
 - [x] Expose `getCurrentRegion()` method
 - [x] Test ref calls from parent
 
-### Phase 4: HomeScreen Integration (1h)
-- [ ] Add MapSearchBar to HomeScreen
-- [ ] Connect `onLocationSelected` handler
-- [ ] Handle z-index layering
-- [ ] Test end-to-end flow
+### Phase 4: HomeScreen Integration ✅ COMPLETED
+- [x] Add MapSearchBar to HomeScreen
+- [x] Connect `onLocationSelected` handler
+- [x] Handle z-index layering
+- [x] Test end-to-end flow
 
 ### Phase 5: Polish & Testing (1-2h)
 - [ ] Add animations (search bar expand/collapse)
