@@ -25,8 +25,53 @@
 
 ### Key Files
 
-- [FEATURES_IMPLEMENTATION_PLAN.md](FEATURES_IMPLEMENTATION_PLAN.md) - Roadmap with all planned features and current progress
+- [docs/ROADMAP.md](docs/ROADMAP.md) - Feature roadmap and implementation status
 - [AGENTS.md](AGENTS.md) - Detailed technical documentation for AI agents
+- [docs/features/](docs/features/) - Individual feature specifications
+
+---
+
+## Documentation Structure
+
+Features are documented in separate files, organized by status:
+
+```
+docs/
+├── ROADMAP.md              # Quick overview: what's done, in progress, planned
+├── FEATURE_TEMPLATE.md     # Template for new feature specs
+└── features/
+    ├── implemented/        # Completed features (reference)
+    ├── in-progress/        # Currently being built (active specs)
+    └── planned/            # Backlog (future work)
+```
+
+### How to Use
+
+**Starting a new feature**:
+1. Check [docs/ROADMAP.md](docs/ROADMAP.md) - is it in the roadmap?
+2. Copy [docs/FEATURE_TEMPLATE.md](docs/FEATURE_TEMPLATE.md)
+3. Create `docs/features/planned/FEATURE_NAME.md`
+4. Add entry to ROADMAP.md
+
+**Working on a feature**:
+1. Move spec from `planned/` → `in-progress/`
+2. Update ROADMAP.md status
+3. Follow the tickets in the spec file
+
+**Completing a feature**:
+1. Move spec from `in-progress/` → `implemented/`
+2. Update ROADMAP.md metrics
+3. Add completion date to spec
+
+### Feature Spec Structure
+
+Each feature file contains:
+- **Overview**: Status, priority, dependencies
+- **User Story**: What the user wants to achieve
+- **UX/UI Spec**: Mockups and interaction flows
+- **Technical Architecture**: Module structure, data models
+- **Implementation Tickets**: Detailed tasks with acceptance criteria
+- **Phases**: Incremental delivery plan
 
 ---
 
@@ -180,7 +225,7 @@ Before any PR/commit, verify:
 ## When to Say No
 
 Refuse to implement:
-- Features not in [FEATURES_IMPLEMENTATION_PLAN.md](FEATURES_IMPLEMENTATION_PLAN.md)
+- Features not in [docs/ROADMAP.md](docs/ROADMAP.md)
 - "Nice to have" additions mid-task
 - Over-engineered solutions
 - Premature optimizations

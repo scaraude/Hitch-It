@@ -1,3 +1,19 @@
+# ⚠️ DEPRECATED - See docs/ROADMAP.md
+
+> **This file has been replaced by the new roadmap structure.**
+> **Last Updated**: January 24, 2026 (Migrated to new structure)
+
+**New Location**: [docs/ROADMAP.md](docs/ROADMAP.md)
+
+All features have been extracted into individual files:
+- Implemented: `docs/features/implemented/`
+- In Progress: `docs/features/in-progress/`
+- Planned: `docs/features/planned/`
+
+---
+
+# OLD FILE BELOW (Archived for Reference)
+
 # Hitch-It Features Implementation Plan
 
 > Advanced features roadmap for the hitchhiking companion app
