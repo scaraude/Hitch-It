@@ -1,8 +1,3 @@
-import { useDebouncedValue } from '@/hooks/useDebouncedValue';
-import type { SearchSuggestion } from '@/services/geocodingService';
-import { searchPlaces } from '@/services/geocodingService';
-import type { Location } from '@/types';
-import { logger } from '@/utils/logger';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import {
@@ -14,6 +9,11 @@ import {
 	TouchableOpacity,
 	View,
 } from 'react-native';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
+import type { SearchSuggestion } from '@/services/geocodingService';
+import { searchPlaces } from '@/services/geocodingService';
+import type { Location } from '@/types';
+import { logger } from '@/utils/logger';
 import { COLORS, SIZES, SPACING } from '../constants';
 
 interface MapSearchBarProps {
@@ -29,6 +29,7 @@ export const MapSearchBar: React.FC<MapSearchBarProps> = ({
 	const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
 	const [isExpanded, setIsExpanded] = useState(initiallyExpanded);
+	const [isFocused, setIsFocused] = useState(false);
 
 	const debouncedSearchText = useDebouncedValue(searchText, 300);
 
@@ -62,7 +63,22 @@ export const MapSearchBar: React.FC<MapSearchBarProps> = ({
 		setIsExpanded(false);
 		setSearchText('');
 		setSuggestions([]);
+		setIsFocused(false);
 		Keyboard.dismiss();
+	};
+
+	const handleBlur = () => {
+		setIsFocused(false);
+		// Smart collapse: only collapse if search text is empty
+		if (!searchText.trim()) {
+			setIsExpanded(false);
+		}
+		// If text is not empty, just hide suggestions (input stays expanded)
+		setSuggestions([]);
+	};
+
+	const handleFocus = () => {
+		setIsFocused(true);
 	};
 
 	const handleSuggestionPress = (suggestion: SearchSuggestion) => {
@@ -95,6 +111,8 @@ export const MapSearchBar: React.FC<MapSearchBarProps> = ({
 						style={styles.input}
 						value={searchText}
 						onChangeText={setSearchText}
+						onFocus={handleFocus}
+						onBlur={handleBlur}
 						placeholder="Rechercher un lieu"
 						placeholderTextColor={COLORS.textSecondary}
 						autoFocus={true}
@@ -112,19 +130,22 @@ export const MapSearchBar: React.FC<MapSearchBarProps> = ({
 					</TouchableOpacity>
 				</View>
 
-				{isLoading && (
+				{isFocused && isLoading && (
 					<View style={styles.loadingContainer}>
 						<ActivityIndicator size="small" color={COLORS.primary} />
 					</View>
 				)}
 
-				{!isLoading && searchText.trim() && suggestions.length === 0 && (
-					<View style={styles.emptyContainer}>
-						<Text style={styles.emptyText}>Aucun résultat</Text>
-					</View>
-				)}
+				{isFocused &&
+					!isLoading &&
+					searchText.trim() &&
+					suggestions.length === 0 && (
+						<View style={styles.emptyContainer}>
+							<Text style={styles.emptyText}>Aucun résultat</Text>
+						</View>
+					)}
 
-				{!isLoading && suggestions.length > 0 && (
+				{isFocused && !isLoading && suggestions.length > 0 && (
 					<View style={styles.suggestionsContainer}>
 						{suggestions.map(suggestion => (
 							<TouchableOpacity
