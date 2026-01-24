@@ -6,12 +6,10 @@ type ExpoExtra = {
 	supabaseAnonKey?: string;
 };
 
-const extra = (Constants.expoConfig?.extra ??
-	Constants.manifest?.extra ??
-	{}) as ExpoExtra;
+const extra = Constants.expoConfig?.extra as ExpoExtra | undefined;
 
-const supabaseUrl = extra.supabaseUrl;
-const supabaseAnonKey = extra.supabaseAnonKey;
+const supabaseUrl = extra?.supabaseUrl;
+const supabaseAnonKey = extra?.supabaseAnonKey;
 
 if (!supabaseUrl || !supabaseAnonKey) {
 	throw new Error(
