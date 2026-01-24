@@ -38,7 +38,7 @@ export async function searchPlaces(query: string): Promise<SearchSuggestion[]> {
 		const params = new URLSearchParams({
 			q: query,
 			lang: 'fr',
-			limit: '5',
+			limit: '3',
 		});
 
 		const controller = new AbortController();

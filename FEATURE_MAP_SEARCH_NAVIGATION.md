@@ -364,11 +364,35 @@ export function HomeScreen() {
 - [x] Test end-to-end flow
 
 ### Phase 5: Polish & Testing (1-2h)
-- [ ] Add animations (search bar expand/collapse)
-- [ ] Add haptic feedback on selection
-- [ ] Test all edge cases
-- [ ] Performance profiling
-- [ ] Update documentation
+
+#### Polish Tasks:
+1. **Search Bar Animations**:
+   - Smooth expand/collapse transition (300ms duration)
+   - Fade-in for suggestions dropdown
+   - Optional: Slide-up animation when suggestions appear
+2. **Haptic Feedback**:
+   - Add light haptic on suggestion tap (using `Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)`)
+   - Add haptic on successful map navigation
+3. **Visual Polish**:
+   - Ensure search bar shadow matches app design
+   - Verify suggestion item press states (background color change)
+   - Check keyboard dismiss behavior is smooth
+
+#### Testing Tasks:
+1. **Manual Testing** (use checklist in "Testing Strategy" section):
+   - Search functionality (debounce, loading, suggestions)
+   - Map navigation (animation, centering, zoom)
+   - Edge cases (offline, timeout, empty search, special chars)
+   - Performance (no lag, quick render, no memory leaks)
+2. **Code Quality**:
+   - Run `pnpm lint` - Biome must pass
+   - Run `npx tsc --noEmit` - No TypeScript errors
+   - Verify no `any` types
+   - Verify no `console.log` (only logger usage)
+3. **Cross-Platform**:
+   - Test on iOS simulator
+   - Test on Android emulator (if available)
+   - Verify keyboard behavior on both platforms
 
 **Total Estimated Time**: 5-8 hours
 

@@ -1,3 +1,8 @@
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
+import type { SearchSuggestion } from '@/services/geocodingService';
+import { searchPlaces } from '@/services/geocodingService';
+import type { Location } from '@/types';
+import { logger } from '@/utils/logger';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import {
@@ -9,11 +14,6 @@ import {
 	TouchableOpacity,
 	View,
 } from 'react-native';
-import { useDebouncedValue } from '@/hooks/useDebouncedValue';
-import type { SearchSuggestion } from '@/services/geocodingService';
-import { searchPlaces } from '@/services/geocodingService';
-import type { Location } from '@/types';
-import { logger } from '@/utils/logger';
 import { COLORS, SIZES, SPACING } from '../constants';
 
 interface MapSearchBarProps {
@@ -30,7 +30,7 @@ export const MapSearchBar: React.FC<MapSearchBarProps> = ({
 	const [isLoading, setIsLoading] = useState(false);
 	const [isExpanded, setIsExpanded] = useState(initiallyExpanded);
 
-	const debouncedSearchText = useDebouncedValue(searchText, 800);
+	const debouncedSearchText = useDebouncedValue(searchText, 300);
 
 	useEffect(() => {
 		const fetchSuggestions = async () => {
