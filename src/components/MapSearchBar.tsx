@@ -1,7 +1,9 @@
+import * as Haptics from 'expo-haptics';
 import type React from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
 	ActivityIndicator,
+	Animated,
 	Keyboard,
 	StyleSheet,
 	Text,
@@ -33,10 +35,14 @@ export const MapSearchBar: React.FC<MapSearchBarProps> = ({
 
 	const debouncedSearchText = useDebouncedValue(searchText, 300);
 
+	// Animation value for suggestions fade
+	const suggestionsOpacity = useRef(new Animated.Value(0)).current;
+
 	useEffect(() => {
 		const fetchSuggestions = async () => {
 			if (!debouncedSearchText.trim()) {
 				setSuggestions([]);
+				suggestionsOpacity.setValue(0);
 				return;
 			}
 
@@ -44,16 +50,25 @@ export const MapSearchBar: React.FC<MapSearchBarProps> = ({
 			try {
 				const results = await searchPlaces(debouncedSearchText);
 				setSuggestions(results);
+				// Fade in suggestions
+				if (results.length > 0) {
+					Animated.timing(suggestionsOpacity, {
+						toValue: 1,
+						duration: 200,
+						useNativeDriver: true,
+					}).start();
+				}
 			} catch (error) {
 				logger.app.error('Failed to fetch search suggestions', error);
 				setSuggestions([]);
+				suggestionsOpacity.setValue(0);
 			} finally {
 				setIsLoading(false);
 			}
 		};
 
 		fetchSuggestions();
-	}, [debouncedSearchText]);
+	}, [debouncedSearchText, suggestionsOpacity]);
 
 	const handleExpand = () => {
 		setIsExpanded(true);
@@ -69,26 +84,34 @@ export const MapSearchBar: React.FC<MapSearchBarProps> = ({
 
 	const handleBlur = () => {
 		setIsFocused(false);
+		// Fade out suggestions
+		Animated.timing(suggestionsOpacity, {
+			toValue: 0,
+			duration: 150,
+			useNativeDriver: true,
+		}).start(() => {
+			setSuggestions([]);
+		});
 		// Smart collapse: only collapse if search text is empty
 		if (!searchText.trim()) {
 			setIsExpanded(false);
 		}
-		// If text is not empty, just hide suggestions (input stays expanded)
-		setSuggestions([]);
 	};
 
 	const handleFocus = () => {
 		setIsFocused(true);
 	};
 
-	const handleSuggestionPress = (suggestion: SearchSuggestion) => {
+	const handleSuggestionPress = async (suggestion: SearchSuggestion) => {
+		// Light haptic feedback on selection
+		await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 		onLocationSelected(suggestion.location, suggestion.name);
 		handleCollapse();
 	};
 
-	if (!isExpanded) {
-		return (
-			<View style={styles.container}>
+	return (
+		<View style={styles.container}>
+			{!isExpanded ? (
 				<TouchableOpacity
 					style={styles.collapsedButton}
 					onPress={handleExpand}
@@ -98,77 +121,79 @@ export const MapSearchBar: React.FC<MapSearchBarProps> = ({
 				>
 					<Text style={styles.searchIcon}>🔍</Text>
 				</TouchableOpacity>
-			</View>
-		);
-	}
-
-	return (
-		<View style={styles.container}>
-			<View style={styles.searchContainer}>
-				<View style={styles.inputRow}>
-					<Text style={styles.searchIconExpanded}>🔍</Text>
-					<TextInput
-						style={styles.input}
-						value={searchText}
-						onChangeText={setSearchText}
-						onFocus={handleFocus}
-						onBlur={handleBlur}
-						placeholder="Rechercher un lieu"
-						placeholderTextColor={COLORS.textSecondary}
-						autoFocus={true}
-						accessibilityLabel="Rechercher un lieu"
-						testID="map-search-input"
-					/>
-					<TouchableOpacity
-						onPress={handleCollapse}
-						style={styles.closeButton}
-						accessibilityLabel="Fermer la recherche"
-						accessibilityRole="button"
-						testID="map-search-close"
-					>
-						<Text style={styles.closeIcon}>✕</Text>
-					</TouchableOpacity>
-				</View>
-
-				{isFocused && isLoading && (
-					<View style={styles.loadingContainer}>
-						<ActivityIndicator size="small" color={COLORS.primary} />
+			) : (
+				<View style={styles.searchContainer}>
+					<View style={styles.inputRow}>
+						<Text style={styles.searchIconExpanded}>🔍</Text>
+						<TextInput
+							style={styles.input}
+							value={searchText}
+							onChangeText={setSearchText}
+							onFocus={handleFocus}
+							onBlur={handleBlur}
+							placeholder="Rechercher un lieu"
+							placeholderTextColor={COLORS.textSecondary}
+							autoFocus={true}
+							accessibilityLabel="Rechercher un lieu"
+							testID="map-search-input"
+						/>
+						<TouchableOpacity
+							onPress={handleCollapse}
+							style={styles.closeButton}
+							accessibilityLabel="Fermer la recherche"
+							accessibilityRole="button"
+							testID="map-search-close"
+						>
+							<Text style={styles.closeIcon}>✕</Text>
+						</TouchableOpacity>
 					</View>
-				)}
 
-				{isFocused &&
-					!isLoading &&
-					searchText.trim() &&
-					suggestions.length === 0 && (
-						<View style={styles.emptyContainer}>
-							<Text style={styles.emptyText}>Aucun résultat</Text>
+					{isFocused && isLoading && (
+						<View style={styles.loadingContainer}>
+							<ActivityIndicator size="small" color={COLORS.primary} />
 						</View>
 					)}
 
-				{isFocused && !isLoading && suggestions.length > 0 && (
-					<View style={styles.suggestionsContainer}>
-						{suggestions.map(suggestion => (
-							<TouchableOpacity
-								key={suggestion.id}
-								style={styles.suggestionItem}
-								onPress={() => handleSuggestionPress(suggestion)}
-								accessibilityRole="button"
-								accessibilityLabel={`${suggestion.name}, ${suggestion.description}`}
-								testID={`suggestion-${suggestion.id}`}
-							>
-								<View>
-									<Text style={styles.suggestionName}>{suggestion.name}</Text>
-									{suggestion.description && (
-										<Text style={styles.suggestionDescription}>
-											{suggestion.description}
-										</Text>
-									)}
-								</View>
-							</TouchableOpacity>
-						))}
-					</View>
-				)}
-			</View>
+					{isFocused &&
+						!isLoading &&
+						searchText.trim() &&
+						suggestions.length === 0 && (
+							<View style={styles.emptyContainer}>
+								<Text style={styles.emptyText}>Aucun résultat</Text>
+							</View>
+						)}
+
+					{isFocused && !isLoading && suggestions.length > 0 && (
+						<Animated.View
+							style={[
+								styles.suggestionsContainer,
+								{ opacity: suggestionsOpacity },
+							]}
+						>
+							{suggestions.map(suggestion => (
+								<TouchableOpacity
+									key={suggestion.id}
+									style={styles.suggestionItem}
+									onPress={() => handleSuggestionPress(suggestion)}
+									accessibilityRole="button"
+									accessibilityLabel={`${suggestion.name}, ${suggestion.description}`}
+									testID={`suggestion-${suggestion.id}`}
+									activeOpacity={0.7}
+								>
+									<View>
+										<Text style={styles.suggestionName}>{suggestion.name}</Text>
+										{suggestion.description && (
+											<Text style={styles.suggestionDescription}>
+												{suggestion.description}
+											</Text>
+										)}
+									</View>
+								</TouchableOpacity>
+							))}
+						</Animated.View>
+					)}
+				</View>
+			)}
 		</View>
 	);
 };
@@ -249,6 +274,7 @@ const styles = StyleSheet.create({
 		padding: SPACING.md,
 		borderBottomWidth: 1,
 		borderBottomColor: COLORS.border,
+		backgroundColor: COLORS.background,
 	},
 	suggestionName: {
 		fontSize: SIZES.fontMd,
