@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import {
 	forwardRef,
 	useCallback,
@@ -23,6 +24,7 @@ interface MapViewComponentProps {
 	onMarkerPress?: (markerId: string) => void;
 	showUserLocation?: boolean;
 	followUserLocation?: boolean;
+	children?: ReactNode;
 }
 
 const MapViewComponent = forwardRef<MapViewRef, MapViewComponentProps>(
@@ -34,6 +36,7 @@ const MapViewComponent = forwardRef<MapViewRef, MapViewComponentProps>(
 			onMarkerPress,
 			showUserLocation = true,
 			followUserLocation = false,
+			children,
 		},
 		ref
 	) => {
@@ -95,6 +98,7 @@ const MapViewComponent = forwardRef<MapViewRef, MapViewComponentProps>(
 						onPress={() => handleMarkerPress(marker.id)}
 					/>
 				))}
+				{children}
 			</MapView>
 		);
 	}

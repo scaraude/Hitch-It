@@ -4,7 +4,7 @@
 
 Transform the existing map search feature into a full navigation experience that integrates with the journey recording system. When a user searches for a destination, they can start a guided navigation that automatically begins a journey recording and displays the optimal hitchhiking route with relevant spots.
 
-**Status**: 🔴 Not Started
+**Status**: 🟡 In Progress (Implementation complete, testing pending)
 **Priority**: High (Foundation for hitchhiking experience)
 **Complexity**: High
 **Dependencies**:
@@ -956,10 +956,10 @@ export function HomeScreen() {
 **Goal**: Calculate routes and manage navigation state
 
 **Tasks**:
-- [ ] Ticket 1: Routing Service (ORS integration)
-- [ ] Ticket 2: Route-Spot Matcher
-- [ ] Ticket 3: Navigation Context
-- [ ] Ticket 11: Environment Setup
+- [x] Ticket 1: Routing Service (ORS integration)
+- [x] Ticket 2: Route-Spot Matcher
+- [x] Ticket 3: Navigation Context
+- [x] Ticket 11: Environment Setup
 
 **Deliverable**: Can calculate route, no UI yet
 
@@ -969,10 +969,11 @@ export function HomeScreen() {
 **Goal**: Show destination marker, route, and navigation header
 
 **Tasks**:
-- [ ] Ticket 4: Destination Marker
-- [ ] Ticket 5: Route Polyline
-- [ ] Ticket 6: Spots on Route Markers
-- [ ] Ticket 7: Navigation Header
+- [x] Ticket 4: Destination Marker
+- [x] Ticket 4.5: Start Navigation Button
+- [x] Ticket 5: Route Polyline
+- [x] Ticket 6: Spots on Route Markers
+- [x] Ticket 7: Navigation Header
 
 **Deliverable**: Visual navigation experience working
 
@@ -982,8 +983,8 @@ export function HomeScreen() {
 **Goal**: Detect arrival and handle journey completion
 
 **Tasks**:
-- [ ] Ticket 8: Arrival Detection Hook
-- [ ] Ticket 9: Navigation Complete Sheet
+- [x] Ticket 8: Arrival Detection Hook
+- [x] Ticket 9: Navigation Complete Sheet
 
 **Deliverable**: Full navigation → arrival → save flow
 
@@ -993,7 +994,7 @@ export function HomeScreen() {
 **Goal**: Wire everything together and polish
 
 **Tasks**:
-- [ ] Ticket 10: HomeScreen Integration
+- [x] Ticket 10: HomeScreen Integration
 - [ ] Ticket 12: Testing & Polish
 
 **Deliverable**: Production-ready feature

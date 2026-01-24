@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
@@ -11,6 +11,7 @@ import {
 	MapViewComponent,
 	type MapViewRef,
 } from '../components';
+import { toastUtils } from '../components/ui';
 import { COLORS, SPACING } from '../constants';
 import { useLocation } from '../hooks';
 import {
@@ -18,7 +19,19 @@ import {
 	JourneyRecordingButton,
 	MarkStopButton,
 } from '../journey/components';
-import { JourneyProvider } from '../journey/context';
+import { JourneyProvider, useJourney } from '../journey/context';
+import {
+	DestinationMarker,
+	NavigationCompleteSheet,
+	NavigationHeader,
+	RoutePolyline,
+	StartNavigationButton,
+} from '../navigation/components';
+import {
+	NavigationProvider,
+	useNavigation,
+} from '../navigation/context/NavigationContext';
+import { useArrivalDetection } from '../navigation/hooks';
 import {
 	CreateSpotButton,
 	SpotDetailsSheet,
@@ -34,12 +47,51 @@ interface HomeScreenContentProps {
 	onRegionChange: (region: MapRegion) => void;
 }
 
+/**
+ * Calculate map bounds that fit the entire route
+ */
+function calculateRouteBounds(
+	polyline: Array<{ latitude: number; longitude: number }>
+): MapRegion {
+	if (polyline.length === 0) {
+		return {
+			latitude: 0,
+			longitude: 0,
+			latitudeDelta: 0.1,
+			longitudeDelta: 0.1,
+		};
+	}
+
+	let minLat = polyline[0].latitude;
+	let maxLat = polyline[0].latitude;
+	let minLng = polyline[0].longitude;
+	let maxLng = polyline[0].longitude;
+
+	for (const point of polyline) {
+		minLat = Math.min(minLat, point.latitude);
+		maxLat = Math.max(maxLat, point.latitude);
+		minLng = Math.min(minLng, point.longitude);
+		maxLng = Math.max(maxLng, point.longitude);
+	}
+
+	const latDelta = (maxLat - minLat) * 1.3; // Add 30% padding
+	const lngDelta = (maxLng - minLng) * 1.3;
+
+	return {
+		latitude: (minLat + maxLat) / 2,
+		longitude: (minLng + maxLng) / 2,
+		latitudeDelta: Math.max(latDelta, 0.01),
+		longitudeDelta: Math.max(lngDelta, 0.01),
+	};
+}
+
 const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 	onRegionChange,
 }) => {
-	const { currentRegion, locationLoading } = useLocation();
+	const { userLocation, currentRegion, locationLoading } = useLocation();
 	const {
 		spots,
+		fullSpots,
 		selectedSpot,
 		isPlacingSpot,
 		isShowingForm,
@@ -51,8 +103,28 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 		selectSpot,
 		deselectSpot,
 	} = useSpotContext();
+
+	const { navigation, setDestination, startNavigation, stopNavigation } =
+		useNavigation();
+
+	const { startRecording, stopRecording, isRecording } = useJourney();
+
 	const [mapRegion, setMapRegion] = useState<MapRegion>(currentRegion);
+	const [isNavigationLoading, setIsNavigationLoading] = useState(false);
+	const [showCompletionSheet, setShowCompletionSheet] = useState(false);
+	const [journeyStartTime, setJourneyStartTime] = useState<Date | null>(null);
+
 	const mapViewRef = useRef<MapViewRef>(null);
+
+	// Arrival detection
+	const { hasArrived } = useArrivalDetection(navigation.route, userLocation);
+
+	// Handle arrival
+	useEffect(() => {
+		if (hasArrived && navigation.isActive) {
+			setShowCompletionSheet(true);
+		}
+	}, [hasArrived, navigation.isActive]);
 
 	const handleRegionChange = (region: MapRegion) => {
 		setMapRegion(region);
@@ -68,6 +140,10 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 	};
 
 	const handleLocationSelected = (location: Location, name: string) => {
+		// Set destination marker
+		setDestination(location, name);
+
+		// Animate map to show destination
 		const region: MapRegion = {
 			latitude: location.latitude,
 			longitude: location.longitude,
@@ -76,12 +152,113 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 		};
 
 		mapViewRef.current?.animateToRegion(region, 1000);
-		logger.navigation.info(`Map navigated to ${name}`);
+		logger.navigation.info(`Destination set: ${name}`);
 	};
 
+	const handleStartNavigation = async () => {
+		if (!userLocation) {
+			toastUtils.error(
+				'Position inconnue',
+				'Impossible de démarrer la navigation'
+			);
+			return;
+		}
+
+		setIsNavigationLoading(true);
+
+		const result = await startNavigation(userLocation, fullSpots);
+
+		if (!result.success) {
+			setIsNavigationLoading(false);
+			toastUtils.error('Erreur', result.message);
+			return;
+		}
+
+		// Start journey recording
+		const journeyStarted = await startRecording();
+		if (journeyStarted) {
+			setJourneyStartTime(new Date());
+			logger.navigation.info('Journey recording started with navigation');
+		}
+
+		setIsNavigationLoading(false);
+	};
+
+	// Fit map to route after navigation starts
+	useEffect(() => {
+		if (navigation.isActive && navigation.route) {
+			const routeBounds = calculateRouteBounds(navigation.route.polyline);
+			mapViewRef.current?.animateToRegion(routeBounds, 1000);
+		}
+	}, [navigation.isActive, navigation.route]);
+
+	const handleStopNavigation = async () => {
+		stopNavigation();
+
+		if (isRecording) {
+			await stopRecording();
+			setJourneyStartTime(null);
+		}
+
+		logger.navigation.info('Navigation and journey recording stopped');
+	};
+
+	const handleSaveJourney = async () => {
+		setShowCompletionSheet(false);
+		stopNavigation();
+
+		if (isRecording) {
+			await stopRecording();
+		}
+
+		toastUtils.success('Voyage sauvegardé', 'Votre voyage a été enregistré');
+		setJourneyStartTime(null);
+	};
+
+	const handleDiscardJourney = async () => {
+		setShowCompletionSheet(false);
+		stopNavigation();
+
+		if (isRecording) {
+			await stopRecording();
+		}
+
+		setJourneyStartTime(null);
+	};
+
+	// Filter spots: only show spots on route during navigation
+	const visibleSpots = navigation.isActive
+		? spots.filter(spot =>
+				navigation.spotsOnRoute.some(s => s.spot.id === spot.id)
+			)
+		: spots;
+
+	// Calculate journey duration
+	const journeyDurationMinutes = journeyStartTime
+		? Math.round((Date.now() - journeyStartTime.getTime()) / 60000)
+		: 0;
+
+	// Hide journey overlay and other buttons during navigation
+	const showJourneyOverlay = FEATURE_JOURNEY_ENABLED && !navigation.isActive;
+	const showCreateSpotButton =
+		!isPlacingSpot &&
+		!isShowingForm &&
+		!navigation.isActive &&
+		!navigation.destinationMarker;
+
 	return (
-		<SafeAreaView style={styles.container}>
-			<Header title="Hitch It" />
+		<SafeAreaView style={styles.container} edges={['left', 'right']}>
+			{/* Navigation header (only when active) */}
+			{navigation.isActive && navigation.route && (
+				<NavigationHeader
+					destinationName={navigation.route.destinationName}
+					distanceKm={navigation.route.distanceKm}
+					onStop={handleStopNavigation}
+				/>
+			)}
+
+			{/* Regular header (only when not navigating) */}
+			{!navigation.isActive && <Header title="Hitch It" />}
 
 			<View style={styles.mapContainer}>
 				{locationLoading ? (
@@ -91,10 +268,22 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 						<MapViewComponent
 							ref={mapViewRef}
 							initialRegion={currentRegion}
-							markers={spots}
+							markers={visibleSpots}
 							onRegionChange={handleRegionChange}
 							onMarkerPress={handleMarkerPress}
-						/>
+						>
+							{/* Destination marker (before navigation starts) */}
+							{navigation.destinationMarker && (
+								<DestinationMarker
+									location={navigation.destinationMarker.location}
+									name={navigation.destinationMarker.name}
+								/>
+							)}
+
+							{/* Route polyline (during navigation) */}
+							{navigation.route && <RoutePolyline route={navigation.route} />}
+						</MapViewComponent>
+
 						{isPlacingSpot && (
 							<View style={styles.centerMarker}>
 								<View style={styles.markerPin} />
@@ -103,9 +292,20 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 					</>
 				)}
 
-				<MapSearchBar onLocationSelected={handleLocationSelected} />
+				{/* Search bar (hidden during navigation) */}
+				{!navigation.isActive && (
+					<MapSearchBar onLocationSelected={handleLocationSelected} />
+				)}
 
-				{FEATURE_JOURNEY_ENABLED && (
+				{/* Start navigation button (when destination is set) */}
+				{navigation.destinationMarker && !navigation.isActive && (
+					<StartNavigationButton
+						onPress={handleStartNavigation}
+						isLoading={isNavigationLoading}
+					/>
+				)}
+
+				{showJourneyOverlay && (
 					<View style={styles.journeyOverlay}>
 						<View style={styles.journeyTopRow}>
 							<ActiveJourneyIndicator />
@@ -123,7 +323,7 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 					onConfirm={onConfirmSpotPlacement}
 					onCancel={cancelSpotPlacement}
 				/>
-			) : !isShowingForm ? (
+			) : showCreateSpotButton ? (
 				<CreateSpotButton onPress={startPlacingSpot} />
 			) : null}
 
@@ -133,6 +333,17 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 
 			{selectedSpot && !isShowingForm && (
 				<SpotDetailsSheet spot={selectedSpot} onClose={deselectSpot} />
+			)}
+
+			{/* Navigation complete sheet */}
+			{showCompletionSheet && navigation.route && (
+				<NavigationCompleteSheet
+					route={navigation.route}
+					spotsUsed={navigation.spotsOnRoute}
+					durationMinutes={journeyDurationMinutes}
+					onSave={handleSaveJourney}
+					onDiscard={handleDiscardJourney}
+				/>
 			)}
 
 			<Toast />
@@ -155,11 +366,12 @@ const HomeScreen: React.FC = () => {
 		</SpotProvider>
 	);
 
-	if (FEATURE_JOURNEY_ENABLED) {
-		return <JourneyProvider>{content}</JourneyProvider>;
-	}
-
-	return content;
+	// Wrap with both JourneyProvider and NavigationProvider
+	return (
+		<JourneyProvider>
+			<NavigationProvider>{content}</NavigationProvider>
+		</JourneyProvider>
+	);
 };
 
 const styles = StyleSheet.create({
