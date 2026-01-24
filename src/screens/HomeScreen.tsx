@@ -12,13 +12,8 @@ import {
 	type MapViewRef,
 } from '../components';
 import { toastUtils } from '../components/ui';
-import { COLORS, SPACING } from '../constants';
+import { COLORS } from '../constants';
 import { useLocation } from '../hooks';
-import {
-	ActiveJourneyIndicator,
-	JourneyRecordingButton,
-	MarkStopButton,
-} from '../journey/components';
 import { JourneyProvider, useJourney } from '../journey/context';
 import {
 	DestinationMarker,
@@ -40,8 +35,6 @@ import {
 import { SpotProvider, useSpotContext } from '../spot/context';
 import type { Location, MapBounds, MapRegion } from '../types';
 import { calculateZoomLevel, logger, regionToBounds } from '../utils';
-
-const FEATURE_JOURNEY_ENABLED = true;
 
 interface HomeScreenContentProps {
 	onRegionChange: (region: MapRegion) => void;
@@ -174,7 +167,7 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 			return;
 		}
 
-		// Start journey recording
+		// Start journey recording in background
 		const journeyStarted = await startRecording();
 		if (journeyStarted) {
 			setJourneyStartTime(new Date());
@@ -238,8 +231,6 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 		? Math.round((Date.now() - journeyStartTime.getTime()) / 60000)
 		: 0;
 
-	// Hide journey overlay and other buttons during navigation
-	const showJourneyOverlay = FEATURE_JOURNEY_ENABLED && !navigation.isActive;
 	const showCreateSpotButton =
 		!isPlacingSpot &&
 		!isShowingForm &&
@@ -303,18 +294,6 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 						onPress={handleStartNavigation}
 						isLoading={isNavigationLoading}
 					/>
-				)}
-
-				{showJourneyOverlay && (
-					<View style={styles.journeyOverlay}>
-						<View style={styles.journeyTopRow}>
-							<ActiveJourneyIndicator />
-							<MarkStopButton />
-						</View>
-						<View style={styles.journeyBottomRow}>
-							<JourneyRecordingButton />
-						</View>
-					</View>
 				)}
 			</View>
 
@@ -397,33 +376,6 @@ const styles = StyleSheet.create({
 		borderRadius: 12,
 		borderWidth: 3,
 		borderColor: COLORS.background,
-	},
-	journeyOverlay: {
-		position: 'absolute',
-		top: 0,
-		left: 0,
-		right: 0,
-		bottom: 0,
-		pointerEvents: 'box-none',
-		zIndex: 500,
-	},
-	journeyTopRow: {
-		position: 'absolute',
-		top: SPACING.md,
-		left: SPACING.md,
-		right: SPACING.md,
-		flexDirection: 'row',
-		justifyContent: 'space-between',
-		alignItems: 'flex-start',
-		pointerEvents: 'box-none',
-	},
-	journeyBottomRow: {
-		position: 'absolute',
-		bottom: SPACING.xxl,
-		left: 0,
-		right: 0,
-		alignItems: 'center',
-		pointerEvents: 'box-none',
 	},
 });
 
