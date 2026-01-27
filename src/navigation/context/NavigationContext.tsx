@@ -1,6 +1,7 @@
 import type React from 'react';
 import { createContext, useCallback, useContext, useState } from 'react';
-import type { Spot } from '../../spot/types';
+import { getSpotsInBounds } from '../../spot/services';
+import type { MapBounds } from '../../types';
 import { logger } from '../../utils/logger';
 import { findSpotsAlongRoute } from '../services/routeSpotMatcher';
 import { calculateRoute, type RoutingError } from '../services/routingService';
@@ -12,13 +13,44 @@ import {
 	type SpotOnRoute,
 } from '../types';
 
+/**
+ * Calculate bounding box for a route polyline with padding for spot search
+ */
+function calculateRouteBounds(
+	polyline: Array<{ latitude: number; longitude: number }>
+): MapBounds {
+	if (polyline.length === 0) {
+		return { north: 0, south: 0, east: 0, west: 0 };
+	}
+
+	let minLat = polyline[0].latitude;
+	let maxLat = polyline[0].latitude;
+	let minLng = polyline[0].longitude;
+	let maxLng = polyline[0].longitude;
+
+	for (const point of polyline) {
+		minLat = Math.min(minLat, point.latitude);
+		maxLat = Math.max(maxLat, point.latitude);
+		minLng = Math.min(minLng, point.longitude);
+		maxLng = Math.max(maxLng, point.longitude);
+	}
+
+	// Add ~1km padding (roughly 0.01 degrees) to catch nearby spots
+	const padding = 0.01;
+	return {
+		north: maxLat + padding,
+		south: minLat - padding,
+		east: maxLng + padding,
+		west: minLng - padding,
+	};
+}
+
 interface NavigationContextValue {
 	navigation: NavigationState;
 	setDestination: (location: RoutePoint, name: string) => void;
 	clearDestination: () => void;
 	startNavigation: (
-		userLocation: RoutePoint,
-		allSpots: Spot[]
+		userLocation: RoutePoint
 	) => Promise<
 		{ success: true } | { success: false; error: RoutingError; message: string }
 	>;
@@ -51,8 +83,7 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({
 
 	const startNavigation = useCallback(
 		async (
-			userLocation: RoutePoint,
-			allSpots: Spot[]
+			userLocation: RoutePoint
 		): Promise<
 			| { success: true }
 			| { success: false; error: RoutingError; message: string }
@@ -83,7 +114,24 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({
 				return result;
 			}
 
-			const spotsOnRoute = findSpotsAlongRoute(result.route, allSpots);
+			// Calculate route bounding box to fetch all spots along the route
+			const routeBounds = calculateRouteBounds(result.route.polyline);
+			logger.navigation.debug('Fetching spots for route bounds', {
+				...routeBounds,
+			});
+
+			let spotsOnRoute: SpotOnRoute[] = [];
+			try {
+				const spotsInRouteBounds = await getSpotsInBounds(routeBounds);
+				spotsOnRoute = findSpotsAlongRoute(result.route, spotsInRouteBounds);
+				logger.navigation.info('Spots found along route', {
+					spotsInBounds: spotsInRouteBounds.length,
+					spotsOnRoute: spotsOnRoute.length,
+				});
+			} catch (error) {
+				logger.navigation.error('Failed to fetch spots for route', error);
+				// Continue navigation even if spots fail to load
+			}
 
 			setNavigation({
 				isActive: true,

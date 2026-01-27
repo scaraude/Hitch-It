@@ -8,6 +8,7 @@ Transform the existing map search feature into a full navigation experience that
 **Priority**: High (Foundation for hitchhiking experience)
 **Complexity**: High
 **Dependencies**:
+
 - ✅ Map Search (FEATURE_MAP_SEARCH_NAVIGATION)
 - ✅ Journey Recording (F11 in FEATURES_IMPLEMENTATION_PLAN)
 
@@ -18,6 +19,7 @@ Transform the existing map search feature into a full navigation experience that
 > **As a hitchhiker**, I want to search for my destination, see a hitchhiking route with relevant spots, and have my journey automatically recorded so I can focus on getting rides without manual tracking.
 
 **Flow**:
+
 1. User searches for "Bayonne" using existing search
 2. Temporary marker appears at destination + full-width "Embarquer" button at bottom
 3. User taps button → Route appears (blue path, only spots on route visible)
@@ -34,6 +36,7 @@ Transform the existing map search feature into a full navigation experience that
 ### Visual States
 
 #### 1. Search Result State (New)
+
 ```
 Map View:
 ┌─────────────────────────────────────┐
@@ -51,17 +54,20 @@ Map View:
 ```
 
 **Button Details**:
+
 - Text: "🧭 Embarquer" (or "C'est parti !" / "En route")
 - Position: Bottom of screen, full-width minus margins
 - Style: Primary button (COLORS.primary background)
 
 **Marker Name Logic** (Keep it simple):
+
 - Shows the exact search query as marker name
 - Example: "Lyon" → Marker name: "Lyon"
 - Example: "1 cours gambetta, Lyon" → Marker name: "1 cours gambetta, Lyon"
 - No processing needed, just display `searchQuery` directly
 
 #### 2. Navigation Active State
+
 ```
 ┌─────────────────────────────────────┐
 │ 🧭 Vers Bayonne              [Stop] │ ← Navigation header
@@ -81,12 +87,14 @@ Map View:
 ```
 
 **IMPORTANT - Spot Visibility**:
+
 - ✅ ONLY show spots that are on the route (within 500m)
 - ✅ All other spots disappear from map
 - ✅ Keep it simple: just filter spots before rendering
 - ✅ Spots use existing marker style (no highlighting/size changes)
 
 #### 3. Arrival / Stop Detection
+
 ```
 ┌─────────────────────────────────────┐
 │   Navigation terminée ! 🎉          │
@@ -146,10 +154,12 @@ src/
 **Goal**: Calculate optimal route between two points using a routing API.
 
 **API Choice**: **OpenRouteService** (Free tier: 2000 requests/day)
+
 - Alternative: Mapbox Directions (500K requests/month free)
 - Fallback: Photon doesn't do routing, only geocoding
 
 **Implementation**:
+
 ```typescript
 // src/navigation/types.ts
 export interface RoutePoint {
@@ -162,20 +172,21 @@ export interface NavigationRoute {
   origin: RoutePoint;
   destination: RoutePoint;
   destinationName: string;
-  polyline: RoutePoint[];        // Array of coordinates for path
+  polyline: RoutePoint[]; // Array of coordinates for path
   distanceKm: number;
   durationMinutes: number;
   createdAt: Date;
 }
 
 // src/navigation/services/routingService.ts
-const ORS_API_URL = 'https://api.openrouteservice.org/v2/directions/driving-car';
+const ORS_API_URL =
+  "https://api.openrouteservice.org/v2/directions/driving-car";
 const ORS_API_KEY = process.env.EXPO_PUBLIC_ORS_API_KEY; // Add to .env
 
 export async function calculateRoute(
   origin: RoutePoint,
   destination: RoutePoint,
-  destinationName: string
+  destinationName: string,
 ): Promise<NavigationRoute> {
   // POST to OpenRouteService with coordinates
   // Parse GeoJSON response
@@ -187,21 +198,25 @@ export async function calculateRoute(
 ```
 
 **Error Handling**:
+
 - API rate limit → Show toast: "Trop de requêtes, réessayez dans 1 minute"
 - Network error → Show toast: "Impossible de calculer l'itinéraire (hors ligne ?)"
 - Invalid coordinates → Log error, return null
 
 **Testing**:
-- [ ] Test with Bordeaux → Bayonne
-- [ ] Test with very close points (<1km)
-- [ ] Test with very far points (>1000km)
+
+- [x] Test with Bordeaux → Bayonne
+- [x] Test with very close points (<1km)
+- [x] Test with very far points (>1000km)
 - [ ] Test error handling (offline mode)
 
 **Dependencies**:
+
 - Need OpenRouteService API key (free signup)
 - Add `EXPO_PUBLIC_ORS_API_KEY` to `.env`
 
 **Acceptance Criteria**:
+
 - ✅ Returns valid route with polyline coordinates
 - ✅ Distance and duration are reasonable
 - ✅ Handles errors gracefully (no crashes)
@@ -217,12 +232,13 @@ export async function calculateRoute(
 **Goal**: Find all spots within X meters of the calculated route.
 
 **Algorithm**:
+
 ```typescript
 // src/navigation/types.ts
 export interface SpotOnRoute {
   spot: Spot;
   distanceFromRouteMeters: number;
-  closestRoutePointIndex: number;  // Which route point it's near
+  closestRoutePointIndex: number; // Which route point it's near
 }
 
 // src/navigation/services/routeSpotMatcher.ts
@@ -230,7 +246,7 @@ const MAX_DISTANCE_FROM_ROUTE_METERS = 500; // 500m buffer
 
 export function findSpotsAlongRoute(
   route: NavigationRoute,
-  allSpots: Spot[]
+  allSpots: Spot[],
 ): SpotOnRoute[] {
   // For each spot:
   //   1. Calculate distance to route (point-to-polyline)
@@ -243,7 +259,7 @@ export function findSpotsAlongRoute(
 function distanceToLineSegment(
   point: RoutePoint,
   lineStart: RoutePoint,
-  lineEnd: RoutePoint
+  lineEnd: RoutePoint,
 ): number {
   // Haversine formula for geographic distance
   // Return distance in meters
@@ -251,18 +267,21 @@ function distanceToLineSegment(
 ```
 
 **Optimization**:
+
 - Don't check every route point (too slow for long routes)
 - Sample route points every ~1km
 - Use bounding box pre-filter to reduce spot candidates
 
 **Testing**:
-- [ ] Spot exactly on route → distance ≈ 0
-- [ ] Spot 200m from route → included
-- [ ] Spot 1000m from route → excluded
-- [ ] Route with no nearby spots → empty array
+
+- [x] Spot exactly on route → distance ≈ 0
+- [x] Spot 200m from route → included
+- [x] Spot 1000m from route → excluded
+- [x] Route with no nearby spots → empty array
 - [ ] Performance with 100+ spots
 
 **Acceptance Criteria**:
+
 - ✅ Finds spots within 500m of route
 - ✅ Spots are sorted by route progression
 - ✅ Fast (<100ms for 100 spots, 100km route)
@@ -277,13 +296,14 @@ function distanceToLineSegment(
 **Goal**: Manage navigation state (route, active/inactive, destination).
 
 **State**:
+
 ```typescript
 // src/navigation/types.ts
 export interface NavigationState {
   isActive: boolean;
   route: NavigationRoute | null;
   spotsOnRoute: SpotOnRoute[];
-  destinationMarker: DestinationMarker | null;  // Before navigation starts
+  destinationMarker: DestinationMarker | null; // Before navigation starts
 }
 
 export interface DestinationMarker {
@@ -305,11 +325,15 @@ interface NavigationContextValue {
 
 export function NavigationProvider({ children }: { children: ReactNode }) {
   const [navigation, setNavigation] = useState<NavigationState>(INITIAL_STATE);
-  const { startRecording } = useJourney();  // Integrate with journey
+  const { startRecording } = useJourney(); // Integrate with journey
 
   const startNavigation = async (userLocation: RoutePoint) => {
     // 1. Calculate route
-    const route = await calculateRoute(userLocation, destination, destinationName);
+    const route = await calculateRoute(
+      userLocation,
+      destination,
+      destinationName,
+    );
 
     // 2. Find spots along route
     const spotsOnRoute = findSpotsAlongRoute(route, allSpots);
@@ -319,7 +343,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
       isActive: true,
       route,
       spotsOnRoute,
-      destinationMarker: null,  // Clear temporary marker
+      destinationMarker: null, // Clear temporary marker
     });
 
     // 4. Start journey recording
@@ -330,7 +354,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
 
   const stopNavigation = () => {
     setNavigation(INITIAL_STATE);
-    logger.info('Navigation stopped');
+    logger.info("Navigation stopped");
   };
 
   // ... other actions
@@ -338,6 +362,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
 ```
 
 **Integration Points**:
+
 - ✅ Calls `JourneyContext.startRecording()` when navigation starts
 - ✅ Journey management on stop:
   - **If arrived at destination**: Stop journey recording immediately
@@ -347,6 +372,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
 - ✅ Provides route data to map components
 
 **Acceptance Criteria**:
+
 - ✅ `startNavigation()` calculates route and starts journey
 - ✅ `stopNavigation()` clears state
 - ✅ No memory leaks (cleanup on unmount)
@@ -361,6 +387,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
 **Goal**: Show simple marker at searched location. Button is separate, at bottom of screen.
 
 **UI**:
+
 ```typescript
 interface DestinationMarkerProps {
   location: RoutePoint;
@@ -379,16 +406,19 @@ export function DestinationMarker({ location, name }: DestinationMarkerProps) {
 ```
 
 **Keep it simple**:
+
 - Just a standard marker with the search query as title
 - No custom callout or button (button is separate component)
 - Use default green pin color for destination
 - Name = exact search query (no processing)
 
 **Behavior**:
+
 - Appears when user selects a search result
 - Disappears when navigation starts (replaced by route + destination marker)
 
 **Acceptance Criteria**:
+
 - ✅ Marker appears at correct coordinates
 - ✅ Marker title shows exact search query
 - ✅ Marker disappears after navigation starts
@@ -403,6 +433,7 @@ export function DestinationMarker({ location, name }: DestinationMarkerProps) {
 **Goal**: Full-width button at bottom of screen to start navigation.
 
 **UI**:
+
 ```typescript
 interface StartNavigationButtonProps {
   destinationName: string;
@@ -447,17 +478,20 @@ const styles = StyleSheet.create({
 ```
 
 **Positioning**:
+
 - Position: Absolute, bottom of screen
 - Margins: 16px left/right
 - Bottom: 20px from screen edge
 - Z-index: 100 (above map, below search bar)
 
 **Behavior**:
+
 - Only visible when `navigation.destinationMarker !== null`
 - Disappears when navigation starts
 - Triggers `startNavigation()` on press
 
 **Acceptance Criteria**:
+
 - ✅ Full-width minus margins (32px total horizontal padding)
 - ✅ Positioned at bottom of screen
 - ✅ Uses COLORS.primary background
@@ -473,6 +507,7 @@ const styles = StyleSheet.create({
 **Goal**: Draw light blue path from user location to destination.
 
 **Implementation**:
+
 ```typescript
 import { Polyline } from 'react-native-maps';
 
@@ -497,11 +532,13 @@ export function RoutePolyline({ route }: RoutePolylineProps) {
 ```
 
 **Visual Requirements**:
+
 - Light blue color (not too bright, not too dark)
 - Visible above map but below markers
 - Smooth curves (use `lineCap="round"`)
 
 **Acceptance Criteria**:
+
 - ✅ Path follows route accurately
 - ✅ Color is distinguishable from map
 - ✅ Doesn't obscure important markers
@@ -516,6 +553,7 @@ export function RoutePolyline({ route }: RoutePolylineProps) {
 **Goal**: Only show spots on route during navigation. Hide all others.
 
 **Implementation** (in HomeScreen):
+
 ```typescript
 // Simple filtering logic
 const visibleSpots = navigation.isActive
@@ -531,6 +569,7 @@ const visibleSpots = navigation.isActive
 ```
 
 **Keep it simple**:
+
 - ✅ During navigation: Filter spots to only show those on route
 - ✅ Outside navigation: Show all spots
 - ✅ Use existing `SpotMarker` component (no styling changes)
@@ -538,6 +577,7 @@ const visibleSpots = navigation.isActive
 - ✅ Just simple filtering before rendering
 
 **Acceptance Criteria**:
+
 - ✅ Only on-route spots visible during navigation
 - ✅ All spots visible when not navigating
 - ✅ Spots use existing marker component (no new code)
@@ -553,6 +593,7 @@ const visibleSpots = navigation.isActive
 **Goal**: Top bar showing destination and stop button during navigation.
 
 **UI**:
+
 ```typescript
 interface NavigationHeaderProps {
   destinationName: string;
@@ -577,16 +618,19 @@ export function NavigationHeader({ destinationName, distanceRemainingKm, onStop 
 ```
 
 **Behavior**:
+
 - Shows only when `navigation.isActive === true`
 - Positioned at top of screen (above search bar)
 - Stop button → calls `stopNavigation()` + asks for confirmation
 
 **Styling**:
+
 - Background: Semi-transparent white with shadow
 - Use `COLORS.primary` for text
 - Stop button: Red text, destructive style
 
 **Acceptance Criteria**:
+
 - ✅ Appears when navigation starts
 - ✅ Shows correct destination name
 - ✅ Stop button stops navigation
@@ -601,10 +645,11 @@ export function NavigationHeader({ destinationName, distanceRemainingKm, onStop 
 **Goal**: Detect when user arrives at destination or stops navigation prematurely.
 
 **Algorithm**:
+
 ```typescript
 export function useArrivalDetection(
   route: NavigationRoute | null,
-  userLocation: Location | null
+  userLocation: Location | null,
 ): {
   hasArrived: boolean;
   distanceToDestinationMeters: number;
@@ -614,10 +659,7 @@ export function useArrivalDetection(
   useEffect(() => {
     if (!route || !userLocation) return;
 
-    const distance = calculateDistance(
-      userLocation,
-      route.destination
-    );
+    const distance = calculateDistance(userLocation, route.destination);
 
     // Arrived if within 200m of destination
     if (distance < 200) {
@@ -631,20 +673,24 @@ export function useArrivalDetection(
 ```
 
 **Arrival Criteria**:
+
 - User is within **200 meters** of destination
 - OR user manually stops navigation (button press)
 
 **Behavior on Arrival**:
+
 1. Trigger haptic feedback (success vibration)
 2. Stop journey recording
 3. Show `NavigationCompleteSheet`
 
 **Edge Cases**:
+
 - User stops navigation mid-journey → Ask "Journey incomplete, save anyway?"
 - GPS inaccurate (>100m error) → Don't falsely trigger arrival
 - User passes destination → Still detect arrival
 
 **Acceptance Criteria**:
+
 - ✅ Detects arrival within 200m
 - ✅ Triggers completion flow
 - ✅ No false positives from GPS jitter
@@ -658,6 +704,7 @@ export function useArrivalDetection(
 **Goal**: Bottom sheet asking user to save journey and register spots.
 
 **UI**:
+
 ```typescript
 interface NavigationCompleteSheetProps {
   journey: Journey;
@@ -705,11 +752,13 @@ export function NavigationCompleteSheet({
 ```
 
 **Behavior**:
+
 - Appears automatically on arrival detection
 - "Oui, sauvegarder" → Saves journey + links spots → Navigate to journey review (F12)
 - "Non merci" → Discards journey → Returns to normal map view
 
 **Journey Validity Check**:
+
 ```typescript
 function isJourneyValid(journey: Journey): boolean {
   // Valid if:
@@ -725,6 +774,7 @@ function isJourneyValid(journey: Journey): boolean {
 ```
 
 **Acceptance Criteria**:
+
 - ✅ Shows journey stats (duration, distance)
 - ✅ Shows spots discovered count
 - ✅ Save button works (integrates with F12)
@@ -740,6 +790,7 @@ function isJourneyValid(journey: Journey): boolean {
 **Goal**: Wire up all navigation components and orchestrate the flow.
 
 **Changes**:
+
 ```typescript
 export function HomeScreen() {
   const mapViewRef = useRef<MapViewRef>(null);
@@ -840,6 +891,7 @@ export function HomeScreen() {
 ```
 
 **Z-Index Layering** (top → bottom):
+
 1. NavigationHeader (z: 2000)
 2. MapSearchBar (z: 1000)
 3. NavigationCompleteSheet (z: 900)
@@ -847,6 +899,7 @@ export function HomeScreen() {
 5. MapView (z: 0)
 
 **Acceptance Criteria**:
+
 - ✅ Search → Destination marker → Start navigation → Route appears
 - ✅ Journey recording starts automatically
 - ✅ Arrival detection triggers completion sheet
@@ -862,6 +915,7 @@ export function HomeScreen() {
 **Goal**: Add OpenRouteService API key for routing.
 
 **Steps**:
+
 1. Sign up at https://openrouteservice.org/dev/#/signup
 2. Get free API key (2000 requests/day)
 3. Add to `.env`:
@@ -875,15 +929,18 @@ export function HomeScreen() {
 5. Update [AGENTS.md](AGENTS.md) with API setup instructions
 
 **Rate Limits**:
+
 - Free tier: 2000 requests/day
 - 40 requests/minute
 - Sufficient for MVP (each navigation = 1 request)
 
 **Fallback**:
+
 - If rate limit hit → Show toast: "Limite atteinte, réessayez plus tard"
 - Don't crash app
 
 **Acceptance Criteria**:
+
 - ✅ API key stored securely in .env
 - ✅ Not committed to git (.env in .gitignore)
 - ✅ Documentation updated
@@ -895,20 +952,22 @@ export function HomeScreen() {
 **Manual Testing Checklist**:
 
 **Navigation Flow**:
-- [ ] Search "Bayonne" → Marker appears at Bayonne
-- [ ] Tap "Embarquer" → Route appears, journey starts
-- [ ] Route is visible (light blue path)
-- [ ] Spots on route are highlighted
-- [ ] Navigation header shows "Vers Bayonne"
-- [ ] Journey indicator shows recording status
+
+- [x] Search "Bayonne" → Marker appears at Bayonne
+- [x] Tap "Embarquer" → Route appears, journey starts
+- [x] Route is visible (light blue path)
+- [x] Spots on route are highlighted
+- [x] Navigation header shows "Vers Bayonne"
 
 **Arrival Detection**:
+
 - [ ] Mock GPS location near destination (Xcode/Android Studio)
 - [ ] Arrival triggers when <200m from destination
 - [ ] Haptic feedback on arrival
 - [ ] Completion sheet appears
 
 **Edge Cases**:
+
 - [ ] Stop navigation mid-journey → Journey saves as "incomplete"
 - [ ] Network offline → Routing fails gracefully with toast
 - [ ] API rate limit → Shows error toast
@@ -916,6 +975,7 @@ export function HomeScreen() {
 - [ ] Very long route (>500km) → Renders without lag
 
 **Code Quality**:
+
 - [ ] `pnpm lint` passes (Biome)
 - [ ] `npx tsc --noEmit` passes (TypeScript)
 - [ ] No `any` types
@@ -923,12 +983,14 @@ export function HomeScreen() {
 - [ ] No unused imports/variables
 
 **Performance**:
+
 - [ ] Route calculation <2s
 - [ ] Spot matching <100ms
 - [ ] Map rendering smooth (60 FPS)
 - [ ] No memory leaks (test 10 navigations)
 
 **Acceptance Criteria**:
+
 - ✅ All manual tests pass
 - ✅ Code quality checks pass
 - ✅ No performance issues
@@ -939,12 +1001,15 @@ export function HomeScreen() {
 ## 📦 Dependencies
 
 ### New Dependencies
+
 - **None** (OpenRouteService uses `fetch`, already available)
 
 ### Environment Variables
+
 - `EXPO_PUBLIC_ORS_API_KEY` - OpenRouteService API key (free)
 
 ### External Services
+
 - **OpenRouteService** - Route calculation (Free: 2000 req/day)
   - Docs: https://openrouteservice.org/dev/#/api-docs/v2/directions
 
@@ -953,9 +1018,11 @@ export function HomeScreen() {
 ## 🚀 Implementation Phases
 
 ### Phase 1: Routing Foundation (Tickets 1-3)
+
 **Goal**: Calculate routes and manage navigation state
 
 **Tasks**:
+
 - [x] Ticket 1: Routing Service (ORS integration)
 - [x] Ticket 2: Route-Spot Matcher
 - [x] Ticket 3: Navigation Context
@@ -966,9 +1033,11 @@ export function HomeScreen() {
 ---
 
 ### Phase 2: Core UI (Tickets 4-7)
+
 **Goal**: Show destination marker, route, and navigation header
 
 **Tasks**:
+
 - [x] Ticket 4: Destination Marker
 - [x] Ticket 4.5: Start Navigation Button
 - [x] Ticket 5: Route Polyline
@@ -980,9 +1049,11 @@ export function HomeScreen() {
 ---
 
 ### Phase 3: Journey Integration (Tickets 8-9)
+
 **Goal**: Detect arrival and handle journey completion
 
 **Tasks**:
+
 - [x] Ticket 8: Arrival Detection Hook
 - [x] Ticket 9: Navigation Complete Sheet
 
@@ -991,9 +1062,11 @@ export function HomeScreen() {
 ---
 
 ### Phase 4: Integration & Testing (Tickets 10, 12)
+
 **Goal**: Wire everything together and polish
 
 **Tasks**:
+
 - [x] Ticket 10: HomeScreen Integration
 - [ ] Ticket 12: Testing & Polish
 
@@ -1004,12 +1077,14 @@ export function HomeScreen() {
 ## ⚠️ Known Limitations & Future Work
 
 **Current Scope (MVP)**:
+
 - ✅ Simple A→B routing
 - ✅ Automatic journey recording
 - ✅ Spot highlighting on route
 - ✅ Arrival detection
 
 **NOT in Scope** (for later):
+
 - ❌ Turn-by-turn voice navigation
 - ❌ Alternative routes
 - ❌ Real-time traffic
@@ -1018,6 +1093,7 @@ export function HomeScreen() {
 - ❌ Route optimization (best spots)
 
 **Future Enhancements** (F3, F4 in roadmap):
+
 - Double Itinerary Calculator (F3)
 - Longway suggestions (F4)
 
@@ -1054,11 +1130,13 @@ export function HomeScreen() {
 ---
 
 **Estimated Effort**: 2-3 weeks (1 developer)
+
 - Phase 1: 3-4 days
 - Phase 2: 4-5 days
 - Phase 3: 2-3 days
 - Phase 4: 2-3 days
 
 **Dependencies**:
+
 - ✅ Journey Recording (F11) - COMPLETE
 - ⏳ Save Journey (F12) - NOT STARTED (needed for full flow)

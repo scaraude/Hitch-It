@@ -84,7 +84,6 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 	const { userLocation, currentRegion, locationLoading } = useLocation();
 	const {
 		spots,
-		fullSpots,
 		selectedSpot,
 		isPlacingSpot,
 		isShowingForm,
@@ -159,7 +158,7 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 
 		setIsNavigationLoading(true);
 
-		const result = await startNavigation(userLocation, fullSpots);
+		const result = await startNavigation(userLocation);
 
 		if (!result.success) {
 			setIsNavigationLoading(false);
@@ -219,11 +218,15 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 		setJourneyStartTime(null);
 	};
 
-	// Filter spots: only show spots on route during navigation
+	// During navigation: show all spots on route (from navigation context, independent of zoom)
+	// Outside navigation: show spots from viewport (respects zoom level)
 	const visibleSpots = navigation.isActive
-		? spots.filter(spot =>
-				navigation.spotsOnRoute.some(s => s.spot.id === spot.id)
-			)
+		? navigation.spotsOnRoute.map(({ spot }) => ({
+				id: spot.id as string,
+				coordinates: spot.coordinates,
+				title: spot.roadName,
+				description: `${spot.appreciation} - ${spot.direction}`,
+			}))
 		: spots;
 
 	// Calculate journey duration
