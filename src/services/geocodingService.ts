@@ -14,6 +14,8 @@ export interface SearchSuggestion {
 interface PhotonFeature {
 	properties: {
 		name?: string;
+		street?: string;
+		housenumber?: string;
 		country?: string;
 		state?: string;
 		city?: string;
@@ -64,7 +66,11 @@ export async function searchPlaces(query: string): Promise<SearchSuggestion[]> {
 			const props = feature.properties;
 			const [longitude, latitude] = feature.geometry.coordinates;
 
-			const name = props.name || 'Lieu inconnu';
+			const streetLabel = [props.housenumber, props.street]
+				.filter(Boolean)
+				.join(' ')
+				.trim();
+			const name = props.name || streetLabel || 'Lieu inconnu';
 			const description = [props.city, props.state, props.country]
 				.filter(Boolean)
 				.join(', ');
