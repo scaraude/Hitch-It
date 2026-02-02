@@ -1,14 +1,14 @@
 import * as Haptics from 'expo-haptics';
-import { useEffect, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import {
 	ActivityIndicator,
 	Animated,
 	Keyboard,
+	Pressable,
 	type StyleProp,
 	StyleSheet,
 	Text,
 	TextInput,
-	TouchableOpacity,
 	View,
 	type ViewStyle,
 } from 'react-native';
@@ -88,17 +88,20 @@ export function AddressInput({
 		fetchSuggestions();
 	}, [debouncedSearchText, suggestionsOpacity]);
 
-	const handleSuggestionPress = async (suggestion: SearchSuggestion) => {
-		if (hapticFeedback) {
-			await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-		}
-		onLocationSelected(suggestion.location, suggestion.name);
-		onChangeText(suggestion.name);
-		setSuggestions([]);
-		Keyboard.dismiss();
-	};
+	const handleSuggestionPress = useCallback(
+		async (suggestion: SearchSuggestion) => {
+			if (hapticFeedback) {
+				await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+			}
+			onLocationSelected(suggestion.location, suggestion.name);
+			onChangeText(suggestion.name);
+			setSuggestions([]);
+			Keyboard.dismiss();
+		},
+		[hapticFeedback, onChangeText, onLocationSelected]
+	);
 
-	const handleBlur = () => {
+	const handleBlur = useCallback(() => {
 		setIsFocused(false);
 		// Delay hiding suggestions to allow press to register
 		setTimeout(() => {
@@ -108,7 +111,11 @@ export function AddressInput({
 				useNativeDriver: true,
 			}).start(() => setSuggestions([]));
 		}, 200);
-	};
+	}, [suggestionsOpacity]);
+
+	const handleFocus = useCallback(() => {
+		setIsFocused(true);
+	}, []);
 
 	const isDropdown = suggestionsStyle === 'dropdown';
 
@@ -121,7 +128,7 @@ export function AddressInput({
 					style={styles.input}
 					value={value}
 					onChangeText={onChangeText}
-					onFocus={() => setIsFocused(true)}
+					onFocus={handleFocus}
 					onBlur={handleBlur}
 					placeholder={placeholder}
 					placeholderTextColor={COLORS.textSecondary}
@@ -148,7 +155,7 @@ export function AddressInput({
 				)}
 
 			{/* Suggestions list */}
-			{isFocused && suggestions.length > 0 && (
+			{isFocused && suggestions.length > 0 ? (
 				<Animated.View
 					style={[
 						styles.suggestionsContainer,
@@ -157,25 +164,40 @@ export function AddressInput({
 					]}
 				>
 					{suggestions.slice(0, 4).map(suggestion => (
-						<TouchableOpacity
+						<SuggestionItem
 							key={suggestion.id}
-							style={styles.suggestionItem}
-							onPress={() => handleSuggestionPress(suggestion)}
-							activeOpacity={0.7}
-						>
-							<Text style={styles.suggestionName}>{suggestion.name}</Text>
-							{suggestion.description && (
-								<Text style={styles.suggestionDescription}>
-									{suggestion.description}
-								</Text>
-							)}
-						</TouchableOpacity>
+							suggestion={suggestion}
+							onPress={handleSuggestionPress}
+						/>
 					))}
 				</Animated.View>
-			)}
+			) : null}
 		</View>
 	);
 }
+
+const SuggestionItem = memo(function SuggestionItem({
+	suggestion,
+	onPress,
+}: {
+	suggestion: SearchSuggestion;
+	onPress: (suggestion: SearchSuggestion) => void | Promise<void>;
+}) {
+	const handlePress = useCallback(() => {
+		onPress(suggestion);
+	}, [onPress, suggestion]);
+
+	return (
+		<Pressable style={styles.suggestionItem} onPress={handlePress}>
+			<Text style={styles.suggestionName}>{suggestion.name}</Text>
+			{suggestion.description ? (
+				<Text style={styles.suggestionDescription}>
+					{suggestion.description}
+				</Text>
+			) : null}
+		</Pressable>
+	);
+});
 
 const styles = StyleSheet.create({
 	container: {

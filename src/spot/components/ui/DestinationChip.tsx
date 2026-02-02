@@ -1,6 +1,6 @@
 import type React from 'react';
 import { memo } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { COLORS, SIZES, SPACING } from '../../../constants';
 import { A11Y_LABELS } from '../../../constants/accessibility';
 
@@ -21,8 +21,8 @@ const DestinationChipComponent: React.FC<DestinationChipProps> = ({
 			testID={testID ?? `destination-chip-${destination}`}
 		>
 			<Text style={styles.text}>{destination}</Text>
-			{onRemove && (
-				<TouchableOpacity
+			{onRemove ? (
+				<Pressable
 					onPress={onRemove}
 					accessibilityLabel={`${A11Y_LABELS.removeDestination} ${destination}`}
 					accessibilityHint={A11Y_LABELS.removeDestinationHint}
@@ -30,8 +30,8 @@ const DestinationChipComponent: React.FC<DestinationChipProps> = ({
 					testID={`${testID ?? `destination-chip-${destination}`}-remove`}
 				>
 					<Text style={styles.removeButton}>✕</Text>
-				</TouchableOpacity>
-			)}
+				</Pressable>
+			) : null}
 		</View>
 	);
 };

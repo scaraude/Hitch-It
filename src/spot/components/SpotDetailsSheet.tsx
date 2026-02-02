@@ -2,12 +2,13 @@ import type React from 'react';
 import {
 	Linking,
 	Platform,
+	Pressable,
 	ScrollView,
 	StyleSheet,
 	Text,
-	TouchableOpacity,
 	View,
 } from 'react-native';
+import { BottomSheetHeader, bottomSheetStyles } from '../../components/ui';
 import { COLORS, SIZES, SPACING } from '../../constants';
 import { A11Y_LABELS } from '../../constants/accessibility';
 import { formatDate } from '../../utils';
@@ -59,10 +60,15 @@ export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 	};
 
 	return (
-		<View style={styles.container} testID="spot-details-sheet">
-			<View style={styles.header}>
-				<View style={styles.dragHandle} />
-				<TouchableOpacity
+		<View
+			style={[bottomSheetStyles.container, styles.container]}
+			testID="spot-details-sheet"
+		>
+			<BottomSheetHeader
+				style={styles.header}
+				dragHandleStyle={styles.dragHandle}
+			>
+				<Pressable
 					onPress={onClose}
 					style={styles.closeButton}
 					accessibilityLabel={A11Y_LABELS.closeButton}
@@ -71,8 +77,8 @@ export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 					testID="spot-details-close"
 				>
 					<Text style={styles.closeButtonText}>✕</Text>
-				</TouchableOpacity>
-			</View>
+				</Pressable>
+			</BottomSheetHeader>
 
 			<ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
 				{/* Appreciation Badge */}
@@ -117,22 +123,22 @@ export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 				{/* Location */}
 				<View style={styles.section}>
 					<Text style={styles.sectionTitle}>Localisation</Text>
-					<TouchableOpacity
+					<Pressable
 						style={styles.mapButton}
 						onPress={handleOpenMap}
 						accessibilityLabel={A11Y_LABELS.openMap}
 						accessibilityRole="button"
 					>
 						<Text style={styles.mapButtonText}>📍 Voir sur la carte</Text>
-					</TouchableOpacity>
-					<TouchableOpacity
+					</Pressable>
+					<Pressable
 						style={styles.directionsButton}
 						onPress={handleGetDirections}
 						accessibilityLabel={A11Y_LABELS.getDirections}
 						accessibilityRole="button"
 					>
 						<Text style={styles.directionsButtonText}>🧭 Itinéraire</Text>
-					</TouchableOpacity>
+					</Pressable>
 				</View>
 
 				{/* Metadata */}
@@ -149,8 +155,8 @@ export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 					<Text style={styles.noComments}>
 						Aucun commentaire pour le moment
 					</Text>
-					{onAddComment && (
-						<TouchableOpacity
+					{onAddComment ? (
+						<Pressable
 							style={styles.addCommentButton}
 							onPress={onAddComment}
 							accessibilityLabel={A11Y_LABELS.addComment}
@@ -159,13 +165,13 @@ export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 							<Text style={styles.addCommentButtonText}>
 								+ Ajouter un commentaire
 							</Text>
-						</TouchableOpacity>
-					)}
+						</Pressable>
+					) : null}
 				</View>
 
 				{/* Embarquer Button */}
-				{onEmbarquer && (
-					<TouchableOpacity
+				{onEmbarquer ? (
+					<Pressable
 						style={styles.embarquerButton}
 						onPress={() => onEmbarquer(spot)}
 						accessibilityLabel="Embarquer depuis ce spot"
@@ -175,8 +181,8 @@ export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 						<Text style={styles.embarquerButtonText}>
 							🚗 Embarquer depuis ce spot
 						</Text>
-					</TouchableOpacity>
-				)}
+					</Pressable>
+				) : null}
 			</ScrollView>
 		</View>
 	);
@@ -184,31 +190,13 @@ export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 
 const styles = StyleSheet.create({
 	container: {
-		position: 'absolute',
-		bottom: 0,
-		left: 0,
-		right: 0,
-		backgroundColor: COLORS.background,
-		borderTopLeftRadius: SIZES.radiusXLarge,
-		borderTopRightRadius: SIZES.radiusXLarge,
-		shadowColor: '#000',
-		shadowOffset: { width: 0, height: -2 },
-		shadowOpacity: SIZES.shadowOpacity,
-		shadowRadius: SIZES.shadowRadius,
-		elevation: 5,
 		maxHeight: '80%',
 	},
 	header: {
-		alignItems: 'center',
-		paddingTop: SPACING.sm,
 		paddingHorizontal: SPACING.lg,
 		position: 'relative',
 	},
 	dragHandle: {
-		width: SIZES.dragHandleWidth,
-		height: SIZES.dragHandleHeight,
-		backgroundColor: COLORS.surface,
-		borderRadius: SIZES.radiusSmall,
 		marginBottom: SPACING.md,
 	},
 	closeButton: {

@@ -1,13 +1,14 @@
 import type React from 'react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import {
+	Pressable,
 	ScrollView,
 	StyleSheet,
 	Text,
 	TextInput,
-	TouchableOpacity,
 	View,
 } from 'react-native';
+import { bottomSheetStyles } from '../../components/ui';
 import { COLORS, SIZES, SPACING } from '../../constants';
 import { A11Y_LABELS } from '../../constants/accessibility';
 import { APPRECIATION_CONFIG, APPRECIATIONS, DIRECTIONS } from '../constants';
@@ -35,18 +36,18 @@ export const SpotForm: React.FC<SpotFormProps> = ({ onSubmit, onCancel }) => {
 	const [destinationInput, setDestinationInput] = useState('');
 	const [destinations, setDestinations] = useState<string[]>([]);
 
-	const handleAddDestination = () => {
-		if (destinationInput.trim()) {
-			setDestinations([...destinations, destinationInput.trim()]);
-			setDestinationInput('');
-		}
-	};
+	const handleAddDestination = useCallback(() => {
+		const trimmed = destinationInput.trim();
+		if (!trimmed) return;
+		setDestinations(previous => [...previous, trimmed]);
+		setDestinationInput('');
+	}, [destinationInput]);
 
-	const handleRemoveDestination = (index: number) => {
-		setDestinations(destinations.filter((_, i) => i !== index));
-	};
+	const handleRemoveDestination = useCallback((index: number) => {
+		setDestinations(previous => previous.filter((_, i) => i !== index));
+	}, []);
 
-	const handleSubmit = () => {
+	const handleSubmit = useCallback(() => {
 		if (
 			!roadName.trim() ||
 			!direction ||
@@ -61,10 +62,13 @@ export const SpotForm: React.FC<SpotFormProps> = ({ onSubmit, onCancel }) => {
 			direction,
 			destinations,
 		});
-	};
+	}, [appreciation, destinations, direction, onSubmit, roadName]);
 
 	return (
-		<View style={styles.container} testID="spot-form">
+		<View
+			style={[bottomSheetStyles.container, styles.container]}
+			testID="spot-form"
+		>
 			<View style={styles.formContent}>
 				<ScrollView
 					style={styles.scrollView}
@@ -76,7 +80,7 @@ export const SpotForm: React.FC<SpotFormProps> = ({ onSubmit, onCancel }) => {
 					<Text style={styles.label}>Appréciation *</Text>
 					<View style={styles.buttonGroup}>
 						{APPRECIATIONS.map(app => (
-							<TouchableOpacity
+							<Pressable
 								key={app}
 								style={[
 									styles.optionButton,
@@ -95,7 +99,7 @@ export const SpotForm: React.FC<SpotFormProps> = ({ onSubmit, onCancel }) => {
 								>
 									{APPRECIATION_CONFIG[app].label}
 								</Text>
-							</TouchableOpacity>
+							</Pressable>
 						))}
 					</View>
 
@@ -116,7 +120,7 @@ export const SpotForm: React.FC<SpotFormProps> = ({ onSubmit, onCancel }) => {
 					<Text style={styles.label}>Direction *</Text>
 					<View style={styles.directionGrid}>
 						{DIRECTIONS.map(dir => (
-							<TouchableOpacity
+							<Pressable
 								key={dir}
 								style={[
 									styles.directionButton,
@@ -135,7 +139,7 @@ export const SpotForm: React.FC<SpotFormProps> = ({ onSubmit, onCancel }) => {
 								>
 									{dir}
 								</Text>
-							</TouchableOpacity>
+							</Pressable>
 						))}
 					</View>
 
@@ -147,24 +151,22 @@ export const SpotForm: React.FC<SpotFormProps> = ({ onSubmit, onCancel }) => {
 						onAdd={handleAddDestination}
 					/>
 
-					{destinations.length > 0 && (
+					{destinations.length > 0 ? (
 						<View style={styles.destinationList}>
-							{destinations.map(dest => (
+							{destinations.map((dest, index) => (
 								<DestinationChip
-									key={dest}
+									key={`${dest}-${index}`}
 									destination={dest}
-									onRemove={() =>
-										handleRemoveDestination(destinations.indexOf(dest))
-									}
+									onRemove={() => handleRemoveDestination(index)}
 								/>
 							))}
 						</View>
-					)}
+					) : null}
 				</ScrollView>
 
 				{/* Action Buttons */}
 				<View style={styles.actions}>
-					<TouchableOpacity
+					<Pressable
 						style={[styles.button, styles.cancelButton]}
 						onPress={onCancel}
 						accessibilityLabel={A11Y_LABELS.cancelAction}
@@ -173,8 +175,8 @@ export const SpotForm: React.FC<SpotFormProps> = ({ onSubmit, onCancel }) => {
 						testID="spot-form-cancel"
 					>
 						<Text style={styles.cancelButtonText}>Annuler</Text>
-					</TouchableOpacity>
-					<TouchableOpacity
+					</Pressable>
+					<Pressable
 						style={[
 							styles.button,
 							styles.submitButton,
@@ -191,7 +193,7 @@ export const SpotForm: React.FC<SpotFormProps> = ({ onSubmit, onCancel }) => {
 						testID="spot-form-submit"
 					>
 						<Text style={styles.submitButtonText}>Créer le spot</Text>
-					</TouchableOpacity>
+					</Pressable>
 				</View>
 			</View>
 		</View>
@@ -200,18 +202,6 @@ export const SpotForm: React.FC<SpotFormProps> = ({ onSubmit, onCancel }) => {
 
 const styles = StyleSheet.create({
 	container: {
-		position: 'absolute',
-		bottom: 0,
-		left: 0,
-		right: 0,
-		backgroundColor: COLORS.background,
-		borderTopLeftRadius: SIZES.radiusXLarge,
-		borderTopRightRadius: SIZES.radiusXLarge,
-		shadowColor: '#000',
-		shadowOffset: { width: 0, height: -2 },
-		shadowOpacity: SIZES.shadowOpacity,
-		shadowRadius: SIZES.shadowRadius,
-		elevation: 5,
 		maxHeight: '80%',
 	},
 	formContent: {

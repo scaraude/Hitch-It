@@ -90,6 +90,33 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 		}
 	}, []);
 
+	const updateJourneyStatus = useCallback(
+		async (
+			status: JourneyStatus,
+			options: { endedAt?: Date } = {}
+		): Promise<Journey | null> => {
+			if (!activeJourneyRef.current) return null;
+
+			const updatedJourney: Journey = {
+				...activeJourneyRef.current,
+				status,
+				...(options.endedAt ? { endedAt: options.endedAt } : {}),
+			};
+
+			setActiveJourney(updatedJourney);
+			activeJourneyRef.current = updatedJourney;
+
+			try {
+				await saveJourney(updatedJourney);
+			} catch (error) {
+				logger.journey.error('Failed to save journey status update', error);
+			}
+
+			return updatedJourney;
+		},
+		[]
+	);
+
 	// Handle location updates
 	const handleLocationUpdate = useCallback(
 		(location: LocationUpdate) => {
@@ -225,26 +252,11 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 
 		await locationTrackingService.stopTracking();
 
-		if (activeJourneyRef.current) {
-			const completedJourney: Journey = {
-				...activeJourneyRef.current,
-				status: JourneyStatus.Completed,
-				endedAt: new Date(),
-			};
-
-			setActiveJourney(completedJourney);
-			activeJourneyRef.current = completedJourney;
-
-			try {
-				await saveJourney(completedJourney);
-			} catch (error) {
-				logger.journey.error('Failed to save completed journey', error);
-			}
-		}
+		await updateJourneyStatus(JourneyStatus.Completed, { endedAt: new Date() });
 
 		setIsRecording(false);
 		logger.journey.info('Journey recording stopped');
-	}, [flushPointsBuffer]);
+	}, [flushPointsBuffer, updateJourneyStatus]);
 
 	// Pause recording
 	const pauseRecording = useCallback(async () => {
@@ -255,24 +267,10 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 
 		await locationTrackingService.stopTracking();
 
-		if (activeJourneyRef.current) {
-			const pausedJourney: Journey = {
-				...activeJourneyRef.current,
-				status: JourneyStatus.Paused,
-			};
-
-			setActiveJourney(pausedJourney);
-			activeJourneyRef.current = pausedJourney;
-
-			try {
-				await saveJourney(pausedJourney);
-			} catch (error) {
-				logger.journey.error('Failed to save paused journey', error);
-			}
-		}
+		await updateJourneyStatus(JourneyStatus.Paused);
 
 		setIsRecording(false);
-	}, [flushPointsBuffer]);
+	}, [flushPointsBuffer, updateJourneyStatus]);
 
 	// Resume recording
 	const resumeRecording = useCallback(async () => {
@@ -293,21 +291,9 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 			return;
 		}
 
-		const resumedJourney: Journey = {
-			...activeJourneyRef.current,
-			status: JourneyStatus.Recording,
-		};
-
-		setActiveJourney(resumedJourney);
-		activeJourneyRef.current = resumedJourney;
+		await updateJourneyStatus(JourneyStatus.Recording);
 		setIsRecording(true);
-
-		try {
-			await saveJourney(resumedJourney);
-		} catch (error) {
-			logger.journey.error('Failed to save resumed journey', error);
-		}
-	}, [handleLocationUpdate, handleLocationError]);
+	}, [handleLocationUpdate, handleLocationError, updateJourneyStatus]);
 
 	// Mark current location as a stop
 	const markStop = useCallback(() => {

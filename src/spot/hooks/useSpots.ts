@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toastUtils } from '../../components/ui';
 import { COLORS } from '../../constants';
 import { useDebouncedValue } from '../../hooks';
@@ -51,13 +51,17 @@ export const useSpots = (
 
 	const debouncedBounds = useDebouncedValue(bounds, 300);
 
-	const spotMarkers: SpotMarkerData[] = fullSpots.map(spot => ({
-		id: spot.id as string,
-		coordinates: spot.coordinates,
-		title: spot.roadName,
-		description: `${spot.appreciation} - ${spot.direction}`,
-		color: COLORS.secondary,
-	}));
+	const spotMarkers: SpotMarkerData[] = useMemo(
+		() =>
+			fullSpots.map(spot => ({
+				id: spot.id as string,
+				coordinates: spot.coordinates,
+				title: spot.roadName,
+				description: `${spot.appreciation} - ${spot.direction}`,
+				color: COLORS.secondary,
+			})),
+		[fullSpots]
+	);
 
 	useEffect(() => {
 		if (zoomLevel < MIN_ZOOM_LEVEL) {

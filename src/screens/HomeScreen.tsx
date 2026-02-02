@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Marker } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -36,48 +36,10 @@ import {
 } from '../spot/components';
 import { SpotProvider, useSpotContext } from '../spot/context';
 import type { Location, MapBounds, MapRegion } from '../types';
-import { calculateZoomLevel, logger, regionToBounds } from '../utils';
+import { calculateZoomLevel, logger, polylineToRegion, regionToBounds } from '../utils';
 
 interface HomeScreenContentProps {
 	onRegionChange: (region: MapRegion) => void;
-}
-
-/**
- * Calculate map bounds that fit the entire route
- */
-function calculateRouteBounds(
-	polyline: Array<{ latitude: number; longitude: number }>
-): MapRegion {
-	if (polyline.length === 0) {
-		return {
-			latitude: 0,
-			longitude: 0,
-			latitudeDelta: 0.1,
-			longitudeDelta: 0.1,
-		};
-	}
-
-	let minLat = polyline[0].latitude;
-	let maxLat = polyline[0].latitude;
-	let minLng = polyline[0].longitude;
-	let maxLng = polyline[0].longitude;
-
-	for (const point of polyline) {
-		minLat = Math.min(minLat, point.latitude);
-		maxLat = Math.max(maxLat, point.latitude);
-		minLng = Math.min(minLng, point.longitude);
-		maxLng = Math.max(maxLng, point.longitude);
-	}
-
-	const latDelta = (maxLat - minLat) * 1.3; // Add 30% padding
-	const lngDelta = (maxLng - minLng) * 1.3;
-
-	return {
-		latitude: (minLat + maxLat) / 2,
-		longitude: (minLng + maxLng) / 2,
-		latitudeDelta: Math.max(latDelta, 0.01),
-		longitudeDelta: Math.max(lngDelta, 0.01),
-	};
 }
 
 const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
@@ -131,28 +93,37 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 		}
 	}, [hasArrived, navigation.isActive]);
 
-	const handleRegionChange = (region: MapRegion) => {
-		setMapRegion(region);
-		onRegionChange(region);
-		// Clear long press marker when user moves the map
-		if (longPressMarker) {
+	const handleRegionChange = useCallback(
+		(region: MapRegion) => {
+			setMapRegion(region);
+			onRegionChange(region);
+			// Clear long press marker when user moves the map
+			if (longPressMarker) {
+				setLongPressMarker(null);
+			}
+		},
+		[longPressMarker, onRegionChange]
+	);
+
+	const handleMarkerPress = useCallback(
+		(markerId: string) => {
+			// Clear long press marker when tapping a spot
 			setLongPressMarker(null);
-		}
-	};
+			selectSpot(markerId);
+		},
+		[selectSpot]
+	);
 
-	const handleMarkerPress = (markerId: string) => {
-		// Clear long press marker when tapping a spot
-		setLongPressMarker(null);
-		selectSpot(markerId);
-	};
+	const handleLongPress = useCallback(
+		(location: Location) => {
+			// Don't allow long press during navigation or spot placement
+			if (navigation.isActive || isPlacingSpot || isShowingForm) return;
+			setLongPressMarker(location);
+		},
+		[navigation.isActive, isPlacingSpot, isShowingForm]
+	);
 
-	const handleLongPress = (location: Location) => {
-		// Don't allow long press during navigation or spot placement
-		if (navigation.isActive || isPlacingSpot || isShowingForm) return;
-		setLongPressMarker(location);
-	};
-
-	const handleLongPressEmbarquer = () => {
+	const handleLongPressEmbarquer = useCallback(() => {
 		if (!longPressMarker) return;
 		setEmbarquerOrigin({
 			location: longPressMarker,
@@ -160,73 +131,82 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 		});
 		setShowEmbarquerSheet(true);
 		setLongPressMarker(null);
-	};
+	}, [longPressMarker]);
 
-	const handleSpotEmbarquer = (spot: typeof selectedSpot) => {
-		if (!spot) return;
-		deselectSpot();
-		setEmbarquerOrigin({
-			location: spot.coordinates,
-			name: spot.roadName,
-		});
-		setShowEmbarquerSheet(true);
-	};
+	const handleSpotEmbarquer = useCallback(
+		(spot: typeof selectedSpot) => {
+			if (!spot) return;
+			deselectSpot();
+			setEmbarquerOrigin({
+				location: spot.coordinates,
+				name: spot.roadName,
+			});
+			setShowEmbarquerSheet(true);
+		},
+		[deselectSpot]
+	);
 
-	const handleEmbarquerStart = async (
-		start: { location: Location; name: string },
-		destination: { location: Location; name: string }
-	) => {
-		setShowEmbarquerSheet(false);
-		setEmbarquerOrigin(null);
-		setIsNavigationLoading(true);
+	const handleEmbarquerStart = useCallback(
+		async (
+			start: { location: Location; name: string },
+			destination: { location: Location; name: string }
+		) => {
+			setShowEmbarquerSheet(false);
+			setEmbarquerOrigin(null);
+			setIsNavigationLoading(true);
 
-		const result = await startNavigationWithRoute(
-			start.location,
-			destination.location,
-			destination.name
-		);
+			const result = await startNavigationWithRoute(
+				start.location,
+				destination.location,
+				destination.name
+			);
 
-		if (!result.success) {
+			if (!result.success) {
+				setIsNavigationLoading(false);
+				toastUtils.error('Erreur', result.message);
+				return;
+			}
+
+			const journeyStarted = await startRecording();
+			if (journeyStarted) {
+				setJourneyStartTime(new Date());
+				logger.navigation.info('Journey recording started with custom route');
+			}
+
 			setIsNavigationLoading(false);
-			toastUtils.error('Erreur', result.message);
-			return;
-		}
+		},
+		[startNavigationWithRoute, startRecording]
+	);
 
-		const journeyStarted = await startRecording();
-		if (journeyStarted) {
-			setJourneyStartTime(new Date());
-			logger.navigation.info('Journey recording started with custom route');
-		}
-
-		setIsNavigationLoading(false);
-	};
-
-	const handleEmbarquerClose = () => {
+	const handleEmbarquerClose = useCallback(() => {
 		setShowEmbarquerSheet(false);
 		setEmbarquerOrigin(null);
-	};
+	}, []);
 
-	const onConfirmSpotPlacement = () => {
+	const onConfirmSpotPlacement = useCallback(() => {
 		confirmSpotPlacement(mapRegion);
-	};
+	}, [confirmSpotPlacement, mapRegion]);
 
-	const handleLocationSelected = (location: Location, name: string) => {
+	const handleLocationSelected = useCallback(
+		(location: Location, name: string) => {
 		// Set destination marker
-		setDestination(location, name);
+			setDestination(location, name);
 
 		// Animate map to show destination
-		const region: MapRegion = {
-			latitude: location.latitude,
-			longitude: location.longitude,
-			latitudeDelta: 0.05,
-			longitudeDelta: 0.05,
-		};
+			const region: MapRegion = {
+				latitude: location.latitude,
+				longitude: location.longitude,
+				latitudeDelta: 0.05,
+				longitudeDelta: 0.05,
+			};
 
-		mapViewRef.current?.animateToRegion(region, 1000);
-		logger.navigation.info(`Destination set: ${name}`);
-	};
+			mapViewRef.current?.animateToRegion(region, 1000);
+			logger.navigation.info(`Destination set: ${name}`);
+		},
+		[setDestination]
+	);
 
-	const handleStartNavigation = async () => {
+	const handleStartNavigation = useCallback(async () => {
 		if (!userLocation) {
 			toastUtils.error(
 				'Position inconnue',
@@ -253,60 +233,66 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 		}
 
 		setIsNavigationLoading(false);
-	};
+	}, [startNavigation, startRecording, userLocation]);
 
 	// Fit map to route after navigation starts
 	useEffect(() => {
 		if (navigation.isActive && navigation.route) {
-			const routeBounds = calculateRouteBounds(navigation.route.polyline);
+			const routeBounds = polylineToRegion(navigation.route.polyline);
 			mapViewRef.current?.animateToRegion(routeBounds, 1000);
 		}
 	}, [navigation.isActive, navigation.route]);
 
-	const handleStopNavigation = async () => {
-		stopNavigation();
+	const endNavigationSession = useCallback(
+		async ({
+			hideCompletionSheet = true,
+			resetJourneyStart = true,
+		}: { hideCompletionSheet?: boolean; resetJourneyStart?: boolean } = {}) => {
+			if (hideCompletionSheet) {
+				setShowCompletionSheet(false);
+			}
 
-		if (isRecording) {
-			await stopRecording();
-			setJourneyStartTime(null);
-		}
+			stopNavigation();
 
+			if (isRecording) {
+				await stopRecording();
+			}
+
+			if (resetJourneyStart) {
+				setJourneyStartTime(null);
+			}
+		},
+		[isRecording, stopNavigation, stopRecording]
+	);
+
+	const handleStopNavigation = useCallback(async () => {
+		await endNavigationSession({ hideCompletionSheet: false });
 		logger.navigation.info('Navigation and journey recording stopped');
-	};
+	}, [endNavigationSession]);
 
-	const handleSaveJourney = async () => {
-		setShowCompletionSheet(false);
-		stopNavigation();
-
-		if (isRecording) {
-			await stopRecording();
-		}
-
+	const handleSaveJourney = useCallback(async () => {
+		await endNavigationSession();
 		toastUtils.success('Voyage sauvegardé', 'Votre voyage a été enregistré');
-		setJourneyStartTime(null);
-	};
+	}, [endNavigationSession]);
 
-	const handleDiscardJourney = async () => {
-		setShowCompletionSheet(false);
-		stopNavigation();
-
-		if (isRecording) {
-			await stopRecording();
-		}
-
-		setJourneyStartTime(null);
-	};
+	const handleDiscardJourney = useCallback(async () => {
+		await endNavigationSession();
+	}, [endNavigationSession]);
 
 	// During navigation: show all spots on route (from navigation context, independent of zoom)
 	// Outside navigation: show spots from viewport (respects zoom level)
-	const visibleSpots = navigation.isActive
-		? navigation.spotsOnRoute.map(({ spot }) => ({
-				id: spot.id as string,
-				coordinates: spot.coordinates,
-				title: spot.roadName,
-				description: `${spot.appreciation} - ${spot.direction}`,
-			}))
-		: spots;
+	const visibleSpots = useMemo(
+		() =>
+			navigation.isActive
+				? navigation.spotsOnRoute.map(({ spot }) => ({
+						id: spot.id as string,
+						coordinates: spot.coordinates,
+						title: spot.roadName,
+						description: `${spot.appreciation} - ${spot.direction}`,
+					}))
+				: spots,
+		[navigation.isActive, navigation.spotsOnRoute, spots]
+	);
 
 	// Calculate journey duration
 	const journeyDurationMinutes = journeyStartTime

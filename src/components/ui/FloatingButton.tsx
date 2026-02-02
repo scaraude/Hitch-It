@@ -1,5 +1,5 @@
 import type React from 'react';
-import { StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { Pressable, StyleSheet, Text } from 'react-native';
 import { COLORS, SIZES } from '../../constants';
 
 interface FloatingButtonProps {
@@ -22,7 +22,7 @@ export const FloatingButton: React.FC<FloatingButtonProps> = ({
 	testID,
 }) => {
 	return (
-		<TouchableOpacity
+		<Pressable
 			style={[
 				styles.button,
 				{ backgroundColor },
@@ -37,7 +37,7 @@ export const FloatingButton: React.FC<FloatingButtonProps> = ({
 			testID={testID ?? `floating-button-${position}`}
 		>
 			<Text style={styles.icon}>{icon}</Text>
-		</TouchableOpacity>
+		</Pressable>
 	);
 };
 

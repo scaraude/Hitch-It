@@ -1,11 +1,5 @@
-import { useState } from 'react';
-import {
-	Keyboard,
-	StyleSheet,
-	Text,
-	TouchableOpacity,
-	View,
-} from 'react-native';
+import { useCallback, useState } from 'react';
+import { Keyboard, Pressable, StyleSheet, Text, View } from 'react-native';
 import { COLORS, SIZES, SPACING } from '../constants';
 import type { Location } from '../types';
 import { AddressInput } from './AddressInput';
@@ -22,34 +16,27 @@ export const MapSearchBar: React.FC<MapSearchBarProps> = ({
 	const [searchText, setSearchText] = useState('');
 	const [isExpanded, setIsExpanded] = useState(initiallyExpanded);
 
-	const handleExpand = () => {
+	const handleExpand = useCallback(() => {
 		setIsExpanded(true);
-	};
+	}, []);
 
-	const handleCollapse = () => {
+	const handleCollapse = useCallback(() => {
 		setIsExpanded(false);
 		setSearchText('');
 		Keyboard.dismiss();
-	};
+	}, []);
 
-	const handleLocationSelected = (location: Location, name: string) => {
-		onLocationSelected(location, name);
-		handleCollapse();
-	};
+	const handleLocationSelected = useCallback(
+		(location: Location, name: string) => {
+			onLocationSelected(location, name);
+			handleCollapse();
+		},
+		[handleCollapse, onLocationSelected]
+	);
 
 	return (
 		<View style={styles.container}>
-			{!isExpanded ? (
-				<TouchableOpacity
-					style={styles.collapsedButton}
-					onPress={handleExpand}
-					accessibilityLabel="Rechercher un lieu"
-					accessibilityRole="button"
-					testID="map-search-button"
-				>
-					<Text style={styles.searchIcon}>🔍</Text>
-				</TouchableOpacity>
-			) : (
+			{isExpanded ? (
 				<View style={styles.searchContainer}>
 					<View style={styles.inputWrapper}>
 						<AddressInput
@@ -66,7 +53,7 @@ export const MapSearchBar: React.FC<MapSearchBarProps> = ({
 							suggestionsStyle="inline"
 							testID="map-search-input"
 						/>
-						<TouchableOpacity
+						<Pressable
 							onPress={handleCollapse}
 							style={styles.closeButton}
 							accessibilityLabel="Fermer la recherche"
@@ -74,9 +61,19 @@ export const MapSearchBar: React.FC<MapSearchBarProps> = ({
 							testID="map-search-close"
 						>
 							<Text style={styles.closeIcon}>✕</Text>
-						</TouchableOpacity>
+						</Pressable>
 					</View>
 				</View>
+			) : (
+				<Pressable
+					style={styles.collapsedButton}
+					onPress={handleExpand}
+					accessibilityLabel="Rechercher un lieu"
+					accessibilityRole="button"
+					testID="map-search-button"
+				>
+					<Text style={styles.searchIcon}>🔍</Text>
+				</Pressable>
 			)}
 		</View>
 	);

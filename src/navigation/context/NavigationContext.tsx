@@ -2,6 +2,7 @@ import type React from 'react';
 import { createContext, useCallback, useContext, useState } from 'react';
 import { getSpotsInBounds } from '../../spot/services';
 import type { MapBounds } from '../../types';
+import { polylineToBounds } from '../../utils';
 import { logger } from '../../utils/logger';
 import { findSpotsAlongRoute } from '../services/routeSpotMatcher';
 import { calculateRoute, type RoutingError } from '../services/routingService';
@@ -12,38 +13,6 @@ import {
 	type RoutePoint,
 	type SpotOnRoute,
 } from '../types';
-
-/**
- * Calculate bounding box for a route polyline with padding for spot search
- */
-function calculateRouteBounds(
-	polyline: Array<{ latitude: number; longitude: number }>
-): MapBounds {
-	if (polyline.length === 0) {
-		return { north: 0, south: 0, east: 0, west: 0 };
-	}
-
-	let minLat = polyline[0].latitude;
-	let maxLat = polyline[0].latitude;
-	let minLng = polyline[0].longitude;
-	let maxLng = polyline[0].longitude;
-
-	for (const point of polyline) {
-		minLat = Math.min(minLat, point.latitude);
-		maxLat = Math.max(maxLat, point.latitude);
-		minLng = Math.min(minLng, point.longitude);
-		maxLng = Math.max(maxLng, point.longitude);
-	}
-
-	// Add ~1km padding (roughly 0.01 degrees) to catch nearby spots
-	const padding = 0.01;
-	return {
-		north: maxLat + padding,
-		south: minLat - padding,
-		east: maxLng + padding,
-		west: minLng - padding,
-	};
-}
 
 interface NavigationContextValue {
 	navigation: NavigationState;
@@ -88,41 +57,36 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({
 		setNavigation(INITIAL_NAVIGATION_STATE);
 	}, []);
 
-	const startNavigation = useCallback(
+	const stopNavigation = useCallback(() => {
+		logger.navigation.info('Navigation stopped');
+		setNavigation(INITIAL_NAVIGATION_STATE);
+	}, []);
+
+	const startNavigationFlow = useCallback(
 		async (
-			userLocation: RoutePoint
+			startLocation: RoutePoint,
+			destinationLocation: RoutePoint,
+			destinationName: string
 		): Promise<
 			| { success: true }
 			| { success: false; error: RoutingError; message: string }
 		> => {
-			const { destinationMarker } = navigation;
-
-			if (!destinationMarker) {
-				logger.navigation.warn('Cannot start navigation: no destination set');
-				return {
-					success: false,
-					error: 'invalid_coordinates',
-					message: 'Aucune destination sélectionnée',
-				};
-			}
-
 			logger.navigation.info('Starting navigation', {
-				destination: destinationMarker.name,
-				from: userLocation,
+				destination: destinationName,
+				from: startLocation,
 			});
 
 			const result = await calculateRoute(
-				userLocation,
-				destinationMarker.location,
-				destinationMarker.name
+				startLocation,
+				destinationLocation,
+				destinationName
 			);
 
 			if (!result.success) {
 				return result;
 			}
 
-			// Calculate route bounding box to fetch all spots along the route
-			const routeBounds = calculateRouteBounds(result.route.polyline);
+			const routeBounds = polylineToBounds(result.route.polyline);
 			logger.navigation.debug('Fetching spots for route bounds', {
 				...routeBounds,
 			});
@@ -155,13 +119,35 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({
 
 			return { success: true };
 		},
-		[navigation]
+		[]
 	);
 
-	const stopNavigation = useCallback(() => {
-		logger.navigation.info('Navigation stopped');
-		setNavigation(INITIAL_NAVIGATION_STATE);
-	}, []);
+	const startNavigation = useCallback(
+		async (
+			userLocation: RoutePoint
+		): Promise<
+			| { success: true }
+			| { success: false; error: RoutingError; message: string }
+		> => {
+			const { destinationMarker } = navigation;
+
+			if (!destinationMarker) {
+				logger.navigation.warn('Cannot start navigation: no destination set');
+				return {
+					success: false,
+					error: 'invalid_coordinates',
+					message: 'Aucune destination sélectionnée',
+				};
+			}
+
+			return startNavigationFlow(
+				userLocation,
+				destinationMarker.location,
+				destinationMarker.name
+			);
+		},
+		[navigation, startNavigationFlow]
+	);
 
 	const startNavigationWithRoute = useCallback(
 		async (
@@ -171,55 +157,9 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({
 		): Promise<
 			| { success: true }
 			| { success: false; error: RoutingError; message: string }
-		> => {
-			logger.navigation.info('Starting navigation with custom route', {
-				destination: destinationName,
-				from: startLocation,
-			});
-
-			const result = await calculateRoute(
-				startLocation,
-				destinationLocation,
-				destinationName
-			);
-
-			if (!result.success) {
-				return result;
-			}
-
-			const routeBounds = calculateRouteBounds(result.route.polyline);
-			logger.navigation.debug('Fetching spots for route bounds', {
-				...routeBounds,
-			});
-
-			let spotsOnRoute: SpotOnRoute[] = [];
-			try {
-				const spotsInRouteBounds = await getSpotsInBounds(routeBounds);
-				spotsOnRoute = findSpotsAlongRoute(result.route, spotsInRouteBounds);
-				logger.navigation.info('Spots found along route', {
-					spotsInBounds: spotsInRouteBounds.length,
-					spotsOnRoute: spotsOnRoute.length,
-				});
-			} catch (error) {
-				logger.navigation.error('Failed to fetch spots for route', error);
-			}
-
-			setNavigation({
-				isActive: true,
-				route: result.route,
-				spotsOnRoute,
-				destinationMarker: null,
-			});
-
-			logger.navigation.info('Navigation started', {
-				destinationName: result.route.destinationName,
-				distanceKm: result.route.distanceKm,
-				spotsOnRoute: spotsOnRoute.length,
-			});
-
-			return { success: true };
-		},
-		[]
+		> =>
+			startNavigationFlow(startLocation, destinationLocation, destinationName),
+		[startNavigationFlow]
 	);
 
 	const value: NavigationContextValue = {

@@ -1,11 +1,5 @@
 import type React from 'react';
-import {
-	StyleSheet,
-	Text,
-	TextInput,
-	TouchableOpacity,
-	View,
-} from 'react-native';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { COLORS, SIZES, SPACING } from '../../../constants';
 import { A11Y_LABELS } from '../../../constants/accessibility';
 
@@ -35,7 +29,7 @@ export const DestinationInput: React.FC<DestinationInputProps> = ({
 				accessibilityHint={A11Y_LABELS.destinationPlaceholder}
 				testID="destination-input"
 			/>
-			<TouchableOpacity
+			<Pressable
 				style={styles.addButton}
 				onPress={onAdd}
 				accessibilityLabel={A11Y_LABELS.addDestination}
@@ -44,7 +38,7 @@ export const DestinationInput: React.FC<DestinationInputProps> = ({
 				testID="destination-add-button"
 			>
 				<Text style={styles.addButtonText}>+</Text>
-			</TouchableOpacity>
+			</Pressable>
 		</View>
 	);
 };

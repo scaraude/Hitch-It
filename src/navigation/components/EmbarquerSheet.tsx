@@ -6,10 +6,10 @@ import {
 	ScrollView,
 	StyleSheet,
 	Text,
-	TouchableOpacity,
 	View,
 } from 'react-native';
 import { AddressInput } from '../../components';
+import { BottomSheetHeader, bottomSheetStyles } from '../../components/ui';
 import { COLORS, SIZES, SPACING } from '../../constants';
 import type { Location } from '../../types';
 
@@ -59,12 +59,14 @@ export function EmbarquerSheet({
 
 	return (
 		<KeyboardAvoidingView
-			style={styles.container}
+			style={[bottomSheetStyles.container, styles.container]}
 			behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
 		>
-			<View style={styles.header}>
-				<View style={styles.dragHandle} />
-				<TouchableOpacity
+			<BottomSheetHeader
+				style={styles.header}
+				dragHandleStyle={styles.dragHandle}
+			>
+				<Pressable
 					onPress={onClose}
 					style={styles.closeButton}
 					accessibilityLabel="Fermer"
@@ -72,8 +74,8 @@ export function EmbarquerSheet({
 					testID="embarquer-sheet-close"
 				>
 					<Text style={styles.closeButtonText}>✕</Text>
-				</TouchableOpacity>
-			</View>
+				</Pressable>
+			</BottomSheetHeader>
 
 			<ScrollView
 				style={styles.content}
@@ -142,32 +144,14 @@ export function EmbarquerSheet({
 
 const styles = StyleSheet.create({
 	container: {
-		position: 'absolute',
-		bottom: 0,
-		left: 0,
-		right: 0,
-		backgroundColor: COLORS.background,
-		borderTopLeftRadius: SIZES.radiusXLarge,
-		borderTopRightRadius: SIZES.radiusXLarge,
-		shadowColor: '#000',
-		shadowOffset: { width: 0, height: -2 },
-		shadowOpacity: SIZES.shadowOpacity,
-		shadowRadius: SIZES.shadowRadius,
-		elevation: 5,
 		maxHeight: '70%',
 		zIndex: 1000,
 	},
 	header: {
-		alignItems: 'center',
-		paddingTop: SPACING.sm,
 		paddingHorizontal: SPACING.lg,
 		position: 'relative',
 	},
 	dragHandle: {
-		width: SIZES.dragHandleWidth,
-		height: SIZES.dragHandleHeight,
-		backgroundColor: COLORS.surface,
-		borderRadius: SIZES.radiusSmall,
 		marginBottom: SPACING.md,
 	},
 	closeButton: {
