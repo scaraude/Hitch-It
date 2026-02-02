@@ -1,22 +1,14 @@
-import * as Haptics from 'expo-haptics';
-import type React from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import {
-	ActivityIndicator,
-	Animated,
 	Keyboard,
 	StyleSheet,
 	Text,
-	TextInput,
 	TouchableOpacity,
 	View,
 } from 'react-native';
-import { useDebouncedValue } from '@/hooks/useDebouncedValue';
-import type { SearchSuggestion } from '@/services/geocodingService';
-import { searchPlaces } from '@/services/geocodingService';
-import type { Location } from '@/types';
-import { logger } from '@/utils/logger';
 import { COLORS, SIZES, SPACING } from '../constants';
+import type { Location } from '../types';
+import { AddressInput } from './AddressInput';
 
 interface MapSearchBarProps {
 	onLocationSelected: (location: Location, name: string) => void;
@@ -28,47 +20,7 @@ export const MapSearchBar: React.FC<MapSearchBarProps> = ({
 	initiallyExpanded = false,
 }) => {
 	const [searchText, setSearchText] = useState('');
-	const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
-	const [isLoading, setIsLoading] = useState(false);
 	const [isExpanded, setIsExpanded] = useState(initiallyExpanded);
-	const [isFocused, setIsFocused] = useState(false);
-
-	const debouncedSearchText = useDebouncedValue(searchText, 300);
-
-	// Animation value for suggestions fade
-	const suggestionsOpacity = useRef(new Animated.Value(0)).current;
-
-	useEffect(() => {
-		const fetchSuggestions = async () => {
-			if (!debouncedSearchText.trim()) {
-				setSuggestions([]);
-				suggestionsOpacity.setValue(0);
-				return;
-			}
-
-			setIsLoading(true);
-			try {
-				const results = await searchPlaces(debouncedSearchText);
-				setSuggestions(results);
-				// Fade in suggestions
-				if (results.length > 0) {
-					Animated.timing(suggestionsOpacity, {
-						toValue: 1,
-						duration: 200,
-						useNativeDriver: true,
-					}).start();
-				}
-			} catch (error) {
-				logger.app.error('Failed to fetch search suggestions', error);
-				setSuggestions([]);
-				suggestionsOpacity.setValue(0);
-			} finally {
-				setIsLoading(false);
-			}
-		};
-
-		fetchSuggestions();
-	}, [debouncedSearchText, suggestionsOpacity]);
 
 	const handleExpand = () => {
 		setIsExpanded(true);
@@ -77,35 +29,11 @@ export const MapSearchBar: React.FC<MapSearchBarProps> = ({
 	const handleCollapse = () => {
 		setIsExpanded(false);
 		setSearchText('');
-		setSuggestions([]);
-		setIsFocused(false);
 		Keyboard.dismiss();
 	};
 
-	const handleBlur = () => {
-		setIsFocused(false);
-		// Fade out suggestions
-		Animated.timing(suggestionsOpacity, {
-			toValue: 0,
-			duration: 150,
-			useNativeDriver: true,
-		}).start(() => {
-			setSuggestions([]);
-		});
-		// Smart collapse: only collapse if search text is empty
-		if (!searchText.trim()) {
-			setIsExpanded(false);
-		}
-	};
-
-	const handleFocus = () => {
-		setIsFocused(true);
-	};
-
-	const handleSuggestionPress = async (suggestion: SearchSuggestion) => {
-		// Light haptic feedback on selection
-		await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-		onLocationSelected(suggestion.location, suggestion.name);
+	const handleLocationSelected = (location: Location, name: string) => {
+		onLocationSelected(location, name);
 		handleCollapse();
 	};
 
@@ -123,18 +51,19 @@ export const MapSearchBar: React.FC<MapSearchBarProps> = ({
 				</TouchableOpacity>
 			) : (
 				<View style={styles.searchContainer}>
-					<View style={styles.inputRow}>
-						<Text style={styles.searchIconExpanded}>🔍</Text>
-						<TextInput
-							style={styles.input}
+					<View style={styles.inputWrapper}>
+						<AddressInput
+							placeholder="Rechercher un lieu"
 							value={searchText}
 							onChangeText={setSearchText}
-							onFocus={handleFocus}
-							onBlur={handleBlur}
-							placeholder="Rechercher un lieu"
-							placeholderTextColor={COLORS.textSecondary}
-							autoFocus={true}
-							accessibilityLabel="Rechercher un lieu"
+							onLocationSelected={handleLocationSelected}
+							icon="🔍"
+							autoFocus
+							showEmptyState
+							hapticFeedback
+							containerStyle={styles.addressInputContainer}
+							inputContainerStyle={styles.addressInputInner}
+							suggestionsStyle="inline"
 							testID="map-search-input"
 						/>
 						<TouchableOpacity
@@ -147,51 +76,6 @@ export const MapSearchBar: React.FC<MapSearchBarProps> = ({
 							<Text style={styles.closeIcon}>✕</Text>
 						</TouchableOpacity>
 					</View>
-
-					{isFocused && isLoading && (
-						<View style={styles.loadingContainer}>
-							<ActivityIndicator size="small" color={COLORS.primary} />
-						</View>
-					)}
-
-					{isFocused &&
-						!isLoading &&
-						searchText.trim() &&
-						suggestions.length === 0 && (
-							<View style={styles.emptyContainer}>
-								<Text style={styles.emptyText}>Aucun résultat</Text>
-							</View>
-						)}
-
-					{isFocused && !isLoading && suggestions.length > 0 && (
-						<Animated.View
-							style={[
-								styles.suggestionsContainer,
-								{ opacity: suggestionsOpacity },
-							]}
-						>
-							{suggestions.map(suggestion => (
-								<TouchableOpacity
-									key={suggestion.id}
-									style={styles.suggestionItem}
-									onPress={() => handleSuggestionPress(suggestion)}
-									accessibilityRole="button"
-									accessibilityLabel={`${suggestion.name}, ${suggestion.description}`}
-									testID={`suggestion-${suggestion.id}`}
-									activeOpacity={0.7}
-								>
-									<View>
-										<Text style={styles.suggestionName}>{suggestion.name}</Text>
-										{suggestion.description && (
-											<Text style={styles.suggestionDescription}>
-												{suggestion.description}
-											</Text>
-										)}
-									</View>
-								</TouchableOpacity>
-							))}
-						</Animated.View>
-					)}
 				</View>
 			)}
 		</View>
@@ -231,60 +115,24 @@ const styles = StyleSheet.create({
 		shadowRadius: SIZES.shadowRadius,
 		elevation: 4,
 	},
-	inputRow: {
+	inputWrapper: {
 		flexDirection: 'row',
-		alignItems: 'center',
-		paddingHorizontal: SPACING.md,
-		paddingVertical: SPACING.sm,
-		gap: SPACING.sm,
+		alignItems: 'flex-start',
 	},
-	searchIconExpanded: {
-		fontSize: SIZES.iconMd,
-	},
-	input: {
+	addressInputContainer: {
 		flex: 1,
-		fontSize: SIZES.fontMd,
-		color: COLORS.text,
-		padding: 0,
+		marginBottom: 0,
+	},
+	addressInputInner: {
+		backgroundColor: 'transparent',
+		paddingVertical: SPACING.sm,
 	},
 	closeButton: {
-		padding: SPACING.xs,
+		padding: SPACING.md,
 	},
 	closeIcon: {
 		fontSize: SIZES.iconMd,
 		color: COLORS.textSecondary,
-	},
-	loadingContainer: {
-		padding: SPACING.md,
-		alignItems: 'center',
-	},
-	emptyContainer: {
-		padding: SPACING.md,
-		alignItems: 'center',
-	},
-	emptyText: {
-		fontSize: SIZES.fontSm,
-		color: COLORS.textSecondary,
-	},
-	suggestionsContainer: {
-		borderTopWidth: 1,
-		borderTopColor: COLORS.border,
-	},
-	suggestionItem: {
-		padding: SPACING.md,
-		borderBottomWidth: 1,
-		borderBottomColor: COLORS.border,
-		backgroundColor: COLORS.background,
-	},
-	suggestionName: {
-		fontSize: SIZES.fontMd,
-		color: COLORS.text,
-		fontWeight: '600',
-	},
-	suggestionDescription: {
-		fontSize: SIZES.fontSm,
-		color: COLORS.textSecondary,
-		marginTop: SPACING.xs,
 	},
 });
 

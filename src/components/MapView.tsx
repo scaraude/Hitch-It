@@ -10,7 +10,7 @@ import { StyleSheet } from 'react-native';
 import MapView, { Marker, type Region } from 'react-native-maps';
 import { MAP_CONFIG } from '../constants';
 import type { SpotMarkerData } from '../spot/types';
-import type { MapRegion } from '../types';
+import type { Location, MapRegion } from '../types';
 
 export interface MapViewRef {
 	animateToRegion(region: MapRegion, duration?: number): void;
@@ -22,6 +22,7 @@ interface MapViewComponentProps {
 	markers?: SpotMarkerData[];
 	onRegionChange?: (region: Region) => void;
 	onMarkerPress?: (markerId: string) => void;
+	onLongPress?: (location: Location) => void;
 	showUserLocation?: boolean;
 	followUserLocation?: boolean;
 	children?: ReactNode;
@@ -34,6 +35,7 @@ const MapViewComponent = forwardRef<MapViewRef, MapViewComponentProps>(
 			markers = [],
 			onRegionChange,
 			onMarkerPress,
+			onLongPress,
 			showUserLocation = true,
 			followUserLocation = false,
 			children,
@@ -68,6 +70,13 @@ const MapViewComponent = forwardRef<MapViewRef, MapViewComponentProps>(
 			[onMarkerPress]
 		);
 
+		const handleLongPress = useCallback(
+			(e: { nativeEvent: { coordinate: Location } }) => {
+				onLongPress?.(e.nativeEvent.coordinate);
+			},
+			[onLongPress]
+		);
+
 		return (
 			<MapView
 				ref={mapRef}
@@ -86,6 +95,7 @@ const MapViewComponent = forwardRef<MapViewRef, MapViewComponentProps>(
 				scrollEnabled={true}
 				zoomEnabled={true}
 				testID="map-view"
+				onLongPress={handleLongPress}
 			>
 				{markers.map(marker => (
 					<Marker

@@ -19,12 +19,14 @@ interface SpotDetailsSheetProps {
 	spot: Spot;
 	onClose: () => void;
 	onAddComment?: () => void;
+	onEmbarquer?: (spot: Spot) => void;
 }
 
 export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 	spot,
 	onClose,
 	onAddComment,
+	onEmbarquer,
 }) => {
 	const appreciationConfig = APPRECIATION_CONFIG[spot.appreciation];
 	const directionEmoji = DIRECTION_CONFIG[spot.direction].emoji;
@@ -160,6 +162,21 @@ export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 						</TouchableOpacity>
 					)}
 				</View>
+
+				{/* Embarquer Button */}
+				{onEmbarquer && (
+					<TouchableOpacity
+						style={styles.embarquerButton}
+						onPress={() => onEmbarquer(spot)}
+						accessibilityLabel="Embarquer depuis ce spot"
+						accessibilityRole="button"
+						testID="spot-embarquer-button"
+					>
+						<Text style={styles.embarquerButtonText}>
+							🚗 Embarquer depuis ce spot
+						</Text>
+					</TouchableOpacity>
+				)}
 			</ScrollView>
 		</View>
 	);
@@ -333,5 +350,19 @@ const styles = StyleSheet.create({
 		fontSize: SIZES.fontSm,
 		color: COLORS.primary,
 		fontWeight: '600',
+	},
+	embarquerButton: {
+		backgroundColor: COLORS.primary,
+		paddingVertical: SPACING.lg,
+		paddingHorizontal: SPACING.lg,
+		borderRadius: SIZES.radiusMedium,
+		alignItems: 'center',
+		marginTop: SPACING.xl,
+		marginBottom: SPACING.lg,
+	},
+	embarquerButtonText: {
+		fontSize: SIZES.fontLg,
+		color: COLORS.background,
+		fontWeight: '700',
 	},
 });

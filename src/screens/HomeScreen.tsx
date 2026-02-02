@@ -1,6 +1,7 @@
 import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Marker } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import {
@@ -17,6 +18,7 @@ import { useLocation } from '../hooks';
 import { JourneyProvider, useJourney } from '../journey/context';
 import {
 	DestinationMarker,
+	EmbarquerSheet,
 	NavigationCompleteSheet,
 	NavigationHeader,
 	RoutePolyline,
@@ -96,8 +98,13 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 		deselectSpot,
 	} = useSpotContext();
 
-	const { navigation, setDestination, startNavigation, stopNavigation } =
-		useNavigation();
+	const {
+		navigation,
+		setDestination,
+		startNavigation,
+		startNavigationWithRoute,
+		stopNavigation,
+	} = useNavigation();
 
 	const { startRecording, stopRecording, isRecording } = useJourney();
 
@@ -105,6 +112,12 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 	const [isNavigationLoading, setIsNavigationLoading] = useState(false);
 	const [showCompletionSheet, setShowCompletionSheet] = useState(false);
 	const [journeyStartTime, setJourneyStartTime] = useState<Date | null>(null);
+	const [longPressMarker, setLongPressMarker] = useState<Location | null>(null);
+	const [showEmbarquerSheet, setShowEmbarquerSheet] = useState(false);
+	const [embarquerOrigin, setEmbarquerOrigin] = useState<{
+		location: Location;
+		name: string;
+	} | null>(null);
 
 	const mapViewRef = useRef<MapViewRef>(null);
 
@@ -121,10 +134,76 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 	const handleRegionChange = (region: MapRegion) => {
 		setMapRegion(region);
 		onRegionChange(region);
+		// Clear long press marker when user moves the map
+		if (longPressMarker) {
+			setLongPressMarker(null);
+		}
 	};
 
 	const handleMarkerPress = (markerId: string) => {
+		// Clear long press marker when tapping a spot
+		setLongPressMarker(null);
 		selectSpot(markerId);
+	};
+
+	const handleLongPress = (location: Location) => {
+		// Don't allow long press during navigation or spot placement
+		if (navigation.isActive || isPlacingSpot || isShowingForm) return;
+		setLongPressMarker(location);
+	};
+
+	const handleLongPressEmbarquer = () => {
+		if (!longPressMarker) return;
+		setEmbarquerOrigin({
+			location: longPressMarker,
+			name: 'Position sélectionnée',
+		});
+		setShowEmbarquerSheet(true);
+		setLongPressMarker(null);
+	};
+
+	const handleSpotEmbarquer = (spot: typeof selectedSpot) => {
+		if (!spot) return;
+		deselectSpot();
+		setEmbarquerOrigin({
+			location: spot.coordinates,
+			name: spot.roadName,
+		});
+		setShowEmbarquerSheet(true);
+	};
+
+	const handleEmbarquerStart = async (
+		start: { location: Location; name: string },
+		destination: { location: Location; name: string }
+	) => {
+		setShowEmbarquerSheet(false);
+		setEmbarquerOrigin(null);
+		setIsNavigationLoading(true);
+
+		const result = await startNavigationWithRoute(
+			start.location,
+			destination.location,
+			destination.name
+		);
+
+		if (!result.success) {
+			setIsNavigationLoading(false);
+			toastUtils.error('Erreur', result.message);
+			return;
+		}
+
+		const journeyStarted = await startRecording();
+		if (journeyStarted) {
+			setJourneyStartTime(new Date());
+			logger.navigation.info('Journey recording started with custom route');
+		}
+
+		setIsNavigationLoading(false);
+	};
+
+	const handleEmbarquerClose = () => {
+		setShowEmbarquerSheet(false);
+		setEmbarquerOrigin(null);
 	};
 
 	const onConfirmSpotPlacement = () => {
@@ -238,7 +317,9 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 		!isPlacingSpot &&
 		!isShowingForm &&
 		!navigation.isActive &&
-		!navigation.destinationMarker;
+		!navigation.destinationMarker &&
+		!longPressMarker &&
+		!showEmbarquerSheet;
 
 	return (
 		<SafeAreaView style={styles.container} edges={['left', 'right']}>
@@ -265,6 +346,7 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 							markers={visibleSpots}
 							onRegionChange={handleRegionChange}
 							onMarkerPress={handleMarkerPress}
+							onLongPress={handleLongPress}
 						>
 							{/* Destination marker (before navigation starts) */}
 							{navigation.destinationMarker && (
@@ -276,6 +358,13 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 
 							{/* Route polyline (during navigation) */}
 							{navigation.route && <RoutePolyline route={navigation.route} />}
+
+							{/* Long press marker */}
+							{longPressMarker && (
+								<Marker coordinate={longPressMarker} tracksViewChanges={false}>
+									<View style={styles.longPressPin} />
+								</Marker>
+							)}
 						</MapViewComponent>
 
 						{isPlacingSpot && (
@@ -298,6 +387,19 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 						isLoading={isNavigationLoading}
 					/>
 				)}
+
+				{/* Long press embarquer button */}
+				{longPressMarker && !navigation.isActive && (
+					<Pressable
+						style={({ pressed }) => [
+							styles.longPressEmbarquerButton,
+							pressed && styles.longPressEmbarquerButtonPressed,
+						]}
+						onPress={handleLongPressEmbarquer}
+					>
+						<Text style={styles.longPressEmbarquerButtonText}>Embarquer</Text>
+					</Pressable>
+				)}
 			</View>
 
 			{isPlacingSpot ? (
@@ -314,7 +416,20 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 			)}
 
 			{selectedSpot && !isShowingForm && (
-				<SpotDetailsSheet spot={selectedSpot} onClose={deselectSpot} />
+				<SpotDetailsSheet
+					spot={selectedSpot}
+					onClose={deselectSpot}
+					onEmbarquer={handleSpotEmbarquer}
+				/>
+			)}
+
+			{/* Embarquer sheet */}
+			{showEmbarquerSheet && (
+				<EmbarquerSheet
+					initialStart={embarquerOrigin ?? undefined}
+					onStart={handleEmbarquerStart}
+					onClose={handleEmbarquerClose}
+				/>
 			)}
 
 			{/* Navigation complete sheet */}
@@ -379,6 +494,32 @@ const styles = StyleSheet.create({
 		borderRadius: 12,
 		borderWidth: 3,
 		borderColor: COLORS.background,
+	},
+	longPressPin: {
+		width: 24,
+		height: 24,
+		backgroundColor: COLORS.primary,
+		borderRadius: 12,
+		borderWidth: 3,
+		borderColor: COLORS.background,
+	},
+	longPressEmbarquerButton: {
+		position: 'absolute',
+		bottom: 20,
+		left: 16,
+		right: 16,
+		backgroundColor: COLORS.primary,
+		paddingVertical: 16,
+		borderRadius: 12,
+		alignItems: 'center',
+	},
+	longPressEmbarquerButtonPressed: {
+		opacity: 0.8,
+	},
+	longPressEmbarquerButtonText: {
+		color: COLORS.background,
+		fontSize: 18,
+		fontWeight: '700',
 	},
 });
 

@@ -54,6 +54,13 @@ interface NavigationContextValue {
 	) => Promise<
 		{ success: true } | { success: false; error: RoutingError; message: string }
 	>;
+	startNavigationWithRoute: (
+		startLocation: RoutePoint,
+		destinationLocation: RoutePoint,
+		destinationName: string
+	) => Promise<
+		{ success: true } | { success: false; error: RoutingError; message: string }
+	>;
 	stopNavigation: () => void;
 }
 
@@ -156,11 +163,71 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({
 		setNavigation(INITIAL_NAVIGATION_STATE);
 	}, []);
 
+	const startNavigationWithRoute = useCallback(
+		async (
+			startLocation: RoutePoint,
+			destinationLocation: RoutePoint,
+			destinationName: string
+		): Promise<
+			| { success: true }
+			| { success: false; error: RoutingError; message: string }
+		> => {
+			logger.navigation.info('Starting navigation with custom route', {
+				destination: destinationName,
+				from: startLocation,
+			});
+
+			const result = await calculateRoute(
+				startLocation,
+				destinationLocation,
+				destinationName
+			);
+
+			if (!result.success) {
+				return result;
+			}
+
+			const routeBounds = calculateRouteBounds(result.route.polyline);
+			logger.navigation.debug('Fetching spots for route bounds', {
+				...routeBounds,
+			});
+
+			let spotsOnRoute: SpotOnRoute[] = [];
+			try {
+				const spotsInRouteBounds = await getSpotsInBounds(routeBounds);
+				spotsOnRoute = findSpotsAlongRoute(result.route, spotsInRouteBounds);
+				logger.navigation.info('Spots found along route', {
+					spotsInBounds: spotsInRouteBounds.length,
+					spotsOnRoute: spotsOnRoute.length,
+				});
+			} catch (error) {
+				logger.navigation.error('Failed to fetch spots for route', error);
+			}
+
+			setNavigation({
+				isActive: true,
+				route: result.route,
+				spotsOnRoute,
+				destinationMarker: null,
+			});
+
+			logger.navigation.info('Navigation started', {
+				destinationName: result.route.destinationName,
+				distanceKm: result.route.distanceKm,
+				spotsOnRoute: spotsOnRoute.length,
+			});
+
+			return { success: true };
+		},
+		[]
+	);
+
 	const value: NavigationContextValue = {
 		navigation,
 		setDestination,
 		clearDestination,
 		startNavigation,
+		startNavigationWithRoute,
 		stopNavigation,
 	};
 
