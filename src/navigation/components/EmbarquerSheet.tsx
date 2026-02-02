@@ -20,12 +20,14 @@ interface AddressData {
 
 interface EmbarquerSheetProps {
 	initialStart?: AddressData;
+	initialDestination?: AddressData;
 	onStart: (start: AddressData, destination: AddressData) => void;
 	onClose: () => void;
 }
 
 export function EmbarquerSheet({
 	initialStart,
+	initialDestination,
 	onStart,
 	onClose,
 }: EmbarquerSheetProps) {
@@ -33,9 +35,11 @@ export function EmbarquerSheet({
 	const [startLocation, setStartLocation] = useState<Location | null>(
 		initialStart?.location ?? null
 	);
-	const [destinationText, setDestinationText] = useState('');
+	const [destinationText, setDestinationText] = useState(
+		initialDestination?.name ?? ''
+	);
 	const [destinationLocation, setDestinationLocation] =
-		useState<Location | null>(null);
+		useState<Location | null>(initialDestination?.location ?? null);
 
 	const canStart = startLocation !== null && destinationLocation !== null;
 
@@ -110,7 +114,7 @@ export function EmbarquerSheet({
 								if (text !== destinationText) setDestinationLocation(null);
 							}}
 							onLocationSelected={handleDestinationSelected}
-							autoFocus={!!initialStart}
+							autoFocus={!!initialStart && !initialDestination}
 							testID="embarquer-destination-input"
 						/>
 					</View>

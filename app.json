@@ -28,6 +28,10 @@
       "package": "com.hitchit.app",
       "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"]
     },
+    "androidNavigationBar": {
+      "backgroundColor": "#000000",
+      "barStyle": "light-content"
+    },
     "web": {
       "favicon": "./assets/favicon.png",
       "bundler": "metro"

@@ -1,5 +1,5 @@
 import type React from 'react';
-import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { type StyleProp, StyleSheet, View, type ViewStyle } from 'react-native';
 import { COLORS, SIZES, SPACING } from '../../constants';
 
 export const bottomSheetStyles = StyleSheet.create({

@@ -155,7 +155,7 @@ export const SpotForm: React.FC<SpotFormProps> = ({ onSubmit, onCancel }) => {
 						<View style={styles.destinationList}>
 							{destinations.map((dest, index) => (
 								<DestinationChip
-									key={`${dest}-${index}`}
+									key={dest}
 									destination={dest}
 									onRemove={() => handleRemoveDestination(index)}
 								/>

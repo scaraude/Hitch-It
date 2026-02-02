@@ -1,7 +1,6 @@
 import type React from 'react';
 import { createContext, useCallback, useContext, useState } from 'react';
 import { getSpotsInBounds } from '../../spot/services';
-import type { MapBounds } from '../../types';
 import { polylineToBounds } from '../../utils';
 import { logger } from '../../utils/logger';
 import { findSpotsAlongRoute } from '../services/routeSpotMatcher';

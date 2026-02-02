@@ -23,6 +23,7 @@ interface MapViewComponentProps {
 	onRegionChange?: (region: Region) => void;
 	onMarkerPress?: (markerId: string) => void;
 	onLongPress?: (location: Location) => void;
+	onPress?: (location: Location) => void;
 	showUserLocation?: boolean;
 	followUserLocation?: boolean;
 	children?: ReactNode;
@@ -36,6 +37,7 @@ const MapViewComponent = forwardRef<MapViewRef, MapViewComponentProps>(
 			onRegionChange,
 			onMarkerPress,
 			onLongPress,
+			onPress,
 			showUserLocation = true,
 			followUserLocation = false,
 			children,
@@ -77,6 +79,13 @@ const MapViewComponent = forwardRef<MapViewRef, MapViewComponentProps>(
 			[onLongPress]
 		);
 
+		const handlePress = useCallback(
+			(e: { nativeEvent: { coordinate: Location } }) => {
+				onPress?.(e.nativeEvent.coordinate);
+			},
+			[onPress]
+		);
+
 		return (
 			<MapView
 				ref={mapRef}
@@ -96,6 +105,7 @@ const MapViewComponent = forwardRef<MapViewRef, MapViewComponentProps>(
 				zoomEnabled={true}
 				testID="map-view"
 				onLongPress={handleLongPress}
+				onPress={handlePress}
 			>
 				{markers.map(marker => (
 					<Marker

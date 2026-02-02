@@ -33,6 +33,8 @@ interface AddressInputProps {
 	containerStyle?: StyleProp<ViewStyle>;
 	inputContainerStyle?: StyleProp<ViewStyle>;
 	suggestionsStyle?: 'dropdown' | 'inline';
+	suggestionsPlacement?: 'above' | 'below';
+	showTopSuggestionLabel?: boolean;
 }
 
 export function AddressInput({
@@ -49,6 +51,8 @@ export function AddressInput({
 	containerStyle,
 	inputContainerStyle,
 	suggestionsStyle = 'dropdown',
+	suggestionsPlacement = 'below',
+	showTopSuggestionLabel = false,
 }: AddressInputProps) {
 	const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
@@ -118,6 +122,7 @@ export function AddressInput({
 	}, []);
 
 	const isDropdown = suggestionsStyle === 'dropdown';
+	const showAbove = isDropdown && suggestionsPlacement === 'above';
 
 	return (
 		<View style={[styles.container, containerStyle]}>
@@ -148,6 +153,7 @@ export function AddressInput({
 						style={[
 							styles.emptyContainer,
 							isDropdown && styles.suggestionsDropdown,
+							showAbove && styles.suggestionsAbove,
 						]}
 					>
 						<Text style={styles.emptyText}>Aucun résultat</Text>
@@ -160,9 +166,15 @@ export function AddressInput({
 					style={[
 						styles.suggestionsContainer,
 						isDropdown && styles.suggestionsDropdown,
+						showAbove && styles.suggestionsAbove,
 						{ opacity: suggestionsOpacity },
 					]}
 				>
+					{showTopSuggestionLabel ? (
+						<Text style={styles.topSuggestionLabel}>
+							Suggestion la plus probable
+						</Text>
+					) : null}
 					{suggestions.slice(0, 4).map(suggestion => (
 						<SuggestionItem
 							key={suggestion.id}
@@ -203,6 +215,7 @@ const styles = StyleSheet.create({
 	container: {
 		marginBottom: SPACING.lg,
 		zIndex: 1,
+		overflow: 'visible',
 	},
 	label: {
 		fontSize: SIZES.fontMd,
@@ -253,6 +266,12 @@ const styles = StyleSheet.create({
 		elevation: 4,
 		zIndex: 100,
 	},
+	suggestionsAbove: {
+		top: undefined,
+		bottom: '100%',
+		marginTop: 0,
+		marginBottom: SPACING.xs,
+	},
 	suggestionItem: {
 		padding: SPACING.md,
 		borderBottomWidth: 1,
@@ -267,5 +286,13 @@ const styles = StyleSheet.create({
 		fontSize: SIZES.fontSm,
 		color: COLORS.textSecondary,
 		marginTop: SPACING.xs,
+	},
+	topSuggestionLabel: {
+		fontSize: SIZES.fontSm,
+		color: COLORS.textSecondary,
+		paddingHorizontal: SPACING.md,
+		paddingTop: SPACING.sm,
+		paddingBottom: SPACING.xs,
+		fontStyle: 'italic',
 	},
 });
