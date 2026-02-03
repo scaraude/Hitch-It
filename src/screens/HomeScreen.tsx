@@ -1,6 +1,7 @@
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+	BackHandler,
 	Keyboard,
 	KeyboardAvoidingView,
 	Platform,
@@ -9,6 +10,7 @@ import {
 	Text,
 	View,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { Marker } from 'react-native-maps';
 import {
 	SafeAreaView,
@@ -162,6 +164,27 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 		}
 	}, [canUseSearch, isSearchOpen]);
 
+	useFocusEffect(
+		useCallback(() => {
+			if (Platform.OS !== 'android') {
+				return undefined;
+			}
+
+			const onBackPress = () => {
+				if (!isSearchOpen) return false;
+				setIsSearchOpen(false);
+				Keyboard.dismiss();
+				return true;
+			};
+
+			const subscription = BackHandler.addEventListener(
+				'hardwareBackPress',
+				onBackPress
+			);
+			return () => subscription.remove();
+		}, [isSearchOpen])
+	);
+
 	const handleSearchTextChange = useCallback(
 		(text: string) => {
 			setSearchText(text);
@@ -313,11 +336,11 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 		() =>
 			navigation.isActive
 				? navigation.spotsOnRoute.map(({ spot }) => ({
-						id: spot.id as string,
-						coordinates: spot.coordinates,
-						title: spot.roadName,
-						description: `${spot.appreciation} - ${spot.direction}`,
-					}))
+					id: spot.id as string,
+					coordinates: spot.coordinates,
+					title: spot.roadName,
+					description: `${spot.appreciation} - ${spot.direction}`,
+				}))
 				: spots,
 		[navigation.isActive, navigation.spotsOnRoute, spots]
 	);
@@ -443,13 +466,12 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 				<View style={styles.bottomOverlay} pointerEvents="box-none">
 					{shouldShowSearchPanel && (
 						<View style={styles.searchSheet}>
-							<Text style={styles.searchTitle}>Où on t’embarque ?</Text>
 							<AddressInput
 								placeholder="Rechercher une destination"
 								value={searchText}
 								onChangeText={handleSearchTextChange}
 								onLocationSelected={handleSearchLocationSelected}
-								icon="🔎"
+								icon="⌕"
 								autoFocus
 								showEmptyState
 								hapticFeedback
@@ -469,14 +491,10 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 									onPress={handleSearchEmbarquer}
 								>
 									<Text style={styles.searchEmbarquerButtonText}>
-										Embarquer maintenant
+										Embarquer
 									</Text>
 								</Pressable>
-							) : (
-								<Text style={styles.searchHint}>
-									Sélectionne une suggestion pour afficher le repère rouge.
-								</Text>
-							)}
+							) : null}
 						</View>
 					)}
 
@@ -487,36 +505,36 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 								{ paddingBottom: Math.max(insets.bottom, 10) },
 							]}
 						>
-							<Pressable
-								style={({ pressed }) => [
-									styles.bottomNavButton,
-									pressed && styles.bottomNavButtonPressed,
-								]}
-								onPress={startPlacingSpot}
-								accessibilityLabel="Ajouter un spot"
-								accessibilityRole="button"
-								testID="bottom-nav-add-spot"
-							>
-								<Text style={styles.bottomNavIcon}>⛳️</Text>
-								<Text style={styles.bottomNavLabel}>Spot</Text>
-							</Pressable>
+							<View style={styles.bottomNavRow}>
+								<Pressable
+									style={({ pressed }) => [
+										styles.bottomNavButton,
+										pressed && styles.bottomNavButtonPressed,
+									]}
+									onPress={startPlacingSpot}
+									accessibilityLabel="Ajouter un spot"
+									accessibilityRole="button"
+									testID="bottom-nav-add-spot"
+								>
+									<Text style={styles.bottomNavIcon}>＋</Text>
+									<Text style={styles.bottomNavLabel}>Spot</Text>
+								</Pressable>
 
-							<Pressable
-								style={({ pressed }) => [
-									styles.bottomNavButton,
-									styles.bottomNavSearchButton,
-									pressed && styles.bottomNavButtonPressed,
-								]}
-								onPress={handleSearchToggle}
-								accessibilityLabel="Rechercher une destination"
-								accessibilityRole="button"
-								testID="bottom-nav-search"
-							>
-								<Text style={styles.bottomNavSearchIcon}>🔍</Text>
-								<Text style={styles.bottomNavSearchLabel}>
-									{isSearchOpen ? 'Fermer' : 'Rechercher'}
-								</Text>
-							</Pressable>
+								<Pressable
+									style={({ pressed }) => [
+										styles.bottomNavButton,
+										styles.bottomNavSearchButton,
+										pressed && styles.bottomNavButtonPressed,
+									]}
+									onPress={handleSearchToggle}
+									accessibilityLabel="Rechercher une destination"
+									accessibilityRole="button"
+									testID="bottom-nav-search"
+								>
+									<Text style={styles.bottomNavSearchIcon}>⌕</Text>
+									<Text style={styles.bottomNavSearchLabel}>Rechercher</Text>
+								</Pressable>
+							</View>
 						</View>
 					)}
 				</View>
@@ -653,124 +671,124 @@ const styles = StyleSheet.create({
 		left: 0,
 		right: 0,
 		bottom: 0,
-		paddingHorizontal: 16,
-		paddingBottom: 10,
+		paddingHorizontal: 0,
+		paddingBottom: 0,
 	},
 	searchSheet: {
-		backgroundColor: '#FFF6EA',
-		borderRadius: 24,
-		padding: 16,
+		backgroundColor: '#F7EAD7',
+		borderRadius: 20,
+		padding: 12,
 		borderWidth: 1,
-		borderColor: '#E7DAC7',
-		shadowColor: '#2A2016',
+		borderColor: '#E2CDB3',
+		shadowColor: '#2D2216',
 		shadowOffset: { width: 0, height: 10 },
-		shadowOpacity: 0.18,
-		shadowRadius: 18,
-		elevation: 6,
-		marginBottom: 14,
+		shadowOpacity: 0.16,
+		shadowRadius: 16,
+		elevation: 5,
+		marginBottom: 10,
 		overflow: 'visible',
 	},
-	searchTitle: {
-		fontSize: 18,
-		fontWeight: '700',
-		color: '#2B1D0D',
-		marginBottom: 10,
-		fontFamily: Platform.select({
-			ios: 'Georgia',
-			android: 'serif',
-		}),
-	},
 	searchInputContainer: {
-		marginBottom: 8,
+		marginBottom: 6,
 	},
 	searchInputInner: {
-		backgroundColor: '#FDF1E1',
+		backgroundColor: '#FDF4E9',
 		borderWidth: 1,
-		borderColor: '#E3D2B8',
-		paddingVertical: 10,
-	},
-	searchHint: {
-		fontSize: 12,
-		color: '#7A5D43',
-		fontFamily: Platform.select({
-			ios: 'Menlo',
-			android: 'monospace',
-		}),
-		marginTop: 4,
+		borderColor: '#E7D2B5',
+		paddingVertical: 8,
 	},
 	searchEmbarquerButton: {
-		backgroundColor: '#0F6A4E',
-		borderRadius: 18,
-		paddingVertical: 14,
+		alignSelf: 'flex-end',
+		backgroundColor: '#CDAE7C',
+		borderRadius: 14,
+		paddingVertical: 8,
+		paddingHorizontal: 14,
 		alignItems: 'center',
-		marginTop: 6,
+		marginTop: 4,
 	},
 	searchEmbarquerButtonPressed: {
 		opacity: 0.85,
 	},
 	searchEmbarquerButtonText: {
-		color: '#F8F6F1',
-		fontSize: 15,
+		color: '#2C1D0C',
+		fontSize: 12,
 		fontWeight: '700',
-		letterSpacing: 0.3,
+		letterSpacing: 0.4,
+		textTransform: 'uppercase',
 	},
 	bottomNav: {
-		backgroundColor: '#11151A',
-		borderRadius: 26,
-		paddingTop: 10,
-		paddingHorizontal: 10,
+		backgroundColor: '#F3E3CD',
+		borderTopLeftRadius: 28,
+		borderTopRightRadius: 28,
+		borderBottomLeftRadius: 0,
+		borderBottomRightRadius: 0,
+		paddingTop: 8,
+		paddingHorizontal: 12,
 		borderWidth: 1,
-		borderColor: '#232A32',
+		borderColor: '#E2CBB0',
+		flexDirection: 'column',
+		alignItems: 'center',
+		justifyContent: 'flex-end',
+		shadowColor: '#1F160D',
+		shadowOffset: { width: 0, height: -2 },
+		shadowOpacity: 0.08,
+		shadowRadius: 10,
+		elevation: 8,
+		width: '100%',
+	},
+	bottomNavRow: {
 		flexDirection: 'row',
 		alignItems: 'center',
 		justifyContent: 'space-between',
-		shadowColor: '#000',
-		shadowOffset: { width: 0, height: 12 },
-		shadowOpacity: 0.25,
-		shadowRadius: 18,
-		elevation: 6,
+		width: '100%',
 	},
 	bottomNavButton: {
 		flex: 1,
-		borderRadius: 18,
-		paddingVertical: 10,
+		borderRadius: 16,
+		paddingVertical: 12,
 		alignItems: 'center',
 		justifyContent: 'center',
-		backgroundColor: 'rgba(255,255,255,0.04)',
+		backgroundColor: '#FAF2E6',
 		borderWidth: 1,
-		borderColor: '#2B333D',
+		borderColor: '#E3CDB3',
 		marginHorizontal: 6,
 	},
 	bottomNavSearchButton: {
-		flex: 1.3,
-		backgroundColor: '#FF6B4A',
-		borderColor: '#FF6B4A',
+		flex: 1,
+		backgroundColor: '#EBCFA9',
+		borderColor: '#D8B98D',
 	},
 	bottomNavButtonPressed: {
-		transform: [{ scale: 0.98 }],
+		transform: [{ translateY: 1 }],
 	},
 	bottomNavIcon: {
-		fontSize: 20,
+		fontSize: 22,
+		color: '#2B1D0D',
 	},
 	bottomNavLabel: {
-		marginTop: 4,
-		fontSize: 12,
-		color: '#E7E1D6',
+		marginTop: 6,
+		fontSize: 11,
+		color: '#2B1D0D',
+		letterSpacing: 0.5,
+		textTransform: 'uppercase',
 		fontFamily: Platform.select({
-			ios: 'Menlo',
-			android: 'monospace',
+			ios: 'Georgia',
+			android: 'serif',
 		}),
 	},
 	bottomNavSearchIcon: {
 		fontSize: 20,
+		color: '#2B1D0D',
 	},
 	bottomNavSearchLabel: {
-		marginTop: 4,
-		fontSize: 12,
-		color: '#2C160D',
+		marginTop: 6,
+		fontSize: 11,
+		color: '#2B1D0D',
+		letterSpacing: 0.5,
+		textTransform: 'uppercase',
 		fontFamily: Platform.select({
-			ios: 'Menlo',
-			android: 'monospace',
+			ios: 'Georgia',
+			android: 'serif',
 		}),
 	},
 });
