@@ -38,13 +38,42 @@ type JourneyPointRow = {
 	created_at: string;
 };
 
+const journeyStatusValues = new Set(Object.values(JourneyStatus));
+const journeyPointTypeValues = new Set(Object.values(JourneyPointType));
+
+const parseJourneyStatus = (
+	value: string,
+	journeyId: string
+): JourneyStatus => {
+	if (journeyStatusValues.has(value as JourneyStatus)) {
+		return value as JourneyStatus;
+	}
+
+	throw new Error(
+		`Invalid journey status "${value}" for journey "${journeyId}"`
+	);
+};
+
+const parseJourneyPointType = (
+	value: string,
+	pointId: string
+): JourneyPointType => {
+	if (journeyPointTypeValues.has(value as JourneyPointType)) {
+		return value as JourneyPointType;
+	}
+
+	throw new Error(
+		`Invalid journey point type "${value}" for point "${pointId}"`
+	);
+};
+
 const mapRowToJourney = (
 	row: JourneyRow,
 	points: JourneyPoint[] = []
 ): Journey => ({
 	id: row.id as JourneyId,
 	userId: row.user_id as UserId,
-	status: row.status as JourneyStatus,
+	status: parseJourneyStatus(row.status, row.id),
 	startedAt: new Date(row.started_at),
 	endedAt: row.ended_at ? new Date(row.ended_at) : undefined,
 	title: row.title ?? undefined,
@@ -58,7 +87,7 @@ const mapRowToJourney = (
 const mapRowToJourneyPoint = (row: JourneyPointRow): JourneyPoint => ({
 	id: row.id as JourneyPointId,
 	journeyId: row.journey_id as JourneyId,
-	type: row.type as JourneyPointType,
+	type: parseJourneyPointType(row.type, row.id),
 	latitude: row.latitude,
 	longitude: row.longitude,
 	timestamp: new Date(row.timestamp),

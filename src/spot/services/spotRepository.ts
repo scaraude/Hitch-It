@@ -6,7 +6,7 @@ import {
 	isSpotInBounds,
 	logger,
 } from '@/utils';
-import type { Spot } from '../types';
+import { Appreciation, Direction, type Spot } from '../types';
 import { createSpotId } from '../utils';
 
 type SpotRow = {
@@ -22,6 +22,38 @@ type SpotRow = {
 	created_by: string;
 };
 
+const appreciationValues = new Set(Object.values(Appreciation));
+const directionValues = new Set(Object.values(Direction));
+
+const parseAppreciation = (
+	value: string,
+	spotId: string
+): Spot['appreciation'] => {
+	if (appreciationValues.has(value as Appreciation)) {
+		return value as Spot['appreciation'];
+	}
+
+	throw new Error(`Invalid spot appreciation "${value}" for spot "${spotId}"`);
+};
+
+const parseDirection = (value: string, spotId: string): Spot['direction'] => {
+	if (directionValues.has(value as Direction)) {
+		return value as Spot['direction'];
+	}
+
+	throw new Error(`Invalid spot direction "${value}" for spot "${spotId}"`);
+};
+
+const parseDestinations = (destinations: SpotRow['destinations']): string[] => {
+	if (!Array.isArray(destinations)) {
+		return [];
+	}
+
+	return destinations.filter((destination): destination is string => {
+		return typeof destination === 'string';
+	});
+};
+
 const mapRowToSpot = (row: SpotRow): Spot => ({
 	id: createSpotId(row.id),
 	coordinates: {
@@ -29,9 +61,9 @@ const mapRowToSpot = (row: SpotRow): Spot => ({
 		longitude: row.longitude,
 	},
 	roadName: row.road_name,
-	appreciation: row.appreciation as Spot['appreciation'],
-	direction: row.direction as Spot['direction'],
-	destinations: row.destinations ?? [],
+	appreciation: parseAppreciation(row.appreciation, row.id),
+	direction: parseDirection(row.direction, row.id),
+	destinations: parseDestinations(row.destinations),
 	createdAt: new Date(row.created_at),
 	updatedAt: new Date(row.updated_at),
 	createdBy: row.created_by,

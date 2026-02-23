@@ -1,45 +1,23 @@
 import { useFocusEffect } from '@react-navigation/native';
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import {
-	BackHandler,
-	Keyboard,
-	KeyboardAvoidingView,
-	Platform,
-	Pressable,
-	StyleSheet,
-	Text,
-	View,
-} from 'react-native';
+import { BackHandler, Keyboard, Platform, View } from 'react-native';
 import { Marker } from 'react-native-maps';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Toast from 'react-native-toast-message';
 import {
-	ActionButtons,
-	BottomNavBar,
 	LoadingSpinner,
-	MapControls,
 	MapViewComponent,
 	type MapViewRef,
-	SearchBarOverlay,
 } from '../components';
 import { toastUtils } from '../components/ui';
 import { COLORS } from '../constants';
 import { useLocation } from '../hooks';
 import { JourneyProvider, useJourney } from '../journey/context';
-import {
-	DestinationMarker,
-	EmbarquerSheet,
-	NavigationCompleteSheet,
-	NavigationHeader,
-	RoutePolyline,
-} from '../navigation/components';
+import { DestinationMarker, RoutePolyline } from '../navigation/components';
 import {
 	NavigationProvider,
 	useNavigation,
 } from '../navigation/context/NavigationContext';
 import { useArrivalDetection } from '../navigation/hooks';
-import { SpotDetailsSheet, SpotForm } from '../spot/components';
 import { SpotProvider, useSpotContext } from '../spot/context';
 import type { Location, MapBounds, MapRegion } from '../types';
 import {
@@ -48,6 +26,9 @@ import {
 	polylineToRegion,
 	regionToBounds,
 } from '../utils';
+import { HomeFixedOverlay } from './home/components/HomeFixedOverlay';
+import { HomeSheetsOverlay } from './home/components/HomeSheetsOverlay';
+import { homeScreenStyles as styles } from './home/homeScreenStyles';
 
 interface HomeScreenContentProps {
 	onRegionChange: (region: MapRegion) => void;
@@ -76,7 +57,6 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 		useNavigation();
 
 	const { startRecording, stopRecording, isRecording } = useJourney();
-	const insets = useSafeAreaInsets();
 
 	const [mapRegion, setMapRegion] = useState<MapRegion>(currentRegion);
 	const [showCompletionSheet, setShowCompletionSheet] = useState(false);
@@ -247,8 +227,7 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 	}, [longPressMarker]);
 
 	const handleSpotEmbarquer = useCallback(
-		(spot: typeof selectedSpot) => {
-			if (!spot) return;
+		(spot: NonNullable<typeof selectedSpot>) => {
 			deselectSpot();
 			setEmbarquerOrigin({
 				location: spot.coordinates,
@@ -382,8 +361,9 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 		}
 	}, [canUseSearch, isSearchOpen]);
 
+	type HomeTabId = 'home' | 'search' | 'add' | 'history' | 'profile';
 	const handleTabPress = useCallback(
-		(tabId: string) => {
+		(tabId: HomeTabId) => {
 			switch (tabId) {
 				case 'add':
 					startPlacingSpot();
@@ -498,116 +478,52 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 				)}
 			</View>
 
-			{/* Non-keyboard-aware overlay for fixed elements */}
-			<View style={styles.nonMapOverlay} pointerEvents="box-none">
-				{/* Navigation header (only when active) */}
-				{navigation.isActive && navigation.route && (
-					<NavigationHeader
-						destinationName={navigation.route.destinationName}
-						distanceKm={navigation.route.distanceKm}
-						onStop={handleStopNavigation}
-					/>
-				)}
+			<HomeFixedOverlay
+				isNavigationActive={navigation.isActive}
+				navigationRoute={navigation.route}
+				canUseSearch={canUseSearch}
+				isSearchOpen={isSearchOpen}
+				searchText={searchText}
+				shouldShowSearchEmbarquer={shouldShowSearchEmbarquer}
+				isPlacingSpot={isPlacingSpot}
+				isShowingForm={isShowingForm}
+				mapHeading={mapHeading}
+				isFollowingUser={isFollowingUser}
+				shouldShowBottomBar={shouldShowBottomBar}
+				longPressMarker={longPressMarker}
+				onStopNavigation={handleStopNavigation}
+				onSearchTextChange={handleSearchTextChange}
+				onSearchLocationSelected={handleSearchLocationSelected}
+				onSearchToggle={handleSearchToggle}
+				onSearchEmbarquer={handleSearchEmbarquer}
+				onResetHeading={handleResetHeading}
+				onLocateUser={handleLocateUser}
+				onLongPressEmbarquer={handleLongPressEmbarquer}
+				onTabPress={handleTabPress}
+			/>
 
-				{/* Search bar overlay (top left) - only when not navigating */}
-				{!navigation.isActive && canUseSearch && (
-					<SearchBarOverlay
-						isExpanded={isSearchOpen}
-						searchText={searchText}
-						onSearchTextChange={handleSearchTextChange}
-						onLocationSelected={handleSearchLocationSelected}
-						onToggle={handleSearchToggle}
-						onEmbarquer={handleSearchEmbarquer}
-						showEmbarquer={shouldShowSearchEmbarquer}
-					/>
-				)}
-
-				{/* Map controls (compass + locate) */}
-				{!isPlacingSpot && !isShowingForm && (
-					<MapControls
-						mapHeading={mapHeading}
-						isFollowingUser={isFollowingUser}
-						onResetHeading={handleResetHeading}
-						onLocateUser={handleLocateUser}
-						bottomOffset={
-							shouldShowBottomBar ? 110 + insets.bottom : 24 + insets.bottom
-						}
-					/>
-				)}
-
-				{/* Long press embarquer button */}
-				{longPressMarker && !navigation.isActive && !isSearchOpen && (
-					<Pressable
-						style={({ pressed }) => [
-							styles.longPressEmbarquerButton,
-							{
-								bottom: shouldShowBottomBar
-									? 110 + insets.bottom
-									: 24 + insets.bottom,
-							},
-							pressed && styles.longPressEmbarquerButtonPressed,
-						]}
-						onPress={handleLongPressEmbarquer}
-					>
-						<Text style={styles.longPressEmbarquerButtonText}>Embarquer</Text>
-					</Pressable>
-				)}
-
-				{/* Bottom navigation bar - outside KeyboardAvoidingView */}
-				{shouldShowBottomBar && (
-					<BottomNavBar activeTab="home" onTabPress={handleTabPress} />
-				)}
-			</View>
-
-			{/* Keyboard-aware overlay for sheets and forms */}
-			<KeyboardAvoidingView
-				style={styles.nonMapOverlay}
-				behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-				keyboardVerticalOffset={0}
-				pointerEvents="box-none"
-			>
-				{isPlacingSpot ? (
-					<ActionButtons
-						onConfirm={onConfirmSpotPlacement}
-						onCancel={cancelSpotPlacement}
-					/>
-				) : null}
-
-				{isShowingForm && (
-					<SpotForm onSubmit={submitSpotForm} onCancel={cancelSpotForm} />
-				)}
-
-				{selectedSpot && !isShowingForm && (
-					<SpotDetailsSheet
-						spot={selectedSpot}
-						onClose={deselectSpot}
-						onEmbarquer={handleSpotEmbarquer}
-					/>
-				)}
-
-				{/* Embarquer sheet */}
-				{showEmbarquerSheet && (
-					<EmbarquerSheet
-						initialStart={embarquerOrigin ?? undefined}
-						initialDestination={embarquerDestination ?? undefined}
-						onStart={handleEmbarquerStart}
-						onClose={handleEmbarquerClose}
-					/>
-				)}
-
-				{/* Navigation complete sheet */}
-				{showCompletionSheet && navigation.route && (
-					<NavigationCompleteSheet
-						route={navigation.route}
-						spotsUsed={navigation.spotsOnRoute}
-						durationMinutes={journeyDurationMinutes}
-						onSave={handleSaveJourney}
-						onDiscard={handleDiscardJourney}
-					/>
-				)}
-
-				<Toast />
-			</KeyboardAvoidingView>
+			<HomeSheetsOverlay
+				isPlacingSpot={isPlacingSpot}
+				isShowingForm={isShowingForm}
+				selectedSpot={selectedSpot}
+				showEmbarquerSheet={showEmbarquerSheet}
+				showCompletionSheet={showCompletionSheet}
+				navigationRoute={navigation.route}
+				navigationSpotsOnRoute={navigation.spotsOnRoute}
+				journeyDurationMinutes={journeyDurationMinutes}
+				embarquerOrigin={embarquerOrigin}
+				embarquerDestination={embarquerDestination}
+				onConfirmSpotPlacement={onConfirmSpotPlacement}
+				onCancelSpotPlacement={cancelSpotPlacement}
+				onSubmitSpotForm={submitSpotForm}
+				onCancelSpotForm={cancelSpotForm}
+				onCloseSpotDetails={deselectSpot}
+				onSpotEmbarquer={handleSpotEmbarquer}
+				onEmbarquerStart={handleEmbarquerStart}
+				onEmbarquerClose={handleEmbarquerClose}
+				onSaveJourney={handleSaveJourney}
+				onDiscardJourney={handleDiscardJourney}
+			/>
 		</View>
 	);
 };
@@ -634,65 +550,5 @@ const HomeScreen: React.FC = () => {
 		</JourneyProvider>
 	);
 };
-
-const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		backgroundColor: COLORS.background,
-	},
-	mapContainer: {
-		flex: 1,
-	},
-	nonMapOverlay: {
-		...StyleSheet.absoluteFillObject,
-	},
-	centerMarker: {
-		position: 'absolute',
-		left: '50%',
-		top: '50%',
-		marginLeft: -9,
-		marginTop: -9,
-		alignItems: 'center',
-	},
-	markerPin: {
-		width: 18,
-		height: 18,
-		backgroundColor: COLORS.secondary,
-		borderRadius: 12,
-		borderWidth: 3,
-		borderColor: COLORS.background,
-	},
-	longPressPin: {
-		width: 24,
-		height: 24,
-		backgroundColor: COLORS.primary,
-		borderRadius: 12,
-		borderWidth: 3,
-		borderColor: COLORS.background,
-	},
-	longPressEmbarquerButton: {
-		position: 'absolute',
-		left: 16,
-		right: 16,
-		backgroundColor: '#539DF3',
-		paddingVertical: 14,
-		borderRadius: 16,
-		alignItems: 'center',
-		shadowColor: '#000',
-		shadowOffset: { width: 0, height: 6 },
-		shadowOpacity: 0.2,
-		shadowRadius: 10,
-		elevation: 4,
-	},
-	longPressEmbarquerButtonPressed: {
-		opacity: 0.8,
-	},
-	longPressEmbarquerButtonText: {
-		color: COLORS.background,
-		fontSize: 16,
-		fontWeight: '700',
-		letterSpacing: 0.3,
-	},
-});
 
 export default HomeScreen;
