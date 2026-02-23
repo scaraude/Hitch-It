@@ -10,8 +10,7 @@ import { NavigationHeader } from '../../../navigation/components';
 import type { NavigationRoute } from '../../../navigation/types';
 import type { Location } from '../../../types';
 import { homeScreenStyles as styles } from '../homeScreenStyles';
-
-type TabId = 'home' | 'search' | 'add' | 'history' | 'profile';
+import type { HomeTabId } from '../types';
 
 interface HomeFixedOverlayProps {
 	isNavigationActive: boolean;
@@ -34,7 +33,7 @@ interface HomeFixedOverlayProps {
 	onResetHeading: () => void;
 	onLocateUser: () => void;
 	onLongPressEmbarquer: () => void;
-	onTabPress: (tabId: TabId) => void;
+	onTabPress: (tabId: HomeTabId) => void;
 }
 
 export const HomeFixedOverlay: React.FC<HomeFixedOverlayProps> = ({

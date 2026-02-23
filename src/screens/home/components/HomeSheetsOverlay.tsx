@@ -9,13 +9,8 @@ import {
 import type { NavigationRoute, SpotOnRoute } from '../../../navigation/types';
 import { SpotDetailsSheet, SpotForm } from '../../../spot/components';
 import type { Spot } from '../../../spot/types';
-import type { Location } from '../../../types';
 import { homeScreenStyles as styles } from '../homeScreenStyles';
-
-interface AddressData {
-	location: Location;
-	name: string;
-}
+import type { NamedLocation } from '../types';
 
 interface HomeSheetsOverlayProps {
 	isPlacingSpot: boolean;
@@ -26,8 +21,8 @@ interface HomeSheetsOverlayProps {
 	navigationRoute: NavigationRoute | null;
 	navigationSpotsOnRoute: SpotOnRoute[];
 	journeyDurationMinutes: number;
-	embarquerOrigin: AddressData | null;
-	embarquerDestination: AddressData | null;
+	embarquerOrigin: NamedLocation | null;
+	embarquerDestination: NamedLocation | null;
 	onConfirmSpotPlacement: () => void;
 	onCancelSpotPlacement: () => void;
 	onSubmitSpotForm: React.ComponentProps<typeof SpotForm>['onSubmit'];
