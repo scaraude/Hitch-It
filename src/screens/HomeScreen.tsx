@@ -68,6 +68,7 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 		submitSpotForm,
 		cancelSpotForm,
 		selectSpot,
+		selectSpotEntity,
 		deselectSpot,
 	} = useSpotContext();
 
@@ -100,6 +101,9 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 	const [isFollowingUser, setIsFollowingUser] = useState(false);
 
 	const mapViewRef = useRef<MapViewRef>(null);
+	const followUserTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+		null
+	);
 
 	// Arrival detection
 	const { hasArrived } = useArrivalDetection(navigation.route, userLocation);
@@ -127,9 +131,20 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 		(markerId: string) => {
 			// Clear long press marker when tapping a spot
 			setLongPressMarker(null);
+
+			if (navigation.isActive) {
+				const routeSpot = navigation.spotsOnRoute.find(
+					({ spot }) => spot.id === markerId
+				);
+				if (routeSpot) {
+					selectSpotEntity(routeSpot.spot);
+					return;
+				}
+			}
+
 			selectSpot(markerId);
 		},
-		[selectSpot]
+		[navigation.isActive, navigation.spotsOnRoute, selectSpot, selectSpotEntity]
 	);
 
 	const handleLongPress = useCallback(
@@ -408,9 +423,24 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 		mapViewRef.current?.animateToRegion(region, 500);
 		setIsFollowingUser(true);
 
+		if (followUserTimeoutRef.current) {
+			clearTimeout(followUserTimeoutRef.current);
+		}
+
 		// Reset following state after user moves the map
-		setTimeout(() => setIsFollowingUser(false), 3000);
+		followUserTimeoutRef.current = setTimeout(() => {
+			setIsFollowingUser(false);
+			followUserTimeoutRef.current = null;
+		}, 3000);
 	}, [userLocation]);
+
+	useEffect(() => {
+		return () => {
+			if (followUserTimeoutRef.current) {
+				clearTimeout(followUserTimeoutRef.current);
+			}
+		};
+	}, []);
 
 	return (
 		<View style={styles.container}>

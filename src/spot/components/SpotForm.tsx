@@ -35,6 +35,11 @@ export const SpotForm: React.FC<SpotFormProps> = ({ onSubmit, onCancel }) => {
 	const [direction, setDirection] = useState<Direction | undefined>(undefined);
 	const [destinationInput, setDestinationInput] = useState('');
 	const [destinations, setDestinations] = useState<string[]>([]);
+	const isFormValid =
+		roadName.trim().length > 0 &&
+		!!direction &&
+		destinations.length > 0 &&
+		appreciation !== undefined;
 
 	const handleAddDestination = useCallback(() => {
 		const trimmed = destinationInput.trim();
@@ -48,12 +53,7 @@ export const SpotForm: React.FC<SpotFormProps> = ({ onSubmit, onCancel }) => {
 	}, []);
 
 	const handleSubmit = useCallback(() => {
-		if (
-			!roadName.trim() ||
-			!direction ||
-			destinations.length === 0 ||
-			appreciation === undefined
-		) {
+		if (!isFormValid || !direction || appreciation === undefined) {
 			return;
 		}
 		onSubmit({
@@ -62,7 +62,7 @@ export const SpotForm: React.FC<SpotFormProps> = ({ onSubmit, onCancel }) => {
 			direction,
 			destinations,
 		});
-	}, [appreciation, destinations, direction, onSubmit, roadName]);
+	}, [appreciation, destinations, direction, isFormValid, onSubmit, roadName]);
 
 	return (
 		<View
@@ -180,13 +180,10 @@ export const SpotForm: React.FC<SpotFormProps> = ({ onSubmit, onCancel }) => {
 						style={[
 							styles.button,
 							styles.submitButton,
-							(!roadName.trim() || !direction || destinations.length === 0) &&
-								styles.submitButtonDisabled,
+							!isFormValid && styles.submitButtonDisabled,
 						]}
 						onPress={handleSubmit}
-						disabled={
-							!roadName.trim() || !direction || destinations.length === 0
-						}
+						disabled={!isFormValid}
 						accessibilityLabel={A11Y_LABELS.confirmSpot}
 						accessibilityHint={A11Y_LABELS.confirmSpotHint}
 						accessibilityRole="button"

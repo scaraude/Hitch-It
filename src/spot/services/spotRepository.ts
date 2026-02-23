@@ -45,6 +45,26 @@ type CachedRegion = {
 
 const cache: CachedRegion[] = [];
 const CACHE_PADDING = 0.1;
+const CACHE_TTL_MS = 60_000;
+const MAX_CACHE_REGIONS = 12;
+
+const pruneCache = () => {
+	const oldestAllowed = Date.now() - CACHE_TTL_MS;
+
+	for (let i = cache.length - 1; i >= 0; i--) {
+		if (cache[i].fetchedAt.getTime() < oldestAllowed) {
+			cache.splice(i, 1);
+		}
+	}
+
+	if (cache.length > MAX_CACHE_REGIONS) {
+		cache.splice(0, cache.length - MAX_CACHE_REGIONS);
+	}
+};
+
+const clearSpotCache = () => {
+	cache.length = 0;
+};
 
 export const getSpotsInBounds = async (bounds: MapBounds): Promise<Spot[]> => {
 	logger.repository.debug('Fetching spots in bounds', {
@@ -53,6 +73,8 @@ export const getSpotsInBounds = async (bounds: MapBounds): Promise<Spot[]> => {
 		east: bounds.east,
 		west: bounds.west,
 	});
+
+	pruneCache();
 
 	const cachedRegion = cache.find(region =>
 		isFullyContained(bounds, region.bounds)
@@ -92,6 +114,7 @@ export const getSpotsInBounds = async (bounds: MapBounds): Promise<Spot[]> => {
 			spots,
 			fetchedAt: new Date(),
 		});
+		pruneCache();
 
 		logger.repository.info('Spots fetched and cached', {
 			count: spots.length,
@@ -172,6 +195,7 @@ export const createSpot = async (spot: Spot): Promise<void> => {
 		if (error) {
 			throw error;
 		}
+		clearSpotCache();
 		logger.repository.info('Spot created successfully', { id: spot.id });
 	} catch (error) {
 		logger.repository.error('Failed to create spot', error, { id: spot.id });
@@ -198,6 +222,7 @@ export const updateSpot = async (spot: Spot): Promise<void> => {
 		if (error) {
 			throw error;
 		}
+		clearSpotCache();
 		logger.repository.info('Spot updated successfully', { id: spot.id });
 	} catch (error) {
 		logger.repository.error('Failed to update spot', error, { id: spot.id });
@@ -212,6 +237,7 @@ export const deleteSpot = async (id: string): Promise<void> => {
 		if (error) {
 			throw error;
 		}
+		clearSpotCache();
 		logger.repository.info('Spot deleted successfully', { id });
 	} catch (error) {
 		logger.repository.error('Failed to delete spot', error, { id });

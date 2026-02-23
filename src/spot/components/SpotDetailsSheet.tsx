@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import type React from 'react';
 import {
 	Linking,
@@ -76,7 +77,7 @@ export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 					accessibilityRole="button"
 					testID="spot-details-close"
 				>
-					<Text style={styles.closeButtonText}>✕</Text>
+					<Ionicons name="close" size={20} color={COLORS.text} />
 				</Pressable>
 			</BottomSheetHeader>
 
@@ -129,7 +130,14 @@ export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 						accessibilityLabel={A11Y_LABELS.openMap}
 						accessibilityRole="button"
 					>
-						<Text style={styles.mapButtonText}>📍 Voir sur la carte</Text>
+						<View style={styles.actionButtonContent}>
+							<Ionicons
+								name="map-outline"
+								size={16}
+								color={COLORS.background}
+							/>
+							<Text style={styles.mapButtonText}>Voir sur la carte</Text>
+						</View>
 					</Pressable>
 					<Pressable
 						style={styles.directionsButton}
@@ -137,7 +145,14 @@ export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 						accessibilityLabel={A11Y_LABELS.getDirections}
 						accessibilityRole="button"
 					>
-						<Text style={styles.directionsButtonText}>🧭 Itinéraire</Text>
+						<View style={styles.actionButtonContent}>
+							<Ionicons
+								name="navigate-outline"
+								size={16}
+								color={COLORS.primary}
+							/>
+							<Text style={styles.directionsButtonText}>Itinéraire</Text>
+						</View>
 					</Pressable>
 				</View>
 
@@ -178,9 +193,12 @@ export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 						accessibilityRole="button"
 						testID="spot-embarquer-button"
 					>
-						<Text style={styles.embarquerButtonText}>
-							🚗 Embarquer depuis ce spot
-						</Text>
+						<View style={styles.actionButtonContent}>
+							<Ionicons name="car" size={18} color={COLORS.background} />
+							<Text style={styles.embarquerButtonText}>
+								Embarquer depuis ce spot
+							</Text>
+						</View>
 					</Pressable>
 				) : null}
 			</ScrollView>
@@ -210,10 +228,10 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 		justifyContent: 'center',
 	},
-	closeButtonText: {
-		fontSize: SIZES.fontLg,
-		color: COLORS.text,
-		fontWeight: 'bold',
+	actionButtonContent: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		gap: SPACING.sm,
 	},
 	content: {
 		paddingHorizontal: SPACING.lg,

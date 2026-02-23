@@ -12,7 +12,7 @@ import type {
 	Spot,
 	SpotMarkerData,
 } from '../types';
-import { createSpotId } from '../utils';
+import { generateSpotId } from '../utils';
 
 export interface SpotFormData {
 	appreciation: Appreciation;
@@ -34,6 +34,7 @@ export interface UseSpotsReturn {
 	submitSpotForm: (formData: SpotFormData) => void;
 	cancelSpotForm: () => void;
 	selectSpot: (spotId: string) => void;
+	selectSpotEntity: (spot: Spot) => void;
 	deselectSpot: () => void;
 }
 
@@ -134,7 +135,7 @@ export const useSpots = (
 
 		const now = new Date();
 		const newSpot: Spot = {
-			id: createSpotId(Date.now().toString()),
+			id: generateSpotId(),
 			coordinates: pendingLocation,
 			roadName: formData.roadName,
 			appreciation: formData.appreciation,
@@ -186,14 +187,18 @@ export const useSpots = (
 	};
 
 	const selectSpot = (spotId: string) => {
-		const spotIdBranded = createSpotId(spotId);
-		const spot = fullSpots.find(s => s.id === spotIdBranded);
+		const spot = fullSpots.find(s => s.id === spotId);
 		if (spot) {
 			logger.spot.info('Spot selected', { spotId });
 			setSelectedSpot(spot);
 		} else {
 			logger.spot.warn('Spot not found for selection', { spotId });
 		}
+	};
+
+	const selectSpotEntity = (spot: Spot) => {
+		logger.spot.info('Spot entity selected', { spotId: spot.id });
+		setSelectedSpot(spot);
 	};
 
 	const deselectSpot = () => {
@@ -214,6 +219,7 @@ export const useSpots = (
 		submitSpotForm,
 		cancelSpotForm,
 		selectSpot,
+		selectSpotEntity,
 		deselectSpot,
 	};
 };

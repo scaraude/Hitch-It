@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import type React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -38,7 +39,7 @@ export const SearchBarOverlay: React.FC<SearchBarOverlayProps> = ({
 						accessibilityLabel="Fermer la recherche"
 						accessibilityRole="button"
 					>
-						<Text style={styles.backIcon}>←</Text>
+						<Ionicons name="arrow-back" size={22} style={styles.backIcon} />
 					</Pressable>
 					<View style={styles.inputWrapper}>
 						<AddressInput
@@ -83,7 +84,7 @@ export const SearchBarOverlay: React.FC<SearchBarOverlayProps> = ({
 			accessibilityRole="button"
 			testID="search-bar-collapsed"
 		>
-			<Text style={styles.searchIcon}>⌕</Text>
+			<Ionicons name="search" size={SIZES.iconMd} style={styles.searchIcon} />
 		</Pressable>
 	);
 };
@@ -105,7 +106,6 @@ const styles = StyleSheet.create({
 		elevation: 3,
 	},
 	searchIcon: {
-		fontSize: SIZES.iconMd,
 		color: '#484C52',
 	},
 	expandedContainer: {
@@ -136,11 +136,7 @@ const styles = StyleSheet.create({
 		borderRadius: 20,
 	},
 	backIcon: {
-		fontSize: 22,
 		color: '#484C52',
-		textAlign: 'center',
-		includeFontPadding: false,
-		textAlignVertical: 'center',
 	},
 	inputWrapper: {
 		flex: 1,

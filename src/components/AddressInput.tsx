@@ -60,18 +60,27 @@ export function AddressInput({
 
 	const debouncedSearchText = useDebouncedValue(value, 300);
 	const suggestionsOpacity = useRef(new Animated.Value(0)).current;
+	const blurTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
 	useEffect(() => {
+		let isMounted = true;
+
 		const fetchSuggestions = async () => {
 			if (!debouncedSearchText.trim()) {
-				setSuggestions([]);
-				suggestionsOpacity.setValue(0);
+				if (isMounted) {
+					setSuggestions([]);
+					suggestionsOpacity.setValue(0);
+				}
 				return;
 			}
 
-			setIsLoading(true);
+			if (isMounted) {
+				setIsLoading(true);
+			}
 			try {
 				const results = await searchPlaces(debouncedSearchText);
+				if (!isMounted) return;
+
 				setSuggestions(results);
 				if (results.length > 0) {
 					Animated.timing(suggestionsOpacity, {
@@ -81,15 +90,23 @@ export function AddressInput({
 					}).start();
 				}
 			} catch (error) {
+				if (!isMounted) return;
+
 				logger.app.error('Failed to fetch search suggestions', error);
 				setSuggestions([]);
 				suggestionsOpacity.setValue(0);
 			} finally {
-				setIsLoading(false);
+				if (isMounted) {
+					setIsLoading(false);
+				}
 			}
 		};
 
-		fetchSuggestions();
+		void fetchSuggestions();
+
+		return () => {
+			isMounted = false;
+		};
 	}, [debouncedSearchText, suggestionsOpacity]);
 
 	const handleSuggestionPress = useCallback(
@@ -108,7 +125,11 @@ export function AddressInput({
 	const handleBlur = useCallback(() => {
 		setIsFocused(false);
 		// Delay hiding suggestions to allow press to register
-		setTimeout(() => {
+		if (blurTimeoutRef.current) {
+			clearTimeout(blurTimeoutRef.current);
+		}
+
+		blurTimeoutRef.current = setTimeout(() => {
 			Animated.timing(suggestionsOpacity, {
 				toValue: 0,
 				duration: 150,
@@ -116,6 +137,14 @@ export function AddressInput({
 			}).start(() => setSuggestions([]));
 		}, 200);
 	}, [suggestionsOpacity]);
+
+	useEffect(() => {
+		return () => {
+			if (blurTimeoutRef.current) {
+				clearTimeout(blurTimeoutRef.current);
+			}
+		};
+	}, []);
 
 	const handleFocus = useCallback(() => {
 		setIsFocused(true);

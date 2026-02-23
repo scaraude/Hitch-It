@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import {
 	KeyboardAvoidingView,
@@ -77,7 +78,7 @@ export function EmbarquerSheet({
 					accessibilityRole="button"
 					testID="embarquer-sheet-close"
 				>
-					<Text style={styles.closeButtonText}>✕</Text>
+					<Ionicons name="close" size={20} color={COLORS.text} />
 				</Pressable>
 			</BottomSheetHeader>
 
@@ -132,14 +133,21 @@ export function EmbarquerSheet({
 					disabled={!canStart}
 					testID="embarquer-start-button"
 				>
-					<Text
-						style={[
-							styles.startButtonText,
-							!canStart && styles.startButtonTextDisabled,
-						]}
-					>
-						🚗 Démarrer
-					</Text>
+					<View style={styles.startButtonContent}>
+						<Ionicons
+							name="car"
+							size={18}
+							color={canStart ? COLORS.textLight : COLORS.textSecondary}
+						/>
+						<Text
+							style={[
+								styles.startButtonText,
+								!canStart && styles.startButtonTextDisabled,
+							]}
+						>
+							Démarrer
+						</Text>
+					</View>
 				</Pressable>
 			</View>
 		</KeyboardAvoidingView>
@@ -169,11 +177,6 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 		justifyContent: 'center',
 	},
-	closeButtonText: {
-		fontSize: SIZES.fontLg,
-		color: COLORS.text,
-		fontWeight: 'bold',
-	},
 	content: {
 		paddingHorizontal: SPACING.lg,
 	},
@@ -197,6 +200,11 @@ const styles = StyleSheet.create({
 		paddingVertical: SPACING.lg,
 		borderRadius: SIZES.radiusMedium,
 		alignItems: 'center',
+	},
+	startButtonContent: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		gap: SPACING.sm,
 	},
 	startButtonDisabled: {
 		backgroundColor: COLORS.surface,

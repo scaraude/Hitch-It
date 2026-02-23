@@ -22,6 +22,59 @@ export interface LocationTrackingCallbacks {
 	onError?: (error: Error) => void;
 }
 
+const backgroundTaskCallbacks: LocationTrackingCallbacks = {};
+let isBackgroundTaskDefined = false;
+
+const toLocationUpdate = (
+	location: LocationTaskData['locations'][number]
+): LocationUpdate => ({
+	latitude: location.coords.latitude,
+	longitude: location.coords.longitude,
+	timestamp: new Date(location.timestamp),
+	speed: location.coords.speed ?? undefined,
+	accuracy: location.coords.accuracy ?? undefined,
+});
+
+const ensureBackgroundLocationTaskDefined = () => {
+	if (
+		isBackgroundTaskDefined ||
+		TaskManager.isTaskDefined(LOCATION_TASK_NAME)
+	) {
+		isBackgroundTaskDefined = true;
+		return;
+	}
+
+	TaskManager.defineTask(
+		LOCATION_TASK_NAME,
+		async ({
+			data,
+			error,
+		}: TaskManager.TaskManagerTaskBody<LocationTaskData>) => {
+			if (error) {
+				logger.location.error(
+					'Background location task error',
+					new Error(error.message)
+				);
+				backgroundTaskCallbacks.onError?.(new Error(error.message));
+				return;
+			}
+
+			if (!data?.locations?.length) return;
+
+			const locationUpdate = toLocationUpdate(data.locations[0]);
+			logger.location.debug('Background location update received', {
+				latitude: locationUpdate.latitude,
+				longitude: locationUpdate.longitude,
+				speed: locationUpdate.speed,
+				accuracy: locationUpdate.accuracy,
+			});
+			backgroundTaskCallbacks.onLocationUpdate?.(locationUpdate);
+		}
+	);
+
+	isBackgroundTaskDefined = true;
+};
+
 class LocationTrackingService {
 	private isTracking = false;
 	private callbacks: LocationTrackingCallbacks = {};
@@ -69,6 +122,8 @@ class LocationTrackingService {
 			logger.location.warn('Location tracking is already active');
 			// Update callbacks so new listeners can receive updates
 			this.callbacks = callbacks;
+			backgroundTaskCallbacks.onLocationUpdate = callbacks.onLocationUpdate;
+			backgroundTaskCallbacks.onError = callbacks.onError;
 			return true;
 		}
 
@@ -82,6 +137,8 @@ class LocationTrackingService {
 		}
 
 		this.callbacks = callbacks;
+		backgroundTaskCallbacks.onLocationUpdate = callbacks.onLocationUpdate;
+		backgroundTaskCallbacks.onError = callbacks.onError;
 
 		try {
 			// Check if background location is available
@@ -118,45 +175,8 @@ class LocationTrackingService {
 	}
 
 	private async startBackgroundTracking(): Promise<void> {
-		logger.location.debug('Defining background location task');
-		// Define the background task
-		TaskManager.defineTask(
-			LOCATION_TASK_NAME,
-			async ({
-				data,
-				error,
-			}: TaskManager.TaskManagerTaskBody<LocationTaskData>) => {
-				if (error) {
-					logger.location.error(
-						'Background location task error',
-						new Error(error.message)
-					);
-					this.callbacks.onError?.(new Error(error.message));
-					return;
-				}
-
-				if (data) {
-					const { locations } = data;
-					if (locations && locations.length > 0) {
-						const location = locations[0];
-						const locationUpdate: LocationUpdate = {
-							latitude: location.coords.latitude,
-							longitude: location.coords.longitude,
-							timestamp: new Date(location.timestamp),
-							speed: location.coords.speed ?? undefined,
-							accuracy: location.coords.accuracy ?? undefined,
-						};
-						logger.location.debug('Background location update received', {
-							latitude: locationUpdate.latitude,
-							longitude: locationUpdate.longitude,
-							speed: locationUpdate.speed,
-							accuracy: locationUpdate.accuracy,
-						});
-						this.callbacks.onLocationUpdate?.(locationUpdate);
-					}
-				}
-			}
-		);
+		logger.location.debug('Ensuring background location task is defined');
+		ensureBackgroundLocationTaskDefined();
 
 		// Start background location updates
 		logger.location.debug(
@@ -234,6 +254,8 @@ class LocationTrackingService {
 
 			this.isTracking = false;
 			this.callbacks = {};
+			backgroundTaskCallbacks.onLocationUpdate = undefined;
+			backgroundTaskCallbacks.onError = undefined;
 			logger.location.info('Location tracking stopped successfully');
 		} catch (error) {
 			logger.location.error('Error stopping location tracking', error);

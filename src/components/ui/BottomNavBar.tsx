@@ -1,22 +1,40 @@
+import { Ionicons } from '@expo/vector-icons';
 import type React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS, SIZES, SPACING } from '../../constants';
 
 type TabId = 'home' | 'search' | 'add' | 'history' | 'profile';
+type IconName = React.ComponentProps<typeof Ionicons>['name'];
 
 interface TabConfig {
 	id: TabId;
 	label: string;
-	icon: string;
+	icon: IconName;
+	activeIcon: IconName;
 }
 
 const TABS: TabConfig[] = [
-	{ id: 'home', label: 'Home', icon: '⌂' },
-	{ id: 'search', label: 'Search', icon: '⌕' },
-	{ id: 'add', label: '', icon: '+' },
-	{ id: 'history', label: 'History', icon: '⏱' },
-	{ id: 'profile', label: 'Profile', icon: '👤' },
+	{ id: 'home', label: 'Home', icon: 'home-outline', activeIcon: 'home' },
+	{
+		id: 'search',
+		label: 'Search',
+		icon: 'search-outline',
+		activeIcon: 'search',
+	},
+	{ id: 'add', label: '', icon: 'add', activeIcon: 'add' },
+	{
+		id: 'history',
+		label: 'History',
+		icon: 'time-outline',
+		activeIcon: 'time',
+	},
+	{
+		id: 'profile',
+		label: 'Profile',
+		icon: 'person-outline',
+		activeIcon: 'person',
+	},
 ];
 
 interface BottomNavBarProps {
@@ -44,7 +62,12 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
 					accessibilityRole="button"
 					testID="bottom-nav-add"
 				>
-					<Text style={styles.addButtonIcon}>+</Text>
+					<Ionicons
+						name="add"
+						size={36}
+						color={COLORS.background}
+						style={styles.addButtonIcon}
+					/>
 				</Pressable>
 			</View>
 
@@ -78,11 +101,12 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
 								accessibilityState={{ selected: isActive }}
 								testID={`bottom-nav-${tab.id}`}
 							>
-								<Text
-									style={[styles.tabIcon, isActive && styles.tabIconActive]}
-								>
-									{tab.icon}
-								</Text>
+								<Ionicons
+									name={isActive ? tab.activeIcon : tab.icon}
+									size={SIZES.iconMd}
+									color={isActive ? PRIMARY_BLUE : TEXT_GRAY}
+									style={styles.tabIcon}
+								/>
 								<Text
 									style={[styles.tabLabel, isActive && styles.tabLabelActive]}
 								>
@@ -139,12 +163,7 @@ const styles = StyleSheet.create({
 		opacity: 0.7,
 	},
 	tabIcon: {
-		fontSize: SIZES.iconMd,
-		color: TEXT_GRAY,
 		marginBottom: SPACING.xs,
-	},
-	tabIconActive: {
-		color: PRIMARY_BLUE,
 	},
 	tabLabel: {
 		fontSize: SIZES.fontMd,
@@ -177,8 +196,6 @@ const styles = StyleSheet.create({
 		transform: [{ scale: 0.95 }],
 	},
 	addButtonIcon: {
-		fontSize: 36,
-		color: COLORS.background,
 		fontWeight: '500',
 	},
 });
