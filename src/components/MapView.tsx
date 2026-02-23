@@ -15,12 +15,14 @@ import type { Location, MapRegion } from '../types';
 export interface MapViewRef {
 	animateToRegion(region: MapRegion, duration?: number): void;
 	getCurrentRegion(): MapRegion | undefined;
+	animateToBearing(bearing: number, duration?: number): void;
 }
 
 interface MapViewComponentProps {
 	initialRegion?: MapRegion;
 	markers?: SpotMarkerData[];
 	onRegionChange?: (region: Region) => void;
+	onHeadingChange?: (heading: number) => void;
 	onMarkerPress?: (markerId: string) => void;
 	onLongPress?: (location: Location) => void;
 	onPress?: (location: Location) => void;
@@ -35,6 +37,7 @@ const MapViewComponent = forwardRef<MapViewRef, MapViewComponentProps>(
 			initialRegion = MAP_CONFIG.defaultRegion,
 			markers = [],
 			onRegionChange,
+			onHeadingChange,
 			onMarkerPress,
 			onLongPress,
 			onPress,
@@ -55,14 +58,24 @@ const MapViewComponent = forwardRef<MapViewRef, MapViewComponentProps>(
 				setCurrentRegion(region);
 			},
 			getCurrentRegion: () => currentRegion,
+			animateToBearing: (bearing: number, duration = 300) => {
+				mapRef.current?.animateCamera({ heading: bearing }, { duration });
+			},
 		}));
 
 		const handleRegionChangeComplete = useCallback(
 			(newRegion: Region) => {
 				setCurrentRegion(newRegion);
 				onRegionChange?.(newRegion);
+
+				// Get camera to report heading
+				mapRef.current?.getCamera().then(camera => {
+					if (camera.heading !== undefined) {
+						onHeadingChange?.(camera.heading);
+					}
+				});
 			},
-			[onRegionChange]
+			[onRegionChange, onHeadingChange]
 		);
 
 		const handleMarkerPress = useCallback(
@@ -94,8 +107,8 @@ const MapViewComponent = forwardRef<MapViewRef, MapViewComponentProps>(
 				onRegionChangeComplete={handleRegionChangeComplete}
 				showsUserLocation={showUserLocation}
 				followsUserLocation={followUserLocation}
-				showsMyLocationButton={true}
-				showsCompass={true}
+				showsMyLocationButton={false}
+				showsCompass={false}
 				showsScale={true}
 				mapType="standard"
 				moveOnMarkerPress={false}

@@ -1,3 +1,4 @@
+import { useFocusEffect } from '@react-navigation/native';
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -10,20 +11,17 @@ import {
 	Text,
 	View,
 } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
 import { Marker } from 'react-native-maps';
-import {
-	SafeAreaView,
-	useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import {
 	ActionButtons,
-	AddressInput,
-	Header,
+	BottomNavBar,
 	LoadingSpinner,
+	MapControls,
 	MapViewComponent,
 	type MapViewRef,
+	SearchBarOverlay,
 } from '../components';
 import { toastUtils } from '../components/ui';
 import { COLORS } from '../constants';
@@ -98,6 +96,8 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 		name: string;
 	} | null>(null);
 	const [isSearchOpen, setIsSearchOpen] = useState(false);
+	const [mapHeading, setMapHeading] = useState(0);
+	const [isFollowingUser, setIsFollowingUser] = useState(false);
 
 	const mapViewRef = useRef<MapViewRef>(null);
 
@@ -336,11 +336,11 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 		() =>
 			navigation.isActive
 				? navigation.spotsOnRoute.map(({ spot }) => ({
-					id: spot.id as string,
-					coordinates: spot.coordinates,
-					title: spot.roadName,
-					description: `${spot.appreciation} - ${spot.direction}`,
-				}))
+						id: spot.id as string,
+						coordinates: spot.coordinates,
+						title: spot.roadName,
+						description: `${spot.appreciation} - ${spot.direction}`,
+					}))
 				: spots,
 		[navigation.isActive, navigation.spotsOnRoute, spots]
 	);
@@ -356,10 +356,8 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 		!isShowingForm &&
 		!showEmbarquerSheet &&
 		!selectedSpot &&
-		!showCompletionSheet &&
-		!isSearchOpen;
+		!showCompletionSheet;
 
-	const shouldShowSearchPanel = isSearchOpen && canUseSearch;
 	const shouldShowSearchEmbarquer =
 		!!searchDestination && !navigation.isActive && !showEmbarquerSheet;
 
@@ -369,11 +367,53 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 		}
 	}, [canUseSearch, isSearchOpen]);
 
+	const handleTabPress = useCallback(
+		(tabId: string) => {
+			switch (tabId) {
+				case 'add':
+					startPlacingSpot();
+					break;
+				case 'search':
+					handleSearchToggle();
+					break;
+				case 'home':
+				case 'history':
+				case 'profile':
+					// Mock tabs - not wired yet
+					break;
+			}
+		},
+		[startPlacingSpot, handleSearchToggle]
+	);
+
+	const handleHeadingChange = useCallback((heading: number) => {
+		setMapHeading(heading);
+	}, []);
+
+	const handleResetHeading = useCallback(() => {
+		mapViewRef.current?.animateToBearing(0);
+		setMapHeading(0);
+	}, []);
+
+	const handleLocateUser = useCallback(() => {
+		if (!userLocation) return;
+
+		const region: MapRegion = {
+			latitude: userLocation.latitude,
+			longitude: userLocation.longitude,
+			latitudeDelta: 0.01,
+			longitudeDelta: 0.01,
+		};
+
+		mapViewRef.current?.animateToRegion(region, 500);
+		setIsFollowingUser(true);
+
+		// Reset following state after user moves the map
+		setTimeout(() => setIsFollowingUser(false), 3000);
+	}, [userLocation]);
+
 	return (
-		<SafeAreaView
-			style={styles.container}
-			edges={['top', 'left', 'right', 'bottom']}
-		>
+		<View style={styles.container}>
 			<View style={styles.mapContainer}>
 				{locationLoading ? (
 					<LoadingSpinner message="Getting your location..." />
@@ -384,6 +424,7 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 							initialRegion={currentRegion}
 							markers={visibleSpots}
 							onRegionChange={handleRegionChange}
+							onHeadingChange={handleHeadingChange}
 							onMarkerPress={handleMarkerPress}
 							onLongPress={handleLongPress}
 							onPress={handleMapPress}
@@ -427,12 +468,8 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 				)}
 			</View>
 
-			<KeyboardAvoidingView
-				style={styles.nonMapOverlay}
-				behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-				keyboardVerticalOffset={insets.bottom}
-				pointerEvents="box-none"
-			>
+			{/* Non-keyboard-aware overlay for fixed elements */}
+			<View style={styles.nonMapOverlay} pointerEvents="box-none">
 				{/* Navigation header (only when active) */}
 				{navigation.isActive && navigation.route && (
 					<NavigationHeader
@@ -442,8 +479,31 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 					/>
 				)}
 
-				{/* Regular header (only when not navigating) */}
-				{!navigation.isActive && <Header title="Hitch It" />}
+				{/* Search bar overlay (top left) - only when not navigating */}
+				{!navigation.isActive && canUseSearch && (
+					<SearchBarOverlay
+						isExpanded={isSearchOpen}
+						searchText={searchText}
+						onSearchTextChange={handleSearchTextChange}
+						onLocationSelected={handleSearchLocationSelected}
+						onToggle={handleSearchToggle}
+						onEmbarquer={handleSearchEmbarquer}
+						showEmbarquer={shouldShowSearchEmbarquer}
+					/>
+				)}
+
+				{/* Map controls (compass + locate) */}
+				{!isPlacingSpot && !isShowingForm && (
+					<MapControls
+						mapHeading={mapHeading}
+						isFollowingUser={isFollowingUser}
+						onResetHeading={handleResetHeading}
+						onLocateUser={handleLocateUser}
+						bottomOffset={
+							shouldShowBottomBar ? 110 + insets.bottom : 24 + insets.bottom
+						}
+					/>
+				)}
 
 				{/* Long press embarquer button */}
 				{longPressMarker && !navigation.isActive && !isSearchOpen && (
@@ -463,82 +523,19 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 					</Pressable>
 				)}
 
-				<View style={styles.bottomOverlay} pointerEvents="box-none">
-					{shouldShowSearchPanel && (
-						<View style={styles.searchSheet}>
-							<AddressInput
-								placeholder="Rechercher une destination"
-								value={searchText}
-								onChangeText={handleSearchTextChange}
-								onLocationSelected={handleSearchLocationSelected}
-								icon="⌕"
-								autoFocus
-								showEmptyState
-								hapticFeedback
-								showTopSuggestionLabel
-								suggestionsPlacement="above"
-								containerStyle={styles.searchInputContainer}
-								inputContainerStyle={styles.searchInputInner}
-								suggestionsStyle="dropdown"
-								testID="map-search-input"
-							/>
-							{shouldShowSearchEmbarquer ? (
-								<Pressable
-									style={({ pressed }) => [
-										styles.searchEmbarquerButton,
-										pressed && styles.searchEmbarquerButtonPressed,
-									]}
-									onPress={handleSearchEmbarquer}
-								>
-									<Text style={styles.searchEmbarquerButtonText}>
-										Embarquer
-									</Text>
-								</Pressable>
-							) : null}
-						</View>
-					)}
+				{/* Bottom navigation bar - outside KeyboardAvoidingView */}
+				{shouldShowBottomBar && (
+					<BottomNavBar activeTab="home" onTabPress={handleTabPress} />
+				)}
+			</View>
 
-					{shouldShowBottomBar && (
-						<View
-							style={[
-								styles.bottomNav,
-								{ paddingBottom: Math.max(insets.bottom, 10) },
-							]}
-						>
-							<View style={styles.bottomNavRow}>
-								<Pressable
-									style={({ pressed }) => [
-										styles.bottomNavButton,
-										pressed && styles.bottomNavButtonPressed,
-									]}
-									onPress={startPlacingSpot}
-									accessibilityLabel="Ajouter un spot"
-									accessibilityRole="button"
-									testID="bottom-nav-add-spot"
-								>
-									<Text style={styles.bottomNavIcon}>＋</Text>
-									<Text style={styles.bottomNavLabel}>Spot</Text>
-								</Pressable>
-
-								<Pressable
-									style={({ pressed }) => [
-										styles.bottomNavButton,
-										styles.bottomNavSearchButton,
-										pressed && styles.bottomNavButtonPressed,
-									]}
-									onPress={handleSearchToggle}
-									accessibilityLabel="Rechercher une destination"
-									accessibilityRole="button"
-									testID="bottom-nav-search"
-								>
-									<Text style={styles.bottomNavSearchIcon}>⌕</Text>
-									<Text style={styles.bottomNavSearchLabel}>Rechercher</Text>
-								</Pressable>
-							</View>
-						</View>
-					)}
-				</View>
-
+			{/* Keyboard-aware overlay for sheets and forms */}
+			<KeyboardAvoidingView
+				style={styles.nonMapOverlay}
+				behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+				keyboardVerticalOffset={0}
+				pointerEvents="box-none"
+			>
 				{isPlacingSpot ? (
 					<ActionButtons
 						onConfirm={onConfirmSpotPlacement}
@@ -581,7 +578,7 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 
 				<Toast />
 			</KeyboardAvoidingView>
-		</SafeAreaView>
+		</View>
 	);
 };
 
@@ -647,7 +644,7 @@ const styles = StyleSheet.create({
 		position: 'absolute',
 		left: 16,
 		right: 16,
-		backgroundColor: '#0F6A4E',
+		backgroundColor: '#539DF3',
 		paddingVertical: 14,
 		borderRadius: 16,
 		alignItems: 'center',
@@ -661,135 +658,10 @@ const styles = StyleSheet.create({
 		opacity: 0.8,
 	},
 	longPressEmbarquerButtonText: {
-		color: '#F8F6F1',
+		color: COLORS.background,
 		fontSize: 16,
 		fontWeight: '700',
 		letterSpacing: 0.3,
-	},
-	bottomOverlay: {
-		position: 'absolute',
-		left: 0,
-		right: 0,
-		bottom: 0,
-		paddingHorizontal: 0,
-		paddingBottom: 0,
-	},
-	searchSheet: {
-		backgroundColor: '#F7EAD7',
-		borderRadius: 20,
-		padding: 12,
-		borderWidth: 1,
-		borderColor: '#E2CDB3',
-		shadowColor: '#2D2216',
-		shadowOffset: { width: 0, height: 10 },
-		shadowOpacity: 0.16,
-		shadowRadius: 16,
-		elevation: 5,
-		marginBottom: 10,
-		overflow: 'visible',
-	},
-	searchInputContainer: {
-		marginBottom: 6,
-	},
-	searchInputInner: {
-		backgroundColor: '#FDF4E9',
-		borderWidth: 1,
-		borderColor: '#E7D2B5',
-		paddingVertical: 8,
-	},
-	searchEmbarquerButton: {
-		alignSelf: 'flex-end',
-		backgroundColor: '#CDAE7C',
-		borderRadius: 14,
-		paddingVertical: 8,
-		paddingHorizontal: 14,
-		alignItems: 'center',
-		marginTop: 4,
-	},
-	searchEmbarquerButtonPressed: {
-		opacity: 0.85,
-	},
-	searchEmbarquerButtonText: {
-		color: '#2C1D0C',
-		fontSize: 12,
-		fontWeight: '700',
-		letterSpacing: 0.4,
-		textTransform: 'uppercase',
-	},
-	bottomNav: {
-		backgroundColor: '#F3E3CD',
-		borderTopLeftRadius: 28,
-		borderTopRightRadius: 28,
-		borderBottomLeftRadius: 0,
-		borderBottomRightRadius: 0,
-		paddingTop: 8,
-		paddingHorizontal: 12,
-		borderWidth: 1,
-		borderColor: '#E2CBB0',
-		flexDirection: 'column',
-		alignItems: 'center',
-		justifyContent: 'flex-end',
-		shadowColor: '#1F160D',
-		shadowOffset: { width: 0, height: -2 },
-		shadowOpacity: 0.08,
-		shadowRadius: 10,
-		elevation: 8,
-		width: '100%',
-	},
-	bottomNavRow: {
-		flexDirection: 'row',
-		alignItems: 'center',
-		justifyContent: 'space-between',
-		width: '100%',
-	},
-	bottomNavButton: {
-		flex: 1,
-		borderRadius: 16,
-		paddingVertical: 12,
-		alignItems: 'center',
-		justifyContent: 'center',
-		backgroundColor: '#FAF2E6',
-		borderWidth: 1,
-		borderColor: '#E3CDB3',
-		marginHorizontal: 6,
-	},
-	bottomNavSearchButton: {
-		flex: 1,
-		backgroundColor: '#EBCFA9',
-		borderColor: '#D8B98D',
-	},
-	bottomNavButtonPressed: {
-		transform: [{ translateY: 1 }],
-	},
-	bottomNavIcon: {
-		fontSize: 22,
-		color: '#2B1D0D',
-	},
-	bottomNavLabel: {
-		marginTop: 6,
-		fontSize: 11,
-		color: '#2B1D0D',
-		letterSpacing: 0.5,
-		textTransform: 'uppercase',
-		fontFamily: Platform.select({
-			ios: 'Georgia',
-			android: 'serif',
-		}),
-	},
-	bottomNavSearchIcon: {
-		fontSize: 20,
-		color: '#2B1D0D',
-	},
-	bottomNavSearchLabel: {
-		marginTop: 6,
-		fontSize: 11,
-		color: '#2B1D0D',
-		letterSpacing: 0.5,
-		textTransform: 'uppercase',
-		fontFamily: Platform.select({
-			ios: 'Georgia',
-			android: 'serif',
-		}),
 	},
 });
 

@@ -43,7 +43,7 @@ export function AddressInput({
 	onChangeText,
 	onLocationSelected,
 	label,
-	icon = '📍',
+	icon,
 	autoFocus = false,
 	testID,
 	showEmptyState = false,
