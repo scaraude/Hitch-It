@@ -14,6 +14,8 @@ interface SearchBarOverlayProps {
 	onToggle: () => void;
 	onEmbarquer?: () => void;
 	showEmbarquer?: boolean;
+	onClearSearch?: () => void;
+	showClearSearch?: boolean;
 }
 
 export const SearchBarOverlay: React.FC<SearchBarOverlayProps> = ({
@@ -24,6 +26,8 @@ export const SearchBarOverlay: React.FC<SearchBarOverlayProps> = ({
 	onToggle,
 	onEmbarquer,
 	showEmbarquer = false,
+	onClearSearch,
+	showClearSearch = false,
 }) => {
 	const insets = useSafeAreaInsets();
 
@@ -58,6 +62,16 @@ export const SearchBarOverlay: React.FC<SearchBarOverlayProps> = ({
 							testID="search-bar-input"
 						/>
 					</View>
+					{showClearSearch && onClearSearch ? (
+						<Pressable
+							style={styles.clearButton}
+							onPress={onClearSearch}
+							accessibilityLabel="Effacer la recherche"
+							accessibilityRole="button"
+						>
+							<Ionicons name="close" size={20} style={styles.clearIcon} />
+						</Pressable>
+					) : null}
 				</View>
 				{showEmbarquer && onEmbarquer && (
 					<View style={styles.embarquerContainer}>
@@ -137,6 +151,16 @@ const styles = StyleSheet.create({
 	},
 	backIcon: {
 		color: '#484C52',
+	},
+	clearButton: {
+		width: 40,
+		height: 40,
+		alignItems: 'center',
+		justifyContent: 'center',
+		borderRadius: 20,
+	},
+	clearIcon: {
+		color: COLORS.textSecondary,
 	},
 	inputWrapper: {
 		flex: 1,

@@ -19,6 +19,7 @@ interface HomeFixedOverlayProps {
 	isSearchOpen: boolean;
 	searchText: string;
 	shouldShowSearchEmbarquer: boolean;
+	shouldShowSearchClose: boolean;
 	isPlacingSpot: boolean;
 	isShowingForm: boolean;
 	mapHeading: number;
@@ -30,6 +31,7 @@ interface HomeFixedOverlayProps {
 	onSearchLocationSelected: (location: Location, name: string) => void;
 	onSearchToggle: () => void;
 	onSearchEmbarquer: () => void;
+	onSearchClear: () => void;
 	onResetHeading: () => void;
 	onLocateUser: () => void;
 	onLongPressEmbarquer: () => void;
@@ -43,6 +45,7 @@ export const HomeFixedOverlay: React.FC<HomeFixedOverlayProps> = ({
 	isSearchOpen,
 	searchText,
 	shouldShowSearchEmbarquer,
+	shouldShowSearchClose,
 	isPlacingSpot,
 	isShowingForm,
 	mapHeading,
@@ -54,6 +57,7 @@ export const HomeFixedOverlay: React.FC<HomeFixedOverlayProps> = ({
 	onSearchLocationSelected,
 	onSearchToggle,
 	onSearchEmbarquer,
+	onSearchClear,
 	onResetHeading,
 	onLocateUser,
 	onLongPressEmbarquer,
@@ -85,6 +89,8 @@ export const HomeFixedOverlay: React.FC<HomeFixedOverlayProps> = ({
 					onToggle={onSearchToggle}
 					onEmbarquer={onSearchEmbarquer}
 					showEmbarquer={shouldShowSearchEmbarquer}
+					onClearSearch={onSearchClear}
+					showClearSearch={shouldShowSearchClose}
 				/>
 			)}
 

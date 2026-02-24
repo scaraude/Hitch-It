@@ -17,8 +17,8 @@ interface UseHomeSearchReturn {
 	searchText: string;
 	searchDestination: NamedLocation | null;
 	isSearchOpen: boolean;
-	handleMapPress: () => void;
 	handleSearchToggle: () => void;
+	handleSearchClear: () => void;
 	handleSearchTextChange: (text: string) => void;
 	handleSearchLocationSelected: (location: Location, name: string) => void;
 	handleSearchEmbarquer: () => void;
@@ -34,12 +34,6 @@ export const useHomeSearch = ({
 		useState<NamedLocation | null>(null);
 	const [isSearchOpen, setIsSearchOpen] = useState(false);
 
-	const handleMapPress = useCallback(() => {
-		if (searchDestination) {
-			setSearchDestination(null);
-		}
-	}, [searchDestination]);
-
 	const handleSearchToggle = useCallback(() => {
 		if (!canUseSearch) return;
 		setIsSearchOpen(prev => !prev);
@@ -47,6 +41,13 @@ export const useHomeSearch = ({
 			Keyboard.dismiss();
 		}
 	}, [canUseSearch, isSearchOpen]);
+
+	const handleSearchClear = useCallback(() => {
+		setSearchText('');
+		setSearchDestination(null);
+		setIsSearchOpen(false);
+		Keyboard.dismiss();
+	}, []);
 
 	useFocusEffect(
 		useCallback(() => {
@@ -114,8 +115,8 @@ export const useHomeSearch = ({
 		searchText,
 		searchDestination,
 		isSearchOpen,
-		handleMapPress,
 		handleSearchToggle,
+		handleSearchClear,
 		handleSearchTextChange,
 		handleSearchLocationSelected,
 		handleSearchEmbarquer,

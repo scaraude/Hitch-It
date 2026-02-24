@@ -28,7 +28,11 @@ Add a Google Maps-inspired search functionality to enable users to search for lo
 - Initially collapsed (search icon only)
 - Expands when tapped to show text input
 - Shows suggestions dropdown below when typing
-- Collapses when search is dismissed or location selected
+- After a location is selected, keep search open with:
+  - destination marker visible on map
+  - `Embarquer` CTA visible
+  - close button in the search bar to clear and close search
+- Map presses do not clear active search state
 
 **Interaction Flow**:
 
@@ -36,9 +40,9 @@ Add a Google Maps-inspired search functionality to enable users to search for lo
 1. User taps search icon → Input expands
 2. User types "Par..." → Wait 800ms → Fetch suggestions
 3. Shows dropdown: ["Paris", "Parempuyre", "Paray-le-Monial"]
-4a. User taps "Paris" → Map animates to Paris → Search collapses
-4b. User unfocuses with text "Par..." → Suggestions hide, input stays expanded with "Par..." text
-5. User unfocuses with empty input → Search bar collapses
+4a. User taps "Paris" → Map animates to Paris → marker + Embarquer appear
+4b. User taps map → Search state stays unchanged
+5. User taps close button in search bar → marker/search state cleared + search collapses
 ```
 
 **Visual Design** (follow app style):
