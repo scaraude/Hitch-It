@@ -1,16 +1,17 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
+	Animated,
+	Keyboard,
 	KeyboardAvoidingView,
 	Platform,
 	Pressable,
-	ScrollView,
 	StyleSheet,
 	Text,
 	View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AddressInput } from '../../components';
-import { BottomSheetHeader, bottomSheetStyles } from '../../components/ui';
 import { COLORS, SIZES, SPACING } from '../../constants';
 import type { Location } from '../../types';
 
@@ -19,9 +20,19 @@ interface AddressData {
 	name: string;
 }
 
+const FROM_MY_POSITION_LABEL = 'from my position';
+const MY_POSITION_NAME = 'My position';
+const GO_LABEL = 'go';
+const SHEET_SLIDE_OFFSET = -36;
+const SHEET_MAX_HEIGHT = '60%';
+const SHEET_TOP_MARGIN = 6;
+const GO_BUTTON_WIDTH = 64;
+const GO_BUTTON_HEIGHT = 36;
+
 interface EmbarquerSheetProps {
 	initialStart?: AddressData;
 	initialDestination?: AddressData;
+	currentPosition?: Location | null;
 	onStart: (start: AddressData, destination: AddressData) => void;
 	onClose: () => void;
 }
@@ -29,29 +40,93 @@ interface EmbarquerSheetProps {
 export function EmbarquerSheet({
 	initialStart,
 	initialDestination,
+	currentPosition = null,
 	onStart,
 	onClose,
 }: EmbarquerSheetProps) {
-	const [startText, setStartText] = useState(initialStart?.name ?? '');
+	const insets = useSafeAreaInsets();
+	const shouldDefaultStartToCurrentPosition =
+		!initialStart && currentPosition !== null;
+	const [startText, setStartText] = useState(
+		initialStart?.name ??
+			(shouldDefaultStartToCurrentPosition ? MY_POSITION_NAME : '')
+	);
 	const [startLocation, setStartLocation] = useState<Location | null>(
-		initialStart?.location ?? null
+		initialStart?.location ?? currentPosition
 	);
 	const [destinationText, setDestinationText] = useState(
 		initialDestination?.name ?? ''
 	);
 	const [destinationLocation, setDestinationLocation] =
 		useState<Location | null>(initialDestination?.location ?? null);
+	const [isStartFromCurrentPosition, setIsStartFromCurrentPosition] = useState(
+		shouldDefaultStartToCurrentPosition
+	);
+	const [
+		isDestinationFromCurrentPosition,
+		setIsDestinationFromCurrentPosition,
+	] = useState(false);
+	const startSelectionRef = useRef(false);
+	const destinationSelectionRef = useRef(false);
+	const slideValue = useRef(new Animated.Value(SHEET_SLIDE_OFFSET)).current;
+	const opacityValue = useRef(new Animated.Value(0)).current;
 
 	const canStart = startLocation !== null && destinationLocation !== null;
+	const hasCurrentPosition = currentPosition !== null;
+
+	useEffect(() => {
+		Animated.parallel([
+			Animated.timing(slideValue, {
+				toValue: 0,
+				duration: 220,
+				useNativeDriver: true,
+			}),
+			Animated.timing(opacityValue, {
+				toValue: 1,
+				duration: 220,
+				useNativeDriver: true,
+			}),
+		]).start();
+	}, [opacityValue, slideValue]);
+
+	useEffect(() => {
+		if (!currentPosition) return;
+		if (startLocation !== null || startText.trim().length > 0) return;
+
+		setIsStartFromCurrentPosition(true);
+		setStartLocation(currentPosition);
+		setStartText(MY_POSITION_NAME);
+		Keyboard.dismiss();
+	}, [currentPosition, startLocation, startText]);
 
 	const handleStartLocationSelected = (location: Location, name: string) => {
+		startSelectionRef.current = true;
 		setStartLocation(location);
 		setStartText(name);
 	};
 
 	const handleDestinationSelected = (location: Location, name: string) => {
+		destinationSelectionRef.current = true;
 		setDestinationLocation(location);
 		setDestinationText(name);
+	};
+
+	const handleUseCurrentPositionForStart = () => {
+		if (!currentPosition) return;
+
+		setIsStartFromCurrentPosition(true);
+		setStartLocation(currentPosition);
+		setStartText(MY_POSITION_NAME);
+		Keyboard.dismiss();
+	};
+
+	const handleUseCurrentPositionForDestination = () => {
+		if (!currentPosition) return;
+
+		setIsDestinationFromCurrentPosition(true);
+		setDestinationLocation(currentPosition);
+		setDestinationText(MY_POSITION_NAME);
+		Keyboard.dismiss();
 	};
 
 	const handleStart = () => {
@@ -64,12 +139,19 @@ export function EmbarquerSheet({
 
 	return (
 		<KeyboardAvoidingView
-			style={[bottomSheetStyles.container, styles.container]}
+			style={styles.overlay}
 			behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+			pointerEvents="box-none"
 		>
-			<BottomSheetHeader
-				style={styles.header}
-				dragHandleStyle={styles.dragHandle}
+			<Animated.View
+				style={[
+					styles.sheet,
+					{
+						top: insets.top + SHEET_TOP_MARGIN,
+						opacity: opacityValue,
+						transform: [{ translateY: slideValue }],
+					},
+				]}
 			>
 				<Pressable
 					onPress={onClose}
@@ -78,146 +160,255 @@ export function EmbarquerSheet({
 					accessibilityRole="button"
 					testID="embarquer-sheet-close"
 				>
-					<Ionicons name="close" size={20} color={COLORS.text} />
+					<Ionicons name="close" size={18} color={COLORS.text} />
 				</Pressable>
-			</BottomSheetHeader>
-
-			<ScrollView
-				style={styles.content}
-				keyboardShouldPersistTaps="handled"
-				showsVerticalScrollIndicator={false}
-			>
-				<Text style={styles.title}>Planifier un trajet</Text>
 
 				<View style={styles.form}>
-					<View style={{ zIndex: 2 }}>
-						<AddressInput
-							label="Point de départ"
-							placeholder="D'où partez-vous ?"
-							value={startText}
-							onChangeText={text => {
-								setStartText(text);
-								if (text !== startText) setStartLocation(null);
-							}}
-							onLocationSelected={handleStartLocationSelected}
-							autoFocus={!initialStart}
-							testID="embarquer-start-input"
-						/>
+					<View style={styles.field}>
+						<View style={styles.startInputLayer}>
+							<AddressInput
+								label="Point de départ"
+								placeholder="D'où partez-vous ?"
+								value={startText}
+								onChangeText={text => {
+									setIsStartFromCurrentPosition(false);
+									setStartText(text);
+
+									if (startSelectionRef.current) {
+										startSelectionRef.current = false;
+										return;
+									}
+
+									setStartLocation(null);
+								}}
+								onLocationSelected={handleStartLocationSelected}
+								autoFocus={startLocation === null}
+								containerStyle={styles.addressInputContainer}
+								inputContainerStyle={styles.addressInputField}
+								disableSuggestions={isStartFromCurrentPosition}
+								testID="embarquer-start-input"
+							/>
+						</View>
+
+						<Pressable
+							style={({ pressed }) => [
+								styles.positionButton,
+								!hasCurrentPosition && styles.positionButtonDisabled,
+								pressed && hasCurrentPosition && styles.positionButtonPressed,
+							]}
+							onPress={handleUseCurrentPositionForStart}
+							disabled={!hasCurrentPosition}
+							accessibilityRole="button"
+							accessibilityLabel="Utiliser ma position pour le départ"
+							testID="embarquer-start-from-position"
+						>
+							<Ionicons
+								name="locate"
+								size={14}
+								color={
+									hasCurrentPosition ? COLORS.primary : COLORS.textSecondary
+								}
+							/>
+							<Text
+								style={[
+									styles.positionButtonText,
+									!hasCurrentPosition && styles.positionButtonTextDisabled,
+								]}
+							>
+								{FROM_MY_POSITION_LABEL}
+							</Text>
+						</Pressable>
 					</View>
 
-					<View style={{ zIndex: 1 }}>
-						<AddressInput
-							label="Destination"
-							placeholder="Où allez-vous ?"
-							value={destinationText}
-							onChangeText={text => {
-								setDestinationText(text);
-								if (text !== destinationText) setDestinationLocation(null);
-							}}
-							onLocationSelected={handleDestinationSelected}
-							autoFocus={!!initialStart && !initialDestination}
-							testID="embarquer-destination-input"
-						/>
+					<View style={styles.field}>
+						<View style={styles.destinationInputLayer}>
+							<AddressInput
+								label="Destination"
+								placeholder="Où allez-vous ?"
+								value={destinationText}
+								onChangeText={text => {
+									setIsDestinationFromCurrentPosition(false);
+									setDestinationText(text);
+
+									if (destinationSelectionRef.current) {
+										destinationSelectionRef.current = false;
+										return;
+									}
+
+									setDestinationLocation(null);
+								}}
+								onLocationSelected={handleDestinationSelected}
+								autoFocus={
+									startLocation !== null &&
+									destinationLocation === null &&
+									destinationText.trim().length === 0
+								}
+								containerStyle={styles.addressInputContainer}
+								inputContainerStyle={styles.addressInputField}
+								disableSuggestions={isDestinationFromCurrentPosition}
+								testID="embarquer-destination-input"
+							/>
+						</View>
+
+						<Pressable
+							style={({ pressed }) => [
+								styles.positionButton,
+								!hasCurrentPosition && styles.positionButtonDisabled,
+								pressed && hasCurrentPosition && styles.positionButtonPressed,
+							]}
+							onPress={handleUseCurrentPositionForDestination}
+							disabled={!hasCurrentPosition}
+							accessibilityRole="button"
+							accessibilityLabel="Utiliser ma position pour la destination"
+							testID="embarquer-destination-from-position"
+						>
+							<Ionicons
+								name="locate"
+								size={14}
+								color={
+									hasCurrentPosition ? COLORS.primary : COLORS.textSecondary
+								}
+							/>
+							<Text
+								style={[
+									styles.positionButtonText,
+									!hasCurrentPosition && styles.positionButtonTextDisabled,
+								]}
+							>
+								{FROM_MY_POSITION_LABEL}
+							</Text>
+						</Pressable>
 					</View>
 				</View>
-			</ScrollView>
 
-			<View style={styles.footer}>
 				<Pressable
 					style={({ pressed }) => [
-						styles.startButton,
-						!canStart && styles.startButtonDisabled,
-						pressed && canStart && styles.startButtonPressed,
+						styles.goButton,
+						!canStart && styles.goButtonDisabled,
+						pressed && canStart && styles.goButtonPressed,
 					]}
 					onPress={handleStart}
 					disabled={!canStart}
 					testID="embarquer-start-button"
 				>
-					<View style={styles.startButtonContent}>
-						<Ionicons
-							name="car"
-							size={18}
-							color={canStart ? COLORS.textLight : COLORS.textSecondary}
-						/>
-						<Text
-							style={[
-								styles.startButtonText,
-								!canStart && styles.startButtonTextDisabled,
-							]}
-						>
-							Démarrer
-						</Text>
-					</View>
+					<Text
+						style={[
+							styles.goButtonText,
+							!canStart && styles.goButtonTextDisabled,
+						]}
+					>
+						{GO_LABEL}
+					</Text>
 				</Pressable>
-			</View>
+			</Animated.View>
 		</KeyboardAvoidingView>
 	);
 }
 
 const styles = StyleSheet.create({
-	container: {
-		maxHeight: '70%',
-		zIndex: 1000,
+	overlay: {
+		...StyleSheet.absoluteFillObject,
+		zIndex: 1100,
 	},
-	header: {
-		paddingHorizontal: SPACING.lg,
-		position: 'relative',
-	},
-	dragHandle: {
-		marginBottom: SPACING.md,
+	sheet: {
+		position: 'absolute',
+		left: 0,
+		right: 0,
+		maxHeight: SHEET_MAX_HEIGHT,
+		backgroundColor: COLORS.background,
+		borderBottomLeftRadius: SIZES.radiusXLarge,
+		borderBottomRightRadius: SIZES.radiusXLarge,
+		borderWidth: 1,
+		borderColor: COLORS.border,
+		paddingHorizontal: SPACING.md,
+		paddingTop: SPACING.md,
+		paddingBottom: SPACING.lg,
+		shadowColor: COLORS.text,
+		shadowOffset: { width: 0, height: 4 },
+		shadowOpacity: SIZES.shadowOpacity,
+		shadowRadius: SIZES.shadowRadius,
+		elevation: 6,
 	},
 	closeButton: {
-		position: 'absolute',
-		right: SPACING.lg,
-		top: SPACING.sm,
-		width: SIZES.iconLg,
-		height: SIZES.iconLg,
-		borderRadius: SIZES.radiusLarge,
+		alignSelf: 'flex-end',
+		width: SIZES.iconMd + SPACING.xs,
+		height: SIZES.iconMd + SPACING.xs,
+		borderRadius: SIZES.radiusRound,
 		backgroundColor: COLORS.surface,
 		alignItems: 'center',
 		justifyContent: 'center',
-	},
-	content: {
-		paddingHorizontal: SPACING.lg,
-	},
-	title: {
-		fontSize: SIZES.font2Xl,
-		fontWeight: 'bold',
-		color: COLORS.text,
-		marginBottom: SPACING.lg,
+		marginBottom: SPACING.sm,
 	},
 	form: {
-		gap: SPACING.md,
-	},
-	footer: {
-		paddingHorizontal: SPACING.lg,
-		paddingVertical: SPACING.lg,
-		borderTopWidth: 1,
-		borderTopColor: COLORS.border,
-	},
-	startButton: {
-		backgroundColor: COLORS.primary,
-		paddingVertical: SPACING.lg,
-		borderRadius: SIZES.radiusMedium,
-		alignItems: 'center',
-	},
-	startButtonContent: {
-		flexDirection: 'row',
-		alignItems: 'center',
 		gap: SPACING.sm,
 	},
-	startButtonDisabled: {
+	field: {
+		gap: SPACING.xs,
+	},
+	startInputLayer: {
+		zIndex: 2,
+	},
+	destinationInputLayer: {
+		zIndex: 1,
+	},
+	addressInputContainer: {
+		marginBottom: 0,
+	},
+	addressInputField: {
+		paddingVertical: SPACING.xs,
+	},
+	positionButton: {
+		alignSelf: 'flex-end',
+		flexDirection: 'row',
+		alignItems: 'center',
+		gap: SPACING.xs,
+		paddingHorizontal: SPACING.sm,
+		paddingVertical: SPACING.xs,
+		borderRadius: SIZES.radiusMedium,
 		backgroundColor: COLORS.surface,
 	},
-	startButtonPressed: {
-		opacity: 0.8,
+	positionButtonPressed: {
+		opacity: 0.75,
 	},
-	startButtonText: {
+	positionButtonDisabled: {
+		opacity: 0.55,
+	},
+	positionButtonText: {
+		fontSize: SIZES.fontSm,
+		fontWeight: '600',
+		color: COLORS.primary,
+	},
+	positionButtonTextDisabled: {
+		color: COLORS.textSecondary,
+	},
+	goButton: {
+		alignSelf: 'flex-end',
+		width: GO_BUTTON_WIDTH,
+		height: GO_BUTTON_HEIGHT,
+		borderRadius: SIZES.radiusRound,
+		marginTop: SPACING.md,
+		backgroundColor: COLORS.primary,
+		alignItems: 'center',
+		justifyContent: 'center',
+		shadowColor: COLORS.text,
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: SIZES.shadowOpacity,
+		shadowRadius: SIZES.shadowRadius,
+		elevation: 3,
+	},
+	goButtonPressed: {
+		opacity: 0.85,
+	},
+	goButtonDisabled: {
+		backgroundColor: COLORS.surface,
+	},
+	goButtonText: {
 		color: COLORS.textLight,
-		fontSize: SIZES.fontLg,
+		fontSize: SIZES.fontMd,
 		fontWeight: '700',
+		textTransform: 'lowercase',
 	},
-	startButtonTextDisabled: {
+	goButtonTextDisabled: {
 		color: COLORS.textSecondary,
 	},
 });

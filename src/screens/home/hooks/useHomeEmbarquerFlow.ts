@@ -56,6 +56,7 @@ export const useHomeEmbarquerFlow = ({
 
 	const handleEmbarquerFromSearch = useCallback(
 		(destination: NamedLocation) => {
+			setEmbarquerOrigin(null);
 			setEmbarquerDestination(destination);
 			setShowEmbarquerSheet(true);
 		},
@@ -65,7 +66,8 @@ export const useHomeEmbarquerFlow = ({
 	const handleLongPressEmbarquer = useCallback((location: Location | null) => {
 		if (!location) return;
 
-		setEmbarquerOrigin({
+		setEmbarquerOrigin(null);
+		setEmbarquerDestination({
 			location,
 			name: 'Position sélectionnée',
 		});

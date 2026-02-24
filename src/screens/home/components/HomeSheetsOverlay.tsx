@@ -9,6 +9,7 @@ import {
 import type { NavigationRoute, SpotOnRoute } from '../../../navigation/types';
 import { SpotDetailsSheet, SpotForm } from '../../../spot/components';
 import type { Spot } from '../../../spot/types';
+import type { Location } from '../../../types';
 import { homeScreenStyles as styles } from '../homeScreenStyles';
 import type { NamedLocation } from '../types';
 
@@ -23,6 +24,7 @@ interface HomeSheetsOverlayProps {
 	journeyDurationMinutes: number;
 	embarquerOrigin: NamedLocation | null;
 	embarquerDestination: NamedLocation | null;
+	userLocation: Location | null;
 	onConfirmSpotPlacement: () => void;
 	onCancelSpotPlacement: () => void;
 	onSubmitSpotForm: React.ComponentProps<typeof SpotForm>['onSubmit'];
@@ -48,6 +50,7 @@ export const HomeSheetsOverlay: React.FC<HomeSheetsOverlayProps> = ({
 	journeyDurationMinutes,
 	embarquerOrigin,
 	embarquerDestination,
+	userLocation,
 	onConfirmSpotPlacement,
 	onCancelSpotPlacement,
 	onSubmitSpotForm,
@@ -90,6 +93,7 @@ export const HomeSheetsOverlay: React.FC<HomeSheetsOverlayProps> = ({
 				<EmbarquerSheet
 					initialStart={embarquerOrigin ?? undefined}
 					initialDestination={embarquerDestination ?? undefined}
+					currentPosition={userLocation}
 					onStart={onEmbarquerStart}
 					onClose={onEmbarquerClose}
 				/>

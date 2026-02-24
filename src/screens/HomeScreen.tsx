@@ -239,6 +239,7 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 				journeyDurationMinutes={journeyDurationMinutes}
 				embarquerOrigin={embarquerOrigin}
 				embarquerDestination={embarquerDestination}
+				userLocation={userLocation}
 				onConfirmSpotPlacement={onConfirmSpotPlacement}
 				onCancelSpotPlacement={cancelSpotPlacement}
 				onSubmitSpotForm={submitSpotForm}

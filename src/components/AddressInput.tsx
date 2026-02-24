@@ -35,6 +35,7 @@ interface AddressInputProps {
 	suggestionsStyle?: 'dropdown' | 'inline';
 	suggestionsPlacement?: 'above' | 'below';
 	showTopSuggestionLabel?: boolean;
+	disableSuggestions?: boolean;
 }
 
 export function AddressInput({
@@ -53,6 +54,7 @@ export function AddressInput({
 	suggestionsStyle = 'dropdown',
 	suggestionsPlacement = 'below',
 	showTopSuggestionLabel = false,
+	disableSuggestions = false,
 }: AddressInputProps) {
 	const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
@@ -66,6 +68,15 @@ export function AddressInput({
 		let isMounted = true;
 
 		const fetchSuggestions = async () => {
+			if (disableSuggestions) {
+				if (isMounted) {
+					setIsLoading(false);
+					setSuggestions([]);
+					suggestionsOpacity.setValue(0);
+				}
+				return;
+			}
+
 			if (!debouncedSearchText.trim()) {
 				if (isMounted) {
 					setSuggestions([]);
@@ -107,7 +118,7 @@ export function AddressInput({
 		return () => {
 			isMounted = false;
 		};
-	}, [debouncedSearchText, suggestionsOpacity]);
+	}, [debouncedSearchText, disableSuggestions, suggestionsOpacity]);
 
 	const handleSuggestionPress = useCallback(
 		async (suggestion: SearchSuggestion) => {
