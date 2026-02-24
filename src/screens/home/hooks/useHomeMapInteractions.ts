@@ -1,4 +1,6 @@
-import { useCallback, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback, useRef, useState } from 'react';
+import { BackHandler, Platform } from 'react-native';
 import type { SpotOnRoute } from '../../../navigation/types';
 import type { Spot } from '../../../spot/types';
 import type { Location, MapRegion } from '../../../types';
@@ -22,6 +24,7 @@ interface UseHomeMapInteractionsReturn {
 	handleRegionChange: (region: MapRegion) => void;
 	handleMarkerPress: (markerId: string) => void;
 	handleLongPress: (location: Location) => void;
+	handleMapPress: (location: Location) => void;
 }
 
 export const useHomeMapInteractions = ({
@@ -37,8 +40,10 @@ export const useHomeMapInteractions = ({
 }: UseHomeMapInteractionsArgs): UseHomeMapInteractionsReturn => {
 	const [mapRegion, setMapRegion] = useState<MapRegion>(initialRegion);
 	const [longPressMarker, setLongPressMarker] = useState<Location | null>(null);
+	const shouldIgnoreNextMapPressRef = useRef(false);
 
 	const clearLongPressMarker = useCallback(() => {
+		shouldIgnoreNextMapPressRef.current = false;
 		setLongPressMarker(previous => (previous ? null : previous));
 	}, []);
 
@@ -84,9 +89,52 @@ export const useHomeMapInteractions = ({
 			) {
 				return;
 			}
+			shouldIgnoreNextMapPressRef.current = true;
 			setLongPressMarker(location);
 		},
 		[isNavigationActive, isPlacingSpot, isShowingForm, isSearchOpen]
+	);
+
+	const handleMapPress = useCallback(
+		(_: Location) => {
+			if (shouldIgnoreNextMapPressRef.current) {
+				shouldIgnoreNextMapPressRef.current = false;
+				return;
+			}
+			clearLongPressMarker();
+		},
+		[clearLongPressMarker]
+	);
+
+	useFocusEffect(
+		useCallback(() => {
+			if (Platform.OS !== 'android') {
+				return undefined;
+			}
+
+			const onBackPress = () => {
+				if (isSearchOpen) {
+					if (longPressMarker) {
+						clearLongPressMarker();
+					}
+					return false;
+				}
+
+				if (!longPressMarker) {
+					return false;
+				}
+
+				clearLongPressMarker();
+				return true;
+			};
+
+			const subscription = BackHandler.addEventListener(
+				'hardwareBackPress',
+				onBackPress
+			);
+
+			return () => subscription.remove();
+		}, [clearLongPressMarker, isSearchOpen, longPressMarker])
 	);
 
 	return {
@@ -96,5 +144,6 @@ export const useHomeMapInteractions = ({
 		handleRegionChange,
 		handleMarkerPress,
 		handleLongPress,
+		handleMapPress,
 	};
 };

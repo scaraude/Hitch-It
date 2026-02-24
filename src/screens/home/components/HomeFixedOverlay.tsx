@@ -6,6 +6,7 @@ import {
 	MapControls,
 	SearchBarOverlay,
 } from '../../../components';
+import { APP_CONFIG } from '../../../constants';
 import { NavigationHeader } from '../../../navigation/components';
 import type { NavigationRoute } from '../../../navigation/types';
 import type { Location } from '../../../types';
@@ -19,7 +20,6 @@ interface HomeFixedOverlayProps {
 	isSearchOpen: boolean;
 	searchText: string;
 	shouldShowSearchEmbarquer: boolean;
-	shouldShowSearchClose: boolean;
 	isPlacingSpot: boolean;
 	isShowingForm: boolean;
 	mapHeading: number;
@@ -31,7 +31,6 @@ interface HomeFixedOverlayProps {
 	onSearchLocationSelected: (location: Location, name: string) => void;
 	onSearchToggle: () => void;
 	onSearchEmbarquer: () => void;
-	onSearchClear: () => void;
 	onResetHeading: () => void;
 	onLocateUser: () => void;
 	onLongPressEmbarquer: () => void;
@@ -45,7 +44,6 @@ export const HomeFixedOverlay: React.FC<HomeFixedOverlayProps> = ({
 	isSearchOpen,
 	searchText,
 	shouldShowSearchEmbarquer,
-	shouldShowSearchClose,
 	isPlacingSpot,
 	isShowingForm,
 	mapHeading,
@@ -57,7 +55,6 @@ export const HomeFixedOverlay: React.FC<HomeFixedOverlayProps> = ({
 	onSearchLocationSelected,
 	onSearchToggle,
 	onSearchEmbarquer,
-	onSearchClear,
 	onResetHeading,
 	onLocateUser,
 	onLongPressEmbarquer,
@@ -67,6 +64,13 @@ export const HomeFixedOverlay: React.FC<HomeFixedOverlayProps> = ({
 	const controlsBottomOffset = shouldShowBottomBar
 		? 110 + insets.bottom
 		: 24 + insets.bottom;
+	const shouldShowLongPressEmbarquer = !!longPressMarker && !isSearchOpen;
+	const shouldShowBottomEmbarquer =
+		!isNavigationActive &&
+		(shouldShowLongPressEmbarquer || shouldShowSearchEmbarquer);
+	const handleBottomEmbarquerPress = shouldShowLongPressEmbarquer
+		? onLongPressEmbarquer
+		: onSearchEmbarquer;
 
 	return (
 		<View style={styles.nonMapOverlay} pointerEvents="box-none">
@@ -87,10 +91,6 @@ export const HomeFixedOverlay: React.FC<HomeFixedOverlayProps> = ({
 					onSearchTextChange={onSearchTextChange}
 					onLocationSelected={onSearchLocationSelected}
 					onToggle={onSearchToggle}
-					onEmbarquer={onSearchEmbarquer}
-					showEmbarquer={shouldShowSearchEmbarquer}
-					onClearSearch={onSearchClear}
-					showClearSearch={shouldShowSearchClose}
 				/>
 			)}
 
@@ -105,17 +105,19 @@ export const HomeFixedOverlay: React.FC<HomeFixedOverlayProps> = ({
 				/>
 			)}
 
-			{/* Long press embarquer button */}
-			{longPressMarker && !isNavigationActive && !isSearchOpen && (
+			{/* Primary hitch action */}
+			{shouldShowBottomEmbarquer && (
 				<Pressable
 					style={({ pressed }) => [
 						styles.longPressEmbarquerButton,
 						{ bottom: controlsBottomOffset },
 						pressed && styles.longPressEmbarquerButtonPressed,
 					]}
-					onPress={onLongPressEmbarquer}
+					onPress={handleBottomEmbarquerPress}
 				>
-					<Text style={styles.longPressEmbarquerButtonText}>Embarquer</Text>
+					<Text style={styles.longPressEmbarquerButtonText}>
+						{APP_CONFIG.name}
+					</Text>
 				</Pressable>
 			)}
 

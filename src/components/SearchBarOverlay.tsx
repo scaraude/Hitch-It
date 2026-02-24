@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import type React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS, SIZES, SPACING } from '../constants';
 import type { Location } from '../types';
@@ -12,10 +12,6 @@ interface SearchBarOverlayProps {
 	onSearchTextChange: (text: string) => void;
 	onLocationSelected: (location: Location, name: string) => void;
 	onToggle: () => void;
-	onEmbarquer?: () => void;
-	showEmbarquer?: boolean;
-	onClearSearch?: () => void;
-	showClearSearch?: boolean;
 }
 
 export const SearchBarOverlay: React.FC<SearchBarOverlayProps> = ({
@@ -24,10 +20,6 @@ export const SearchBarOverlay: React.FC<SearchBarOverlayProps> = ({
 	onSearchTextChange,
 	onLocationSelected,
 	onToggle,
-	onEmbarquer,
-	showEmbarquer = false,
-	onClearSearch,
-	showClearSearch = false,
 }) => {
 	const insets = useSafeAreaInsets();
 
@@ -62,30 +54,7 @@ export const SearchBarOverlay: React.FC<SearchBarOverlayProps> = ({
 							testID="search-bar-input"
 						/>
 					</View>
-					{showClearSearch && onClearSearch ? (
-						<Pressable
-							style={styles.clearButton}
-							onPress={onClearSearch}
-							accessibilityLabel="Effacer la recherche"
-							accessibilityRole="button"
-						>
-							<Ionicons name="close" size={20} style={styles.clearIcon} />
-						</Pressable>
-					) : null}
 				</View>
-				{showEmbarquer && onEmbarquer && (
-					<View style={styles.embarquerContainer}>
-						<Pressable
-							style={({ pressed }) => [
-								styles.embarquerButton,
-								pressed && styles.embarquerButtonPressed,
-							]}
-							onPress={onEmbarquer}
-						>
-							<Text style={styles.embarquerText}>Embarquer</Text>
-						</Pressable>
-					</View>
-				)}
 			</View>
 		);
 	}
@@ -152,16 +121,6 @@ const styles = StyleSheet.create({
 	backIcon: {
 		color: '#484C52',
 	},
-	clearButton: {
-		width: 40,
-		height: 40,
-		alignItems: 'center',
-		justifyContent: 'center',
-		borderRadius: 20,
-	},
-	clearIcon: {
-		color: COLORS.textSecondary,
-	},
 	inputWrapper: {
 		flex: 1,
 		justifyContent: 'center',
@@ -174,23 +133,5 @@ const styles = StyleSheet.create({
 		borderWidth: 0,
 		paddingVertical: 0,
 		minHeight: 40,
-	},
-	embarquerContainer: {
-		marginTop: SPACING.sm,
-		alignItems: 'flex-end',
-	},
-	embarquerButton: {
-		backgroundColor: '#539DF3',
-		paddingVertical: SPACING.sm,
-		paddingHorizontal: SPACING.lg,
-		borderRadius: SIZES.radiusLarge,
-	},
-	embarquerButtonPressed: {
-		opacity: 0.8,
-	},
-	embarquerText: {
-		color: COLORS.background,
-		fontSize: SIZES.fontMd,
-		fontWeight: '600',
 	},
 });

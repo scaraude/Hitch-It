@@ -39,6 +39,7 @@ interface HomeMapLayerProps {
 	onHeadingChange: (heading: number) => void;
 	onMarkerPress: (markerId: string) => void;
 	onLongPress: (location: Location) => void;
+	onMapPress: (location: Location) => void;
 }
 
 export const HomeMapLayer: React.FC<HomeMapLayerProps> = ({
@@ -57,6 +58,7 @@ export const HomeMapLayer: React.FC<HomeMapLayerProps> = ({
 	onHeadingChange,
 	onMarkerPress,
 	onLongPress,
+	onMapPress,
 }) => {
 	return (
 		<View style={styles.mapContainer}>
@@ -72,6 +74,7 @@ export const HomeMapLayer: React.FC<HomeMapLayerProps> = ({
 						onHeadingChange={onHeadingChange}
 						onMarkerPress={onMarkerPress}
 						onLongPress={onLongPress}
+						onPress={onMapPress}
 					>
 						{/* Destination marker (before navigation starts) */}
 						{navigationDestinationMarker && (
@@ -97,9 +100,11 @@ export const HomeMapLayer: React.FC<HomeMapLayerProps> = ({
 
 						{/* Long press marker */}
 						{longPressMarker && (
-							<Marker coordinate={longPressMarker} tracksViewChanges={false}>
-								<View style={styles.longPressPin} />
-							</Marker>
+							<Marker
+								coordinate={longPressMarker}
+								pinColor={COLORS.error}
+								tracksViewChanges={false}
+							/>
 						)}
 					</MapViewComponent>
 

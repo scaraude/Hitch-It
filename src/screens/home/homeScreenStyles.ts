@@ -28,14 +28,6 @@ export const homeScreenStyles = StyleSheet.create({
 		borderWidth: 3,
 		borderColor: COLORS.background,
 	},
-	longPressPin: {
-		width: 24,
-		height: 24,
-		backgroundColor: COLORS.primary,
-		borderRadius: 12,
-		borderWidth: 3,
-		borderColor: COLORS.background,
-	},
 	longPressEmbarquerButton: {
 		position: 'absolute',
 		left: 16,

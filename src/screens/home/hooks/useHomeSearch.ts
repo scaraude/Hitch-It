@@ -57,8 +57,7 @@ export const useHomeSearch = ({
 
 			const onBackPress = () => {
 				if (!isSearchOpen) return false;
-				setIsSearchOpen(false);
-				Keyboard.dismiss();
+				handleSearchClear();
 				return true;
 			};
 
@@ -67,7 +66,7 @@ export const useHomeSearch = ({
 				onBackPress
 			);
 			return () => subscription.remove();
-		}, [isSearchOpen])
+		}, [handleSearchClear, isSearchOpen])
 	);
 
 	const handleSearchTextChange = useCallback(

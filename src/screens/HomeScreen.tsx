@@ -97,7 +97,6 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 		searchDestination,
 		isSearchOpen,
 		handleSearchToggle,
-		handleSearchClear,
 		handleSearchTextChange,
 		handleSearchLocationSelected,
 		handleSearchEmbarquer,
@@ -114,6 +113,7 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 		handleRegionChange,
 		handleMarkerPress,
 		handleLongPress,
+		handleMapPress,
 	} = useHomeMapInteractions({
 		initialRegion: currentRegion,
 		onRegionChange,
@@ -164,7 +164,6 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 
 	const shouldShowSearchEmbarquer =
 		!!searchDestination && !navigation.isActive && !showEmbarquerSheet;
-	const shouldShowSearchClose = !!searchDestination;
 
 	const handleTabPress = useCallback(
 		(tabId: HomeTabId) => {
@@ -202,6 +201,7 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 				onHeadingChange={handleHeadingChange}
 				onMarkerPress={handleMarkerPress}
 				onLongPress={handleLongPress}
+				onMapPress={handleMapPress}
 			/>
 
 			<HomeFixedOverlay
@@ -211,7 +211,6 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 				isSearchOpen={isSearchOpen}
 				searchText={searchText}
 				shouldShowSearchEmbarquer={shouldShowSearchEmbarquer}
-				shouldShowSearchClose={shouldShowSearchClose}
 				isPlacingSpot={isPlacingSpot}
 				isShowingForm={isShowingForm}
 				mapHeading={mapHeading}
@@ -223,7 +222,6 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 				onSearchLocationSelected={handleSearchLocationSelected}
 				onSearchToggle={handleSearchToggle}
 				onSearchEmbarquer={handleSearchEmbarquer}
-				onSearchClear={handleSearchClear}
 				onResetHeading={handleResetHeading}
 				onLocateUser={handleLocateUser}
 				onLongPressEmbarquer={onLongPressEmbarquer}
