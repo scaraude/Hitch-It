@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { COLORS, SPACING } from '../../constants';
+import { COLORS, SIZES, SPACING } from '../../constants';
 
 interface NavigationHeaderProps {
 	destinationName: string;
@@ -16,7 +16,9 @@ export function NavigationHeader({
 	const insets = useSafeAreaInsets();
 
 	return (
-		<View style={[styles.header, { paddingTop: insets.top + SPACING.sm }]}>
+		<View
+			style={[styles.header, { paddingBottom: insets.bottom + SPACING.sm }]}
+		>
 			<View style={styles.leftSection}>
 				<Text style={styles.destination} numberOfLines={1}>
 					Vers {destinationName}
@@ -39,7 +41,7 @@ export function NavigationHeader({
 const styles = StyleSheet.create({
 	header: {
 		position: 'absolute',
-		top: 0,
+		bottom: 0,
 		left: 0,
 		right: 0,
 		zIndex: 2000,
@@ -47,10 +49,12 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 		justifyContent: 'space-between',
 		paddingHorizontal: SPACING.md,
-		paddingBottom: SPACING.sm,
+		paddingTop: SPACING.md,
 		backgroundColor: 'rgba(255, 255, 255, 0.95)',
-		shadowColor: '#000',
-		shadowOffset: { width: 0, height: 2 },
+		borderTopLeftRadius: SIZES.radiusXLarge,
+		borderTopRightRadius: SIZES.radiusXLarge,
+		shadowColor: COLORS.text,
+		shadowOffset: { width: 0, height: -2 },
 		shadowOpacity: 0.1,
 		shadowRadius: 4,
 		elevation: 5,

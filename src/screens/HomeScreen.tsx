@@ -16,6 +16,7 @@ import { HomeFixedOverlay } from './home/components/HomeFixedOverlay';
 import { HomeMapLayer } from './home/components/HomeMapLayer';
 import { HomeSheetsOverlay } from './home/components/HomeSheetsOverlay';
 import { homeScreenStyles as styles } from './home/homeScreenStyles';
+import { useHomeDriverDirection } from './home/hooks/useHomeDriverDirection';
 import { useHomeEmbarquerFlow } from './home/hooks/useHomeEmbarquerFlow';
 import { useHomeJourneySession } from './home/hooks/useHomeJourneySession';
 import { useHomeMapControls } from './home/hooks/useHomeMapControls';
@@ -46,8 +47,13 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 		selectSpotEntity,
 		deselectSpot,
 	} = useSpotContext();
-	const { navigation, startNavigationWithRoute, stopNavigation } =
-		useNavigation();
+	const {
+		navigation,
+		startNavigationWithRoute,
+		compareWithDriverDirection,
+		clearDriverComparison,
+		stopNavigation,
+	} = useNavigation();
 	const { startRecording, stopRecording, isRecording } = useJourney();
 
 	const mapViewRef = useRef<MapViewRef>(null);
@@ -84,6 +90,19 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 		onDeselectSpot: deselectSpot,
 	});
 
+	const {
+		isDriverDirectionSheetOpen,
+		hasDriverComparison,
+		openDriverDirectionSheet,
+		closeDriverDirectionSheet,
+		handleDriverDirectionCompare,
+		handleDriverDirectionClear,
+	} = useHomeDriverDirection({
+		driverRoute: navigation.driverRoute,
+		compareWithDriverDirection,
+		clearDriverComparison,
+	});
+
 	const canUseSearch =
 		!navigation.isActive &&
 		!isPlacingSpot &&
@@ -118,10 +137,13 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 		initialRegion: currentRegion,
 		onRegionChange,
 		isNavigationActive: navigation.isActive,
+		hasDriverComparison,
 		spotsOnRoute: navigation.spotsOnRoute,
 		isPlacingSpot,
 		isShowingForm,
 		isSearchOpen,
+		onClearDriverComparison: handleDriverDirectionClear,
+		onStopNavigationFromBack: handleStopNavigation,
 		onSelectSpot: selectSpot,
 		onSelectRouteSpot: selectSpotEntity,
 	});
@@ -140,7 +162,9 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 	const { visibleSpots } = useHomeNavigationMapData({
 		isNavigationActive: navigation.isActive,
 		navigationRoute: navigation.route,
+		driverRoute: navigation.driverRoute,
 		spotsOnRoute: navigation.spotsOnRoute,
+		commonSpotsOnRoute: navigation.commonSpotsOnRoute,
 		spots,
 		mapViewRef,
 	});
@@ -191,6 +215,7 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 				mapViewRef={mapViewRef}
 				visibleSpots={visibleSpots}
 				navigationRoute={navigation.route}
+				driverRoute={navigation.driverRoute}
 				navigationDestinationMarker={navigation.destinationMarker}
 				searchDestination={searchDestination}
 				longPressMarker={longPressMarker}
@@ -207,6 +232,7 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 			<HomeFixedOverlay
 				isNavigationActive={navigation.isActive}
 				navigationRoute={navigation.route}
+				hasDriverComparison={hasDriverComparison}
 				canUseSearch={canUseSearch}
 				isSearchOpen={isSearchOpen}
 				searchText={searchText}
@@ -224,6 +250,8 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 				onSearchEmbarquer={handleSearchEmbarquer}
 				onResetHeading={handleResetHeading}
 				onLocateUser={handleLocateUser}
+				onOpenDriverDirectionSheet={openDriverDirectionSheet}
+				onClearDriverDirectionComparison={handleDriverDirectionClear}
 				onLongPressEmbarquer={onLongPressEmbarquer}
 				onTabPress={handleTabPress}
 			/>
@@ -233,6 +261,7 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 				isShowingForm={isShowingForm}
 				selectedSpot={selectedSpot}
 				showEmbarquerSheet={showEmbarquerSheet}
+				showDriverDirectionSheet={isDriverDirectionSheetOpen}
 				showCompletionSheet={showCompletionSheet}
 				navigationRoute={navigation.route}
 				navigationSpotsOnRoute={navigation.spotsOnRoute}
@@ -247,6 +276,8 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 				onCloseSpotDetails={deselectSpot}
 				onSpotEmbarquer={handleSpotEmbarquer}
 				onEmbarquerStart={handleEmbarquerStart}
+				onDriverDirectionCompare={handleDriverDirectionCompare}
+				onCloseDriverDirectionSheet={closeDriverDirectionSheet}
 				onEmbarquerClose={handleEmbarquerClose}
 				onSaveJourney={handleSaveJourney}
 				onDiscardJourney={handleDiscardJourney}

@@ -3,6 +3,7 @@ import { KeyboardAvoidingView, Platform } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { ActionButtons } from '../../../components';
 import {
+	DriverDirectionSheet,
 	EmbarquerSheet,
 	NavigationCompleteSheet,
 } from '../../../navigation/components';
@@ -18,6 +19,7 @@ interface HomeSheetsOverlayProps {
 	isShowingForm: boolean;
 	selectedSpot: Spot | null;
 	showEmbarquerSheet: boolean;
+	showDriverDirectionSheet: boolean;
 	showCompletionSheet: boolean;
 	navigationRoute: NavigationRoute | null;
 	navigationSpotsOnRoute: SpotOnRoute[];
@@ -34,6 +36,10 @@ interface HomeSheetsOverlayProps {
 		React.ComponentProps<typeof SpotDetailsSheet>['onEmbarquer']
 	>;
 	onEmbarquerStart: React.ComponentProps<typeof EmbarquerSheet>['onStart'];
+	onDriverDirectionCompare: React.ComponentProps<
+		typeof DriverDirectionSheet
+	>['onCompare'];
+	onCloseDriverDirectionSheet: () => void;
 	onEmbarquerClose: () => void;
 	onSaveJourney: () => void;
 	onDiscardJourney: () => void;
@@ -44,6 +50,7 @@ export const HomeSheetsOverlay: React.FC<HomeSheetsOverlayProps> = ({
 	isShowingForm,
 	selectedSpot,
 	showEmbarquerSheet,
+	showDriverDirectionSheet,
 	showCompletionSheet,
 	navigationRoute,
 	navigationSpotsOnRoute,
@@ -58,6 +65,8 @@ export const HomeSheetsOverlay: React.FC<HomeSheetsOverlayProps> = ({
 	onCloseSpotDetails,
 	onSpotEmbarquer,
 	onEmbarquerStart,
+	onDriverDirectionCompare,
+	onCloseDriverDirectionSheet,
 	onEmbarquerClose,
 	onSaveJourney,
 	onDiscardJourney,
@@ -96,6 +105,13 @@ export const HomeSheetsOverlay: React.FC<HomeSheetsOverlayProps> = ({
 					currentPosition={userLocation}
 					onStart={onEmbarquerStart}
 					onClose={onEmbarquerClose}
+				/>
+			)}
+
+			{showDriverDirectionSheet && (
+				<DriverDirectionSheet
+					onCompare={onDriverDirectionCompare}
+					onClose={onCloseDriverDirectionSheet}
 				/>
 			)}
 

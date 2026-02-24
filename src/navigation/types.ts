@@ -59,6 +59,8 @@ export interface NavigationState {
 	isActive: boolean;
 	route: NavigationRoute | null;
 	spotsOnRoute: SpotOnRoute[];
+	driverRoute: NavigationRoute | null;
+	commonSpotsOnRoute: SpotOnRoute[];
 	destinationMarker: DestinationMarker | null;
 }
 
@@ -66,5 +68,7 @@ export const INITIAL_NAVIGATION_STATE: NavigationState = {
 	isActive: false,
 	route: null,
 	spotsOnRoute: [],
+	driverRoute: null,
+	commonSpotsOnRoute: [],
 	destinationMarker: null,
 };

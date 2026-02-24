@@ -51,4 +51,28 @@ export const homeScreenStyles = StyleSheet.create({
 		fontWeight: '700',
 		letterSpacing: 0.3,
 	},
+	compareDriverDirectionButton: {
+		position: 'absolute',
+		left: 16,
+		backgroundColor: COLORS.surface,
+		borderWidth: 1,
+		borderColor: COLORS.border,
+		borderTopLeftRadius: 10,
+		borderTopRightRadius: 10,
+		paddingHorizontal: 14,
+		paddingVertical: 10,
+		shadowColor: COLORS.text,
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.15,
+		shadowRadius: 6,
+		elevation: 3,
+	},
+	compareDriverDirectionButtonPressed: {
+		opacity: 0.8,
+	},
+	compareDriverDirectionButtonText: {
+		color: COLORS.text,
+		fontSize: 13,
+		fontWeight: '600',
+	},
 });

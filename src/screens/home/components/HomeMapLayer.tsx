@@ -29,6 +29,7 @@ interface HomeMapLayerProps {
 	mapViewRef: RefObject<MapViewRef | null>;
 	visibleSpots: SpotMarkerData[];
 	navigationRoute: NavigationRoute | null;
+	driverRoute: NavigationRoute | null;
 	navigationDestinationMarker: DestinationMarkerData | null;
 	searchDestination: NamedLocation | null;
 	longPressMarker: Location | null;
@@ -48,6 +49,7 @@ export const HomeMapLayer: React.FC<HomeMapLayerProps> = ({
 	mapViewRef,
 	visibleSpots,
 	navigationRoute,
+	driverRoute,
 	navigationDestinationMarker,
 	searchDestination,
 	longPressMarker,
@@ -95,8 +97,25 @@ export const HomeMapLayer: React.FC<HomeMapLayerProps> = ({
 								/>
 							)}
 
-						{/* Route polyline (during navigation) */}
-						{navigationRoute && <RoutePolyline route={navigationRoute} />}
+						{/* Driver route polyline (comparison mode) */}
+						{driverRoute && (
+							<RoutePolyline
+								route={driverRoute}
+								strokeColor={COLORS.primary}
+								strokeWidth={3}
+								zIndex={1}
+							/>
+						)}
+
+						{/* User route polyline (during navigation) */}
+						{navigationRoute && (
+							<RoutePolyline
+								route={navigationRoute}
+								strokeColor={COLORS.secondary}
+								strokeWidth={5}
+								zIndex={2}
+							/>
+						)}
 
 						{/* Long press marker */}
 						{longPressMarker && (

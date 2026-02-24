@@ -13,22 +13,27 @@ import {
 	type SpotOnRoute,
 } from '../types';
 
+type NavigationActionResult =
+	| { success: true }
+	| { success: false; error: RoutingError; message: string };
+
 interface NavigationContextValue {
 	navigation: NavigationState;
 	setDestination: (location: RoutePoint, name: string) => void;
 	clearDestination: () => void;
 	startNavigation: (
 		userLocation: RoutePoint
-	) => Promise<
-		{ success: true } | { success: false; error: RoutingError; message: string }
-	>;
+	) => Promise<NavigationActionResult>;
 	startNavigationWithRoute: (
 		startLocation: RoutePoint,
 		destinationLocation: RoutePoint,
 		destinationName: string
-	) => Promise<
-		{ success: true } | { success: false; error: RoutingError; message: string }
-	>;
+	) => Promise<NavigationActionResult>;
+	compareWithDriverDirection: (
+		driverDestinationLocation: RoutePoint,
+		driverDestinationName: string
+	) => Promise<NavigationActionResult>;
+	clearDriverComparison: () => void;
 	stopNavigation: () => void;
 }
 
@@ -61,15 +66,27 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({
 		setNavigation(INITIAL_NAVIGATION_STATE);
 	}, []);
 
+	const clearDriverComparison = useCallback(() => {
+		setNavigation(previous => {
+			if (!previous.driverRoute && previous.commonSpotsOnRoute.length === 0) {
+				return previous;
+			}
+
+			logger.navigation.info('Driver direction comparison cleared');
+			return {
+				...previous,
+				driverRoute: null,
+				commonSpotsOnRoute: [],
+			};
+		});
+	}, []);
+
 	const startNavigationFlow = useCallback(
 		async (
 			startLocation: RoutePoint,
 			destinationLocation: RoutePoint,
 			destinationName: string
-		): Promise<
-			| { success: true }
-			| { success: false; error: RoutingError; message: string }
-		> => {
+		): Promise<NavigationActionResult> => {
 			logger.navigation.info('Starting navigation', {
 				destination: destinationName,
 				from: startLocation,
@@ -107,6 +124,8 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({
 				isActive: true,
 				route: result.route,
 				spotsOnRoute,
+				driverRoute: null,
+				commonSpotsOnRoute: [],
 				destinationMarker: null,
 			});
 
@@ -122,12 +141,7 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({
 	);
 
 	const startNavigation = useCallback(
-		async (
-			userLocation: RoutePoint
-		): Promise<
-			| { success: true }
-			| { success: false; error: RoutingError; message: string }
-		> => {
+		async (userLocation: RoutePoint): Promise<NavigationActionResult> => {
 			const { destinationMarker } = navigation;
 
 			if (!destinationMarker) {
@@ -153,12 +167,82 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({
 			startLocation: RoutePoint,
 			destinationLocation: RoutePoint,
 			destinationName: string
-		): Promise<
-			| { success: true }
-			| { success: false; error: RoutingError; message: string }
-		> =>
+		): Promise<NavigationActionResult> =>
 			startNavigationFlow(startLocation, destinationLocation, destinationName),
 		[startNavigationFlow]
+	);
+
+	const compareWithDriverDirection = useCallback(
+		async (
+			driverDestinationLocation: RoutePoint,
+			driverDestinationName: string
+		): Promise<NavigationActionResult> => {
+			if (!navigation.isActive || !navigation.route) {
+				logger.navigation.warn(
+					'Cannot compare with driver direction: navigation inactive'
+				);
+				return {
+					success: false,
+					error: 'invalid_coordinates',
+					message: 'Navigation inactive',
+				};
+			}
+
+			const baseRoute = navigation.route;
+			logger.navigation.info('Comparing with driver direction', {
+				userDestination: baseRoute.destinationName,
+				driverDestination: driverDestinationName,
+			});
+
+			const driverRouteResult = await calculateRoute(
+				baseRoute.origin,
+				driverDestinationLocation,
+				driverDestinationName
+			);
+
+			if (!driverRouteResult.success) {
+				return driverRouteResult;
+			}
+
+			let driverSpotsOnRoute: SpotOnRoute[] = [];
+			try {
+				const driverRouteBounds = polylineToBounds(
+					driverRouteResult.route.polyline
+				);
+				const spotsInDriverRouteBounds =
+					await getSpotsInBounds(driverRouteBounds);
+				driverSpotsOnRoute = findSpotsAlongRoute(
+					driverRouteResult.route,
+					spotsInDriverRouteBounds
+				);
+			} catch (error) {
+				logger.navigation.error(
+					'Failed to fetch driver route spots for comparison',
+					error
+				);
+			}
+
+			const driverSpotIds = new Set(
+				driverSpotsOnRoute.map(({ spot }) => spot.id as string)
+			);
+			const commonSpotsOnRoute = navigation.spotsOnRoute.filter(({ spot }) =>
+				driverSpotIds.has(spot.id as string)
+			);
+
+			setNavigation(previous => ({
+				...previous,
+				driverRoute: driverRouteResult.route,
+				commonSpotsOnRoute,
+			}));
+
+			logger.navigation.info('Driver direction comparison ready', {
+				driverRouteDistanceKm: driverRouteResult.route.distanceKm,
+				commonSpotsOnRoute: commonSpotsOnRoute.length,
+			});
+
+			return { success: true };
+		},
+		[navigation.isActive, navigation.route, navigation.spotsOnRoute]
 	);
 
 	const value: NavigationContextValue = {
@@ -167,6 +251,8 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({
 		clearDestination,
 		startNavigation,
 		startNavigationWithRoute,
+		compareWithDriverDirection,
+		clearDriverComparison,
 		stopNavigation,
 	};
 

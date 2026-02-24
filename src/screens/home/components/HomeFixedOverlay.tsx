@@ -13,9 +13,17 @@ import type { Location } from '../../../types';
 import { homeScreenStyles as styles } from '../homeScreenStyles';
 import type { HomeTabId } from '../types';
 
+const MAP_CONTROLS_OFFSET_WITH_BOTTOM_BAR = 110;
+const MAP_CONTROLS_OFFSET_DEFAULT = 24;
+const MAP_CONTROLS_OFFSET_WITH_NAVIGATION = 170;
+const NAVIGATION_COMPARE_BUTTON_BOTTOM_OFFSET = 56;
+const COMPARE_BUTTON_LABEL = 'Comparer direction conducteur';
+const CLEAR_COMPARE_BUTTON_LABEL = 'Effacer comparaison';
+
 interface HomeFixedOverlayProps {
 	isNavigationActive: boolean;
 	navigationRoute: NavigationRoute | null;
+	hasDriverComparison: boolean;
 	canUseSearch: boolean;
 	isSearchOpen: boolean;
 	searchText: string;
@@ -33,6 +41,8 @@ interface HomeFixedOverlayProps {
 	onSearchEmbarquer: () => void;
 	onResetHeading: () => void;
 	onLocateUser: () => void;
+	onOpenDriverDirectionSheet: () => void;
+	onClearDriverDirectionComparison: () => void;
 	onLongPressEmbarquer: () => void;
 	onTabPress: (tabId: HomeTabId) => void;
 }
@@ -40,6 +50,7 @@ interface HomeFixedOverlayProps {
 export const HomeFixedOverlay: React.FC<HomeFixedOverlayProps> = ({
 	isNavigationActive,
 	navigationRoute,
+	hasDriverComparison,
 	canUseSearch,
 	isSearchOpen,
 	searchText,
@@ -57,13 +68,17 @@ export const HomeFixedOverlay: React.FC<HomeFixedOverlayProps> = ({
 	onSearchEmbarquer,
 	onResetHeading,
 	onLocateUser,
+	onOpenDriverDirectionSheet,
+	onClearDriverDirectionComparison,
 	onLongPressEmbarquer,
 	onTabPress,
 }) => {
 	const insets = useSafeAreaInsets();
-	const controlsBottomOffset = shouldShowBottomBar
-		? 110 + insets.bottom
-		: 24 + insets.bottom;
+	const controlsBottomOffset = isNavigationActive
+		? MAP_CONTROLS_OFFSET_WITH_NAVIGATION + insets.bottom
+		: shouldShowBottomBar
+			? MAP_CONTROLS_OFFSET_WITH_BOTTOM_BAR + insets.bottom
+			: MAP_CONTROLS_OFFSET_DEFAULT + insets.bottom;
 	const shouldShowLongPressEmbarquer = !!longPressMarker && !isSearchOpen;
 	const shouldShowBottomEmbarquer =
 		!isNavigationActive &&
@@ -71,16 +86,42 @@ export const HomeFixedOverlay: React.FC<HomeFixedOverlayProps> = ({
 	const handleBottomEmbarquerPress = shouldShowLongPressEmbarquer
 		? onLongPressEmbarquer
 		: onSearchEmbarquer;
+	const handleDriverDirectionPress = hasDriverComparison
+		? onClearDriverDirectionComparison
+		: onOpenDriverDirectionSheet;
+	const driverDirectionLabel = hasDriverComparison
+		? CLEAR_COMPARE_BUTTON_LABEL
+		: COMPARE_BUTTON_LABEL;
 
 	return (
 		<View style={styles.nonMapOverlay} pointerEvents="box-none">
 			{/* Navigation header (only when active) */}
 			{isNavigationActive && navigationRoute && (
-				<NavigationHeader
-					destinationName={navigationRoute.destinationName}
-					distanceKm={navigationRoute.distanceKm}
-					onStop={onStopNavigation}
-				/>
+				<>
+					<Pressable
+						style={({ pressed }) => [
+							styles.compareDriverDirectionButton,
+							{
+								bottom: NAVIGATION_COMPARE_BUTTON_BOTTOM_OFFSET + insets.bottom,
+							},
+							pressed && styles.compareDriverDirectionButtonPressed,
+						]}
+						onPress={handleDriverDirectionPress}
+						accessibilityRole="button"
+						accessibilityLabel={driverDirectionLabel}
+						testID="compare-driver-direction-button"
+					>
+						<Text style={styles.compareDriverDirectionButtonText}>
+							{driverDirectionLabel}
+						</Text>
+					</Pressable>
+
+					<NavigationHeader
+						destinationName={navigationRoute.destinationName}
+						distanceKm={navigationRoute.distanceKm}
+						onStop={onStopNavigation}
+					/>
+				</>
 			)}
 
 			{/* Search bar overlay (top left) - only when not navigating */}

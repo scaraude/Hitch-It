@@ -9,10 +9,13 @@ interface UseHomeMapInteractionsArgs {
 	initialRegion: MapRegion;
 	onRegionChange: (region: MapRegion) => void;
 	isNavigationActive: boolean;
+	hasDriverComparison: boolean;
 	spotsOnRoute: SpotOnRoute[];
 	isPlacingSpot: boolean;
 	isShowingForm: boolean;
 	isSearchOpen: boolean;
+	onClearDriverComparison: () => void;
+	onStopNavigationFromBack: () => Promise<void>;
 	onSelectSpot: (spotId: string) => void;
 	onSelectRouteSpot: (spot: Spot) => void;
 }
@@ -31,10 +34,13 @@ export const useHomeMapInteractions = ({
 	initialRegion,
 	onRegionChange,
 	isNavigationActive,
+	hasDriverComparison,
 	spotsOnRoute,
 	isPlacingSpot,
 	isShowingForm,
 	isSearchOpen,
+	onClearDriverComparison,
+	onStopNavigationFromBack,
 	onSelectSpot,
 	onSelectRouteSpot,
 }: UseHomeMapInteractionsArgs): UseHomeMapInteractionsReturn => {
@@ -113,6 +119,16 @@ export const useHomeMapInteractions = ({
 			}
 
 			const onBackPress = () => {
+				if (isNavigationActive) {
+					if (hasDriverComparison) {
+						onClearDriverComparison();
+						return true;
+					}
+
+					void onStopNavigationFromBack();
+					return true;
+				}
+
 				if (isSearchOpen) {
 					if (longPressMarker) {
 						clearLongPressMarker();
@@ -134,7 +150,15 @@ export const useHomeMapInteractions = ({
 			);
 
 			return () => subscription.remove();
-		}, [clearLongPressMarker, isSearchOpen, longPressMarker])
+		}, [
+			clearLongPressMarker,
+			hasDriverComparison,
+			isNavigationActive,
+			isSearchOpen,
+			longPressMarker,
+			onClearDriverComparison,
+			onStopNavigationFromBack,
+		])
 	);
 
 	return {
