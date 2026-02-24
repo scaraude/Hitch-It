@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 import type { MapViewRef } from '../components';
 import { useLocation } from '../hooks';
@@ -32,6 +32,10 @@ interface HomeScreenContentProps {
 const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 	onRegionChange,
 }) => {
+	const [
+		shouldOpenSearchAfterNavigationStop,
+		setShouldOpenSearchAfterNavigationStop,
+	] = useState(false);
 	const { userLocation, currentRegion, locationLoading } = useLocation();
 	const {
 		spots,
@@ -115,6 +119,7 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 		searchText,
 		searchDestination,
 		isSearchOpen,
+		handleSearchOpen,
 		handleSearchToggle,
 		handleSearchTextChange,
 		handleSearchLocationSelected,
@@ -124,6 +129,11 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 		mapViewRef,
 		onEmbarquerFromSearch: handleEmbarquerFromSearch,
 	});
+
+	const handleStopNavigationAndOpenSearch = useCallback(async () => {
+		setShouldOpenSearchAfterNavigationStop(true);
+		await handleStopNavigation();
+	}, [handleStopNavigation]);
 
 	const {
 		mapRegion,
@@ -143,7 +153,7 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 		isShowingForm,
 		isSearchOpen,
 		onClearDriverComparison: handleDriverDirectionClear,
-		onStopNavigationFromBack: handleStopNavigation,
+		onStopNavigationFromBack: handleStopNavigationAndOpenSearch,
 		onSelectSpot: selectSpot,
 		onSelectRouteSpot: selectSpotEntity,
 	});
@@ -168,6 +178,15 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 		spots,
 		mapViewRef,
 	});
+
+	useEffect(() => {
+		if (!shouldOpenSearchAfterNavigationStop || !canUseSearch) {
+			return;
+		}
+
+		handleSearchOpen();
+		setShouldOpenSearchAfterNavigationStop(false);
+	}, [canUseSearch, handleSearchOpen, shouldOpenSearchAfterNavigationStop]);
 
 	const onLongPressEmbarquer = useCallback(() => {
 		handleLongPressEmbarquer(longPressMarker);
@@ -243,7 +262,7 @@ const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 				isFollowingUser={isFollowingUser}
 				shouldShowBottomBar={shouldShowBottomBar}
 				longPressMarker={longPressMarker}
-				onStopNavigation={handleStopNavigation}
+				onStopNavigation={handleStopNavigationAndOpenSearch}
 				onSearchTextChange={handleSearchTextChange}
 				onSearchLocationSelected={handleSearchLocationSelected}
 				onSearchToggle={handleSearchToggle}

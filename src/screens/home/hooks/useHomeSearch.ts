@@ -17,6 +17,7 @@ interface UseHomeSearchReturn {
 	searchText: string;
 	searchDestination: NamedLocation | null;
 	isSearchOpen: boolean;
+	handleSearchOpen: () => void;
 	handleSearchToggle: () => void;
 	handleSearchClear: () => void;
 	handleSearchTextChange: (text: string) => void;
@@ -33,6 +34,11 @@ export const useHomeSearch = ({
 	const [searchDestination, setSearchDestination] =
 		useState<NamedLocation | null>(null);
 	const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+	const handleSearchOpen = useCallback(() => {
+		if (!canUseSearch) return;
+		setIsSearchOpen(true);
+	}, [canUseSearch]);
 
 	const handleSearchToggle = useCallback(() => {
 		if (!canUseSearch) return;
@@ -114,6 +120,7 @@ export const useHomeSearch = ({
 		searchText,
 		searchDestination,
 		isSearchOpen,
+		handleSearchOpen,
 		handleSearchToggle,
 		handleSearchClear,
 		handleSearchTextChange,
