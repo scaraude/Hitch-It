@@ -5,9 +5,11 @@
 ## 🎯 Current Focus
 
 **In Progress**:
+
 - [Navigation & Journey Integration](features/in-progress/FEATURE_NAVIGATION_JOURNEY_INTEGRATION.md) - Transform search into full navigation with automatic journey recording
 
 **Next Up**:
+
 - F12: Save Journey Feature - Post-trip enrichment and review
 - F8: User Profile & Travel History - Track hitchhiking stats
 
@@ -17,49 +19,49 @@
 
 ### ✅ Implemented (3 features)
 
-| Feature | File | Completed |
-|---------|------|-----------|
-| Spot Management | [FEATURE_SPOT_MANAGEMENT.md](features/implemented/FEATURE_SPOT_MANAGEMENT.md) | 2025-12 |
-| Journey Recording (v2) | [F11_JOURNEY_RECORDING.md](features/implemented/F11_JOURNEY_RECORDING.md) | 2026-01-23 |
-| Map Search | [FEATURE_MAP_SEARCH.md](features/implemented/FEATURE_MAP_SEARCH.md) | 2026-01-24 |
+| Feature                | File                                                                          | Completed  |
+| ---------------------- | ----------------------------------------------------------------------------- | ---------- |
+| Spot Management        | [FEATURE_SPOT_MANAGEMENT.md](features/implemented/FEATURE_SPOT_MANAGEMENT.md) | 2025-12    |
+| Journey Recording (v2) | [F11_JOURNEY_RECORDING.md](features/implemented/F11_JOURNEY_RECORDING.md)     | 2026-01-23 |
+| Map Search             | [FEATURE_MAP_SEARCH.md](features/implemented/FEATURE_MAP_SEARCH.md)           | 2026-01-24 |
 
-### 🚧 In Progress (1 feature)
+### ✅ Implemented (1 feature)
 
-| Feature | File | Phase | Est. Time |
-|---------|------|-------|-----------|
-| Navigation & Journey Integration | [FEATURE_NAVIGATION_JOURNEY_INTEGRATION.md](features/in-progress/FEATURE_NAVIGATION_JOURNEY_INTEGRATION.md) | 0/4 | 2-3 weeks |
+| Feature                          | File                                                                                                        | Phase | Est. Time |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------- | ----- | --------- |
+| Navigation & Journey Integration | [FEATURE_NAVIGATION_JOURNEY_INTEGRATION.md](features/in-progress/FEATURE_NAVIGATION_JOURNEY_INTEGRATION.md) | 0/4   | 2-3 weeks |
 
 ### 📋 Phase 1: Critical Foundation (2 features)
 
 **Goal**: Complete journey lifecycle (record → navigate → save → review)
 
-| Priority | Feature | Effort | Dependencies | File |
-|----------|---------|--------|--------------|------|
-| 🔴 High | F12: Save Journey | Medium | Navigation ✅ | [F12_SAVE_JOURNEY.md](features/planned/F12_SAVE_JOURNEY.md) |
-| 🔴 High | F8: User Profile | Medium | Auth | [F8_USER_PROFILE.md](features/planned/F8_USER_PROFILE.md) |
+| Priority | Feature           | Effort | Dependencies  | File                                                        |
+| -------- | ----------------- | ------ | ------------- | ----------------------------------------------------------- |
+| 🔴 High  | F12: Save Journey | Medium | Navigation ✅ | [F12_SAVE_JOURNEY.md](features/planned/F12_SAVE_JOURNEY.md) |
+| 🔴 High  | F8: User Profile  | Medium | Auth          | [F8_USER_PROFILE.md](features/planned/F8_USER_PROFILE.md)   |
 
 ### 📋 Phase 2: High-Value Features (4 features)
 
 **Goal**: Enhance spot discovery and sharing capabilities
 
-| Priority | Feature | Effort | File |
-|----------|---------|--------|------|
-| 🟠 Medium | F1: Spot Pictures | Medium | [F1_SPOT_PICTURES.md](features/planned/F1_SPOT_PICTURES.md) |
-| 🟠 Medium | F2: Rest Areas | Low | [F2_REST_AREAS.md](features/planned/F2_REST_AREAS.md) |
-| 🟠 Medium | F6: External Sharing | Medium | [F6_EXTERNAL_SHARING.md](features/planned/F6_EXTERNAL_SHARING.md) |
-| 🟠 Medium | F7: Destination Suggestions | Low | [F7_DESTINATION_SUGGESTIONS.md](features/planned/F7_DESTINATION_SUGGESTIONS.md) |
+| Priority  | Feature                     | Effort | File                                                                            |
+| --------- | --------------------------- | ------ | ------------------------------------------------------------------------------- |
+| 🟠 Medium | F1: Spot Pictures           | Medium | [F1_SPOT_PICTURES.md](features/planned/F1_SPOT_PICTURES.md)                     |
+| 🟠 Medium | F2: Rest Areas              | Low    | [F2_REST_AREAS.md](features/planned/F2_REST_AREAS.md)                           |
+| 🟠 Medium | F6: External Sharing        | Medium | [F6_EXTERNAL_SHARING.md](features/planned/F6_EXTERNAL_SHARING.md)               |
+| 🟠 Medium | F7: Destination Suggestions | Low    | [F7_DESTINATION_SUGGESTIONS.md](features/planned/F7_DESTINATION_SUGGESTIONS.md) |
 
 ### 📋 Phase 3: Advanced Features (5 features)
 
 **Goal**: Advanced routing, social features, gamification
 
-| Priority | Feature | Effort | File |
-|----------|---------|--------|------|
-| 🟡 Lower | F3: Double Itinerary | High | [F3_DOUBLE_ITINERARY.md](features/planned/F3_DOUBLE_ITINERARY.md) |
-| 🟡 Lower | F4: Longway | Medium | [F4_LONGWAY.md](features/planned/F4_LONGWAY.md) |
-| 🟡 Lower | F5: Group Tracking | High | [F5_GROUP_TRACKING.md](features/planned/F5_GROUP_TRACKING.md) |
-| 🟡 Lower | F9: Community | High | [F9_COMMUNITY.md](features/planned/F9_COMMUNITY.md) |
-| 🟡 Lower | F10: Badges | Medium | [F10_BADGES.md](features/planned/F10_BADGES.md) |
+| Priority | Feature              | Effort | File                                                              |
+| -------- | -------------------- | ------ | ----------------------------------------------------------------- |
+| 🟡 Lower | F3: Double Itinerary | High   | [F3_DOUBLE_ITINERARY.md](features/planned/F3_DOUBLE_ITINERARY.md) |
+| 🟡 Lower | F4: Longway          | Medium | [F4_LONGWAY.md](features/planned/F4_LONGWAY.md)                   |
+| 🟡 Lower | F5: Group Tracking   | High   | [F5_GROUP_TRACKING.md](features/planned/F5_GROUP_TRACKING.md)     |
+| 🟡 Lower | F9: Community        | High   | [F9_COMMUNITY.md](features/planned/F9_COMMUNITY.md)               |
+| 🟡 Lower | F10: Badges          | Medium | [F10_BADGES.md](features/planned/F10_BADGES.md)                   |
 
 ---
 
@@ -69,7 +71,7 @@
   - Spot Management ✅
   - Journey Recording ✅
   - Map Search ✅
-- **Navigation**: 1/1 in progress (🚧)
+- **Navigation**: 1/1 complete (✅)
 - **Phase 1 (Critical)**: 0/2 complete (0%)
 - **Phase 2 (High-Value)**: 0/4 complete (0%)
 - **Phase 3 (Advanced)**: 0/5 complete (0%)
@@ -79,12 +81,12 @@
 
 ## 🗓️ Timeline Estimate
 
-| Phase | Duration | Features |
-|-------|----------|----------|
-| **Current** | 2-3 weeks | Navigation Integration |
-| **Phase 1** | 4-5 weeks | F12 Save Journey, F8 User Profile |
-| **Phase 2** | 5-6 weeks | F1 Pictures, F2 Rest Areas, F6 Sharing, F7 Suggestions |
-| **Phase 3** | 10-12 weeks | F3-F5 Advanced Routing, F9-F10 Social/Gamification |
+| Phase       | Duration    | Features                                               |
+| ----------- | ----------- | ------------------------------------------------------ |
+| **Current** | 2-3 weeks   | Navigation Integration                                 |
+| **Phase 1** | 4-5 weeks   | F12 Save Journey, F8 User Profile                      |
+| **Phase 2** | 5-6 weeks   | F1 Pictures, F2 Rest Areas, F6 Sharing, F7 Suggestions |
+| **Phase 3** | 10-12 weeks | F3-F5 Advanced Routing, F9-F10 Social/Gamification     |
 
 **Total**: ~6 months for complete feature set
 
@@ -98,7 +100,7 @@ src/
 ├── screens/           # Screen components
 ├── spot/              # ✅ Spot management (DDD feature module)
 ├── journey/           # ✅ Journey recording (DDD feature module)
-├── navigation/        # 🚧 Navigation & routing (DDD feature module)
+├── navigation/        # ✅ Navigation & routing (DDD feature module)
 ├── lib/               # External integrations (Supabase)
 ├── hooks/             # Shared hooks
 ├── constants/         # App constants
@@ -107,6 +109,7 @@ src/
 ```
 
 **Philosophy**: Feature-based Domain-Driven Design (DDD)
+
 - Each feature is self-contained module
 - Modules contain: components, services, context, hooks, types
 - See [../CLAUDE.md](../CLAUDE.md) for full architecture details
@@ -127,6 +130,7 @@ src/
 See [FEATURE_TEMPLATE.md](FEATURE_TEMPLATE.md) for structure (or copy existing feature files).
 
 **Key Sections**:
+
 - 📋 Overview (status, priority, complexity, dependencies)
 - 🎯 User Story (flow)
 - 🎨 UX/UI Specification (mockups, states)
@@ -151,6 +155,7 @@ See [FEATURE_TEMPLATE.md](FEATURE_TEMPLATE.md) for structure (or copy existing f
 > "A good developer is the one who removes lines of code"
 
 **Before adding a feature**:
+
 1. Is it in this roadmap? (If not, discuss first)
 2. Is this the simplest solution?
 3. Can existing code achieve the same?
