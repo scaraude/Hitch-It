@@ -4,13 +4,19 @@
 
 Transform the existing map search feature into a full navigation experience that integrates with the journey recording system. When a user searches for a destination, they can start a guided navigation that automatically begins a journey recording and displays the optimal hitchhiking route with relevant spots.
 
-**Status**: 🟡 In Progress (Implementation complete, testing pending)
+**Status**: 🟠 Partially Done (Navigation complete, journey integration testing pending)
 **Priority**: High (Foundation for hitchhiking experience)
 **Complexity**: High
 **Dependencies**:
 
 - ✅ Map Search (FEATURE_MAP_SEARCH_NAVIGATION)
 - ✅ Journey Recording (F11 in FEATURES_IMPLEMENTATION_PLAN)
+
+### Delivery Split (Source of Truth)
+
+- ✅ Navigation UX/flow: implemented
+- 🧪 Journey integration: test campaign pending (start/stop/arrival/manual stop/background/offline)
+- ⏳ Final status upgrade to "Implemented" only after test pass + critical bugfixes
 
 ---
 

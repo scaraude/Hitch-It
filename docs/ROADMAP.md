@@ -1,12 +1,12 @@
 # Hitch-It Roadmap
 
-> **Last Updated**: 2026-01-24
+> **Last Updated**: 2026-02-25
 
 ## 🎯 Current Focus
 
 **In Progress**:
 
-- [Navigation & Journey Integration](features/in-progress/FEATURE_NAVIGATION_JOURNEY_INTEGRATION.md) - Transform search into full navigation with automatic journey recording
+- [Navigation & Journey Integration](features/implemented/FEATURE_NAVIGATION_JOURNEY_INTEGRATION.md) - Navigation feature complete; journey integration testing & stabilization pending
 
 **Next Up**:
 
@@ -25,11 +25,11 @@
 | Journey Recording (v2) | [F11_JOURNEY_RECORDING.md](features/implemented/F11_JOURNEY_RECORDING.md)     | 2026-01-23 |
 | Map Search             | [FEATURE_MAP_SEARCH.md](features/implemented/FEATURE_MAP_SEARCH.md)           | 2026-01-24 |
 
-### ✅ Implemented (1 feature)
+### ✅ Implemented (1 feature, validation pending)
 
-| Feature                          | File                                                                                                        | Phase | Est. Time |
-| -------------------------------- | ----------------------------------------------------------------------------------------------------------- | ----- | --------- |
-| Navigation & Journey Integration | [FEATURE_NAVIGATION_JOURNEY_INTEGRATION.md](features/in-progress/FEATURE_NAVIGATION_JOURNEY_INTEGRATION.md) | 0/4   | 2-3 weeks |
+| Feature                          | File                                                                                                        | Build Status | Validation Status |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------- | ------------ | ----------------- |
+| Navigation & Journey Integration | [FEATURE_NAVIGATION_JOURNEY_INTEGRATION.md](features/implemented/FEATURE_NAVIGATION_JOURNEY_INTEGRATION.md) | ✅ Navigation complete | 🧪 Journey integration tests pending |
 
 ### 📋 Phase 1: Critical Foundation (2 features)
 
@@ -72,6 +72,7 @@
   - Journey Recording ✅
   - Map Search ✅
 - **Navigation**: 1/1 complete (✅)
+- **Journey integration validation**: pending (manual test pass + bugfix loop)
 - **Phase 1 (Critical)**: 0/2 complete (0%)
 - **Phase 2 (High-Value)**: 0/4 complete (0%)
 - **Phase 3 (Advanced)**: 0/5 complete (0%)
@@ -83,7 +84,7 @@
 
 | Phase       | Duration    | Features                                               |
 | ----------- | ----------- | ------------------------------------------------------ |
-| **Current** | 2-3 weeks   | Navigation Integration                                 |
+| **Current** | 3-5 days    | Journey integration testing + stabilization            |
 | **Phase 1** | 4-5 weeks   | F12 Save Journey, F8 User Profile                      |
 | **Phase 2** | 5-6 weeks   | F1 Pictures, F2 Rest Areas, F6 Sharing, F7 Suggestions |
 | **Phase 3** | 10-12 weeks | F3-F5 Advanced Routing, F9-F10 Social/Gamification     |
