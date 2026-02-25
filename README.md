@@ -1,163 +1,229 @@
-# Hitch It 🚗
+# Hitch-It 🚗
 
-A modern React Native app for hitchhiking built with Expo and TypeScript.
+> Your hitchhiking companion for discovering the best spots, planning routes, and tracking your journeys across France and beyond.
 
-## Features
+## What is Hitch-It?
 
-- 🗺️ Interactive maps with React Native Maps
-- 📍 Location services integration
-- 🎯 Draggable markers
-- 📱 Cross-platform (iOS, Android, Web)
-- 🎨 Modern UI with TypeScript
-- 🔧 ESLint and Prettier configured
-- 📦 Well-structured codebase
+**Hitch-It** is a mobile app designed specifically for the hitchhiking community. Born from real hitchhiking experiences, it solves the age-old problem: _"Where should I position myself to catch a ride?"_
 
-## Prerequisites
+Whether you're a seasoned hitchhiker or planning your first adventure, Hitch-It helps you:
+
+- **Find proven spots** - Discover where other hitchhikers have successfully caught rides
+- **Plan your journey** - Search destinations, view routes, and navigate to optimal hitchhiking positions
+- **Record your trips** - Track your hitchhiking adventures automatically with journey recording
+- **Share knowledge** - Contribute spots and help grow the community's collective wisdom
+
+Built for French hitchhikers, with a focus on simplicity and real-world usability.
+
+## Current Features
+
+### ✅ Spot Management
+
+Save and discover hitchhiking spots with ratings, notes, and success stories. Mark your favorite spots and access them offline.
+
+### ✅ Journey Recording
+
+Automatically track your hitchhiking trips with background location tracking. Record pickup points, wait times, and journey details.
+
+### ✅ Map Search & Navigation
+
+Search destinations, view routes on the map, and get directions to the best hitchhiking spots along your way.
+
+### ✅ Find the best spot on the driver's path
+
+Compare your itinerary with the driver path and find the latest spot you have on both path.
+
+## Vision
+
+Hitch-It aims to become **the essential tool for hitchhikers**, combining:
+
+- Community-driven spot knowledge
+- Smart route planning and navigation
+- Comprehensive journey tracking and statistics
+- Photo documentation of spots
+- Safety features like destination sharing
+
+All while maintaining **privacy**, **offline-first capability**, and **simplicity**.
+
+---
+
+## Getting Started
+
+### For Users
+
+Hitch-It is currently in active development. The app will soon be available on iOS and Android app stores.
+
+### For Developers
+
+Want to contribute or run the project locally? Here's how to get started.
+
+#### Prerequisites
 
 - Node.js >= 18.0.0
-- pnpm
-- Expo CLI
-- iOS Simulator (for iOS development)
-- Android Studio (for Android development)
+- [pnpm](https://pnpm.io/) package manager
+- [Expo CLI](https://docs.expo.dev/get-started/installation/)
+- iOS Simulator (macOS only) or Android Studio
 
-## Installation
+#### Quick Start
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd hitch-it
-   ```
+```bash
+# Clone the repository
+git clone <repository-url>
+cd hitch-it
 
-2. **Install dependencies**
-   ```bash
-   pnpm install
-   ```
+# Install dependencies
+pnpm install
 
-3. **Start the development server**
-   ```bash
-   pnpm start
-   ```
+# Start the development server
+pnpm start
+```
 
-## Development
+Then press:
 
-### Available Scripts
+- `i` for iOS simulator
+- `a` for Android emulator
+- `w` for web browser
 
-- `npm start` - Start the Expo development server
-- `npm run android` - Run on Android device/emulator
-- `npm run ios` - Run on iOS simulator
-- `npm run web` - Run in web browser
-- `npm run lint` - Run ESLint
-- `npm run lint:fix` - Fix ESLint issues
-- `npm run format` - Format code with Prettier
-- `npm run type-check` - Run TypeScript type checking
+#### Development Commands
+
+| Command           | Description                   |
+| ----------------- | ----------------------------- |
+| `pnpm start`      | Start Metro bundler           |
+| `pnpm ios`        | Run on iOS simulator          |
+| `pnpm android`    | Run on Android emulator       |
+| `pnpm lint`       | Check code quality with Biome |
+| `pnpm lint:fix`   | Auto-fix linting issues       |
+| `pnpm type-check` | Run TypeScript type checking  |
+
+---
+
+## Architecture & Tech Stack
+
+Hitch-It follows a **feature-based clean architecture** using Domain-Driven Design (DDD) principles.
+
+### Tech Stack
+
+- **Framework**: React Native + Expo
+- **Language**: TypeScript (strict mode)
+- **Backend**: Supabase (PostgreSQL with Row Level Security)
+- **Maps**: React Native Maps
+- **Navigation**: React Navigation
+- **State**: React Context + Hooks
+- **Code Quality**: Biome (linting + formatting)
 
 ### Project Structure
 
 ```
 src/
-├── components/          # Reusable UI components
-│   ├── MapView.tsx     # Custom map component
-│   └── index.ts        # Component exports
-├── screens/            # Screen components
-│   ├── HomeScreen.tsx  # Main home screen
-│   └── index.ts        # Screen exports
-├── utils/              # Utility functions
-│   ├── location.ts     # Location-related utilities
-│   └── index.ts        # Utility exports
-├── types/              # TypeScript type definitions
-│   └── index.ts        # Type exports
-├── constants/          # App constants and configuration
-│   └── index.ts        # Constant exports
-└── navigation/         # Navigation configuration
+├── spot/              # Spot management (feature module)
+├── journey/           # Journey recording (feature module)
+├── screens/           # Screen components
+├── components/        # Shared UI components
+├── hooks/             # Custom hooks
+├── lib/               # External integrations (Supabase)
+├── constants/         # Design tokens, config
+├── utils/             # Utilities + logger
+└── types/             # Shared TypeScript types
 ```
 
-### Code Style
+Each feature module is self-contained with its own:
 
-This project uses:
-- **ESLint** for code linting
-- **Prettier** for code formatting
-- **TypeScript** for type safety
-- **Path aliases** for clean imports
+- Components
+- Services
+- Context & hooks
+- Type definitions
 
-### Path Aliases
+### Code Quality Standards
 
-Configured path aliases for cleaner imports:
-- `@/*` → `./src/*`
-- `@components/*` → `./src/components/*`
-- `@screens/*` → `./src/screens/*`
-- `@utils/*` → `./src/utils/*`
-- `@types/*` → `./src/types/*`
-- `@constants/*` → `./src/constants/*`
+- **Zero tolerance** for `any` types
+- **Library-first** approach - prefer established solutions over custom code
+- **Design system** - all UI uses shared tokens and components
+- **Small, focused files** - screens ≤ 300 lines, components ≤ 150 lines
+- **Domain types** - branded IDs, enums for categorical values
 
-## Configuration
+See [docs/ENGINEERING_STANDARDS.md](docs/ENGINEERING_STANDARDS.md) for complete guidelines.
 
-### Environment Setup
-
-1. **iOS Development**
-   - Install Xcode
-   - Install iOS Simulator
-   - Configure bundle identifier in `app.json`
-
-2. **Android Development**
-   - Install Android Studio
-   - Configure Android SDK
-   - Set up Android emulator or connect device
-
-3. **Location Services**
-   - iOS: Add location permissions in `app.json`
-   - Android: Location permissions are configured automatically
-
-### App Configuration
-
-Update `app.json` with your project details:
-- Change `slug` to your app slug
-- Update `bundleIdentifier` for iOS
-- Update `package` for Android
-- Add your EAS project ID
-
-## Building for Production
-
-### Using EAS Build
-
-1. **Install EAS CLI**
-   ```bash
-   npm install -g @expo/eas-cli
-   ```
-
-2. **Login to Expo**
-   ```bash
-   eas login
-   ```
-
-3. **Configure EAS**
-   ```bash
-   eas build:configure
-   ```
-
-4. **Build for platforms**
-   ```bash
-   # Android
-   eas build --platform android
-   
-   # iOS
-   eas build --platform ios
-   
-   # Both platforms
-   eas build --platform all
-   ```
+---
 
 ## Contributing
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+Hitch-It is currently a solo project, but contributions are welcome! Here's how you can help:
+
+### Before You Start
+
+1. Read [CLAUDE.md](CLAUDE.md) - Project philosophy and development guidelines
+2. Check [docs/ROADMAP.md](docs/ROADMAP.md) - See what's planned and in progress
+3. Review [docs/ENGINEERING_STANDARDS.md](docs/ENGINEERING_STANDARDS.md) - Code standards
+
+### Development Workflow
+
+1. **Pick or propose a feature** from the roadmap
+2. **Create a feature spec** (see `docs/features/` for examples)
+3. **Develop** following the engineering standards
+4. **Test** - Run `pnpm lint` and `pnpm type-check`
+5. **Submit a PR** with clear description
+
+### Quality Checklist
+
+Before submitting:
+
+- [ ] Code passes `pnpm lint` and `pnpm type-check`
+- [ ] No hardcoded strings/colors - uses constants and design tokens
+- [ ] Reuses existing components and libraries where possible
+- [ ] Files stay within size limits (screens ≤ 300 lines)
+- [ ] Proper TypeScript types (no `any`, branded IDs for entities)
+
+### Philosophy
+
+> "A good developer is the one who removes lines of code"
+
+We prefer:
+
+- Simple, direct solutions over clever abstractions
+- Library solutions over custom implementations
+- Explicit code over magic behavior
+- Deleting code over adding features
+
+See [CLAUDE.md](CLAUDE.md) for the full philosophy.
+
+---
+
+## Documentation
+
+- **[CLAUDE.md](CLAUDE.md)** - Quick reference for development standards and commands
+- **[docs/ROADMAP.md](docs/ROADMAP.md)** - Feature roadmap and progress tracking
+- **[docs/ENGINEERING_STANDARDS.md](docs/ENGINEERING_STANDARDS.md)** - Complete code standards and architecture guide
+- **[AGENTS.md](AGENTS.md)** - Technical documentation for AI-assisted development
+
+---
+
+## Project Status
+
+**Development Stage**: Active development (Alpha)
+
+This is a solo project maintained with a focus on code quality, simplicity, and long-term maintainability.
+
+### Recent Updates
+
+- ✅ Journey recording with background location tracking
+- ✅ Map search and route visualization
+- ✅ Spot management with offline support
+- ✅ Navigation integration in progress
+
+See [docs/ROADMAP.md](docs/ROADMAP.md) for the complete feature timeline.
+
+---
 
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## Support
+---
 
-If you have any questions or need help, please open an issue in the repository.
+## Questions or Feedback?
+
+- Open an issue on GitHub
+- Check the documentation in the `docs/` folder
+- Review existing feature specs in `docs/features/`
+
+**Happy hitchhiking!** 🚗✨
