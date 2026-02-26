@@ -3,6 +3,7 @@ import type { MapViewRef } from '../../components';
 import type {
 	DestinationMarker,
 	NavigationRoute,
+	NavigationState,
 	SpotOnRoute,
 } from '../../navigation/types';
 import type { SpotFormData } from '../../spot/hooks/useSpots';
@@ -94,4 +95,67 @@ export interface HomeScreenViewModel {
 	mapLayer: HomeMapLayerState;
 	fixedOverlay: HomeFixedOverlayState;
 	sheetsOverlay: HomeSheetsOverlayState;
+}
+
+export interface HomeControllerState {
+	userLocation: Location | null;
+	currentRegion: MapRegion;
+	locationLoading: boolean;
+	mapViewRef: React.RefObject<MapViewRef | null>;
+	visibleSpots: SpotMarkerData[];
+	navigation: NavigationState;
+	selectedSpot: Spot | null;
+	isPlacingSpot: boolean;
+	isShowingForm: boolean;
+	showEmbarquerSheet: boolean;
+	showCompletionSheet: boolean;
+	isDriverDirectionSheetOpen: boolean;
+	hasDriverComparison: boolean;
+	shouldShowBottomBar: boolean;
+	canUseSearch: boolean;
+	shouldShowSearchEmbarquer: boolean;
+	searchText: string;
+	searchDestination: NamedLocation | null;
+	isSearchOpen: boolean;
+	mapHeading: number;
+	isFollowingUser: boolean;
+	longPressMarker: Location | null;
+	mapRegion: MapRegion;
+	journeyDurationMinutes: number;
+	embarquerOrigin: NamedLocation | null;
+	embarquerDestination: NamedLocation | null;
+	startPlacingSpot: () => void;
+	confirmSpotPlacement: (region: MapRegion) => void;
+	cancelSpotPlacement: () => void;
+	submitSpotForm: (formData: SpotFormData) => void;
+	cancelSpotForm: () => void;
+	deselectSpot: () => void;
+	handleSearchToggle: () => void;
+	handleSearchTextChange: (text: string) => void;
+	handleSearchLocationSelected: (location: Location, name: string) => void;
+	handleSearchEmbarquer: () => void;
+	handleRegionChange: (region: MapRegion) => void;
+	handleHeadingChange: (heading: number) => void;
+	handleMarkerPress: (markerId: string) => void;
+	handleLongPress: (location: Location) => void;
+	handleMapPress: (location: Location) => void;
+	handleResetHeading: () => void;
+	handleLocateUser: () => void;
+	openDriverDirectionSheet: () => void;
+	handleDriverDirectionClear: () => void;
+	handleDriverDirectionCompare: (
+		driverDestination: NamedLocation
+	) => Promise<void>;
+	closeDriverDirectionSheet: () => void;
+	handleEmbarquerClose: () => void;
+	handleSpotEmbarquer: (spot: Spot) => void;
+	handleEmbarquerStart: (
+		start: NamedLocation,
+		destination: NamedLocation
+	) => Promise<void>;
+	handleLongPressEmbarquer: (location: Location | null) => void;
+	clearLongPressMarker: () => void;
+	handleStopNavigationAndOpenSearch: () => Promise<void>;
+	handleSaveJourney: () => Promise<void>;
+	handleDiscardJourney: () => Promise<void>;
 }
