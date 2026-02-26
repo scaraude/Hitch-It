@@ -11,7 +11,7 @@ import {
 	View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { AddressInput } from '../../components';
+import { AddressInput, MapControlButton } from '../../components';
 import { COLORS, SIZES, SPACING } from '../../constants';
 import type { Location } from '../../types';
 
@@ -28,6 +28,8 @@ const SHEET_MAX_HEIGHT = '60%';
 const SHEET_TOP_MARGIN = 6;
 const GO_BUTTON_WIDTH = 64;
 const GO_BUTTON_HEIGHT = 36;
+const SWAP_LOCATIONS_ACCESSIBILITY_LABEL =
+	'Echanger le point de depart et la destination';
 
 interface EmbarquerSheetProps {
 	initialStart?: AddressData;
@@ -137,6 +139,16 @@ export function EmbarquerSheet({
 		);
 	};
 
+	const handleSwapLocations = () => {
+		setStartText(destinationText);
+		setStartLocation(destinationLocation);
+		setDestinationText(startText);
+		setDestinationLocation(startLocation);
+		setIsStartFromCurrentPosition(isDestinationFromCurrentPosition);
+		setIsDestinationFromCurrentPosition(isStartFromCurrentPosition);
+		Keyboard.dismiss();
+	};
+
 	return (
 		<KeyboardAvoidingView
 			style={styles.overlay}
@@ -218,6 +230,22 @@ export function EmbarquerSheet({
 								{FROM_MY_POSITION_LABEL}
 							</Text>
 						</Pressable>
+					</View>
+
+					<View style={styles.swapButtonContainer}>
+						<MapControlButton
+							icon={
+								<Ionicons
+									name="swap-vertical"
+									size={SIZES.iconSm}
+									color={COLORS.text}
+								/>
+							}
+							onPress={handleSwapLocations}
+							accessibilityLabel={SWAP_LOCATIONS_ACCESSIBILITY_LABEL}
+							size="small"
+							testID="embarquer-swap-locations"
+						/>
 					</View>
 
 					<View style={styles.field}>
@@ -344,6 +372,9 @@ const styles = StyleSheet.create({
 	},
 	field: {
 		gap: SPACING.xs,
+	},
+	swapButtonContainer: {
+		alignItems: 'center',
 	},
 	startInputLayer: {
 		zIndex: 2,
