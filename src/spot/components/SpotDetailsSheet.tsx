@@ -1,9 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import type React from 'react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
+	Image,
 	Linking,
-	Platform,
 	Pressable,
 	ScrollView,
 	StyleSheet,
@@ -16,20 +16,75 @@ import type { CommentAppreciation } from '../../comment/types';
 import {
 	BottomSheetHeader,
 	bottomSheetStyles,
+	CompassIcon,
 	toastUtils,
 } from '../../components/ui';
 import { COLORS, SIZES, SPACING } from '../../constants';
 import { A11Y_LABELS } from '../../constants/accessibility';
-import { formatDate } from '../../utils';
-import { DIRECTION_CONFIG } from '../constants';
+import { DIRECTION_HEADING_DEGREES } from '../constants';
 import type { Spot } from '../types';
-import { DestinationChip } from './ui';
 
 interface SpotDetailsSheetProps {
 	spot: Spot;
 	onClose: () => void;
 	onEmbarquer?: (spot: Spot) => void;
 }
+
+const TITLE_COORDINATE_DECIMALS = 3;
+const WAITING_MINUTES_FALLBACK = '-';
+const EMPTY_MAIN_ROAD = '';
+const EMPTY_DESTINATIONS = '-';
+const GOOGLE_DRIVING_MODE = 'driving';
+const STREET_VIEW_ICON = require('../../../assets/street-view-icon.png');
+
+const truncateCoordinate = (value: number, decimals: number): string => {
+	const factor = 10 ** decimals;
+	const truncatedValue =
+		value < 0
+			? Math.ceil(value * factor) / factor
+			: Math.floor(value * factor) / factor;
+
+	return truncatedValue.toFixed(decimals);
+};
+
+const getSpotCoordinatesTitle = (spot: Spot): string => {
+	const latitude = truncateCoordinate(
+		spot.coordinates.latitude,
+		TITLE_COORDINATE_DECIMALS
+	);
+	const longitude = truncateCoordinate(
+		spot.coordinates.longitude,
+		TITLE_COORDINATE_DECIMALS
+	);
+
+	return `${latitude}, ${longitude}`;
+};
+
+const buildGoogleStreetViewUrl = (spot: Spot): string => {
+	const { latitude, longitude } = spot.coordinates;
+	return `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${latitude},${longitude}`;
+};
+
+const buildGoogleItineraryUrl = (spot: Spot): string => {
+	const { latitude, longitude } = spot.coordinates;
+	return `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}&travelmode=${GOOGLE_DRIVING_MODE}`;
+};
+
+const openExternalUrl = async (
+	url: string,
+	failureMessage: string
+): Promise<void> => {
+	try {
+		const canOpen = await Linking.canOpenURL(url);
+		if (!canOpen) {
+			throw new Error(`Cannot open URL: ${url}`);
+		}
+
+		await Linking.openURL(url);
+	} catch {
+		toastUtils.error('Ouverture impossible', failureMessage);
+	}
+};
 
 export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 	spot,
@@ -44,33 +99,56 @@ export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 	const { comments, isLoading, isSubmitting, submitComment } = useSpotComments(
 		spot.id
 	);
-	const directionEmoji = DIRECTION_CONFIG[spot.direction].emoji;
 
-	const handleOpenMap = () => {
-		const { latitude, longitude } = spot.coordinates;
-		const label = encodeURIComponent(spot.roadName);
+	const directionHeading = DIRECTION_HEADING_DEGREES[spot.direction];
+	const spotTitle = getSpotCoordinatesTitle(spot);
+	const destinationsLabel =
+		spot.destinations.length > 0
+			? spot.destinations.join(', ')
+			: EMPTY_DESTINATIONS;
 
-		const url = Platform.select({
-			ios: `maps:?q=${label}&ll=${latitude},${longitude}`,
-			android: `geo:0,0?q=${latitude},${longitude}(${label})`,
-		});
+	const waitingTimes = useMemo(
+		() =>
+			comments
+				.map(comment => comment.waitingTimeMinutes)
+				.filter(
+					(value): value is number =>
+						typeof value === 'number' && Number.isFinite(value) && value >= 0
+				),
+		[comments]
+	);
 
-		if (url) {
-			Linking.openURL(url);
+	const averageWaitingTimeMinutes = useMemo(() => {
+		if (waitingTimes.length === 0) {
+			return undefined;
 		}
+
+		const totalWaitingTime = waitingTimes.reduce(
+			(total, waitingTime) => total + waitingTime,
+			0
+		);
+
+		return Math.round(totalWaitingTime / waitingTimes.length);
+	}, [waitingTimes]);
+
+	const waitingTimeLabel =
+		averageWaitingTimeMinutes === undefined
+			? WAITING_MINUTES_FALLBACK
+			: `${averageWaitingTimeMinutes} min`;
+	const waitingRecordsLabel = `${waitingTimes.length} records`;
+
+	const handleOpenStreetView = () => {
+		void openExternalUrl(
+			buildGoogleStreetViewUrl(spot),
+			"Impossible d'ouvrir Street View pour ce spot."
+		);
 	};
 
-	const handleGetDirections = () => {
-		const { latitude, longitude } = spot.coordinates;
-
-		const url = Platform.select({
-			ios: `maps:?daddr=${latitude},${longitude}`,
-			android: `google.navigation:q=${latitude},${longitude}`,
-		});
-
-		if (url) {
-			Linking.openURL(url);
-		}
+	const handleOpenItinerary = () => {
+		void openExternalUrl(
+			buildGoogleItineraryUrl(spot),
+			"Impossible d'ouvrir Google Itinerary pour ce spot."
+		);
 	};
 
 	const handleStartComment = () => {
@@ -119,81 +197,88 @@ export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 					accessibilityRole="button"
 					testID="spot-details-close"
 				>
-					<Ionicons name="close" size={20} color={COLORS.text} />
+					<Ionicons name="close" size={18} color={COLORS.textSecondary} />
 				</Pressable>
 			</BottomSheetHeader>
 
-			<ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-				{/* Road Name */}
-				<Text style={styles.roadName}>{spot.roadName}</Text>
-
-				{/* Direction */}
-				<View style={styles.infoRow}>
-					<Text style={styles.infoLabel}>Direction</Text>
-					<View style={styles.directionContainer}>
-						<Text style={styles.directionEmoji}>{directionEmoji}</Text>
-						<Text style={styles.infoValue}>{spot.direction}</Text>
-					</View>
-				</View>
-
-				{/* Destinations */}
-				{spot.destinations.length > 0 && (
-					<View style={styles.section}>
-						<Text style={styles.sectionTitle}>Destinations</Text>
-						<View style={styles.destinationList}>
-							{spot.destinations.map(dest => (
-								<DestinationChip key={dest} destination={dest} />
-							))}
-						</View>
-					</View>
-				)}
-
-				{/* Location */}
-				<View style={styles.section}>
-					<Text style={styles.sectionTitle}>Localisation</Text>
-					<Pressable
-						style={styles.mapButton}
-						onPress={handleOpenMap}
-						accessibilityLabel={A11Y_LABELS.openMap}
-						accessibilityRole="button"
-					>
-						<View style={styles.actionButtonContent}>
+			<ScrollView
+				style={styles.content}
+				contentContainerStyle={styles.contentContainer}
+				showsVerticalScrollIndicator={false}
+			>
+				<View style={styles.titleRow}>
+					<Text style={styles.title}>{spotTitle}</Text>
+					<View style={styles.topActions}>
+						<Pressable
+							style={[styles.topActionButton, styles.topActionButtonDisabled]}
+							accessibilityRole="button"
+							accessibilityLabel={A11Y_LABELS.favoriteComingSoon}
+							accessibilityState={{ disabled: true }}
+							disabled
+						>
 							<Ionicons
-								name="map-outline"
-								size={16}
-								color={COLORS.background}
+								name="heart-outline"
+								size={SIZES.iconMd}
+								color={COLORS.secondary}
 							/>
-							<Text style={styles.mapButtonText}>Voir sur la carte</Text>
-						</View>
-					</Pressable>
-					<Pressable
-						style={styles.directionsButton}
-						onPress={handleGetDirections}
-						accessibilityLabel={A11Y_LABELS.getDirections}
-						accessibilityRole="button"
-					>
-						<View style={styles.actionButtonContent}>
+						</Pressable>
+						<Pressable
+							style={styles.topActionButton}
+							onPress={handleOpenStreetView}
+							accessibilityRole="button"
+							accessibilityLabel={A11Y_LABELS.openStreetView}
+							testID="spot-details-open-street-view"
+						>
+							<Image
+								source={STREET_VIEW_ICON}
+								style={styles.streetViewIcon}
+								resizeMode="contain"
+							/>
+						</Pressable>
+						<Pressable
+							style={[styles.topActionButton, styles.primaryTopActionButton]}
+							onPress={handleOpenItinerary}
+							accessibilityRole="button"
+							accessibilityLabel={A11Y_LABELS.getGoogleItinerary}
+							testID="spot-details-open-itinerary"
+						>
 							<Ionicons
 								name="navigate-outline"
-								size={16}
-								color={COLORS.primary}
+								size={SIZES.iconMd}
+								color={COLORS.background}
 							/>
-							<Text style={styles.directionsButtonText}>Itinéraire</Text>
+						</Pressable>
+					</View>
+				</View>
+
+				<View style={styles.summaryRow}>
+					<View style={styles.summaryBlock}>
+						<Text style={styles.label}>Direction</Text>
+						<View style={styles.directionRow}>
+							<CompassIcon heading={directionHeading} size={SIZES.iconMd} />
+							<Text style={styles.value}>{spot.direction}</Text>
 						</View>
-					</Pressable>
+					</View>
+
+					<View style={[styles.summaryBlock, styles.waitingBlock]}>
+						<Text style={styles.label}>Waiting time</Text>
+						<Text style={styles.waitingValue}>{waitingTimeLabel}</Text>
+						<Text style={styles.waitingRecords}>{waitingRecordsLabel}</Text>
+					</View>
 				</View>
 
-				{/* Metadata */}
-				<View style={styles.metadata}>
-					<Text style={styles.metadataText}>
-						Créé le {formatDate(spot.createdAt)}
-					</Text>
-					<Text style={styles.metadataText}>Par {spot.createdBy}</Text>
+				<View style={styles.dataSection}>
+					<Text style={styles.label}>Main roads</Text>
+					<Text style={styles.value}>{EMPTY_MAIN_ROAD}</Text>
 				</View>
 
-				{/* Comments Section (placeholder for future) */}
-				<View style={styles.section}>
-					<Text style={styles.sectionTitle}>Commentaires</Text>
+				<View style={styles.dataSection}>
+					<Text style={styles.label}>Destinations</Text>
+					<Text style={styles.value}>{destinationsLabel}</Text>
+				</View>
+
+				<View style={styles.commentsSection}>
+					<Text style={styles.label}>Comments</Text>
 
 					{isLoading ? (
 						<Text style={styles.loadingComments}>
@@ -254,21 +339,15 @@ export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 					)}
 				</View>
 
-				{/* Embarquer Button */}
 				{onEmbarquer ? (
 					<Pressable
-						style={styles.embarquerButton}
+						style={styles.hitchButton}
 						onPress={() => onEmbarquer(spot)}
-						accessibilityLabel="Embarquer depuis ce spot"
+						accessibilityLabel="Hitch from this spot"
 						accessibilityRole="button"
 						testID="spot-embarquer-button"
 					>
-						<View style={styles.actionButtonContent}>
-							<Ionicons name="car" size={18} color={COLORS.background} />
-							<Text style={styles.embarquerButtonText}>
-								Embarquer depuis ce spot
-							</Text>
-						</View>
+						<Text style={styles.hitchButtonText}>Hitch it</Text>
 					</Pressable>
 				) : null}
 			</ScrollView>
@@ -278,7 +357,7 @@ export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 
 const styles = StyleSheet.create({
 	container: {
-		maxHeight: '80%',
+		maxHeight: '82%',
 	},
 	header: {
 		paddingHorizontal: SPACING.lg,
@@ -289,113 +368,104 @@ const styles = StyleSheet.create({
 	},
 	closeButton: {
 		position: 'absolute',
-		right: SPACING.lg,
+		left: SPACING.lg,
 		top: SPACING.sm,
-		width: SIZES.iconLg,
-		height: SIZES.iconLg,
-		borderRadius: SIZES.radiusLarge,
-		backgroundColor: COLORS.surface,
-		alignItems: 'center',
-		justifyContent: 'center',
-	},
-	actionButtonContent: {
-		flexDirection: 'row',
-		alignItems: 'center',
-		gap: SPACING.sm,
+		padding: SPACING.xs,
 	},
 	content: {
 		paddingHorizontal: SPACING.lg,
+	},
+	contentContainer: {
 		paddingBottom: SPACING.xl,
 	},
-	roadName: {
-		fontSize: SIZES.font3Xl,
-		fontWeight: 'bold',
-		color: COLORS.text,
+	titleRow: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		justifyContent: 'space-between',
 		marginBottom: SPACING.lg,
 	},
-	infoRow: {
-		flexDirection: 'row',
-		justifyContent: 'space-between',
-		alignItems: 'center',
-		paddingVertical: SPACING.md,
-		borderBottomWidth: 1,
-		borderBottomColor: COLORS.surface,
-	},
-	infoLabel: {
-		fontSize: SIZES.fontMd,
-		color: COLORS.textSecondary,
-		fontWeight: '500',
-	},
-	infoValue: {
-		fontSize: SIZES.fontMd,
-		color: COLORS.text,
-		fontWeight: '600',
-	},
-	directionContainer: {
-		flexDirection: 'row',
-		alignItems: 'center',
-		gap: SPACING.sm,
-	},
-	directionEmoji: {
-		fontSize: SIZES.fontXl,
-	},
-	section: {
-		marginTop: SPACING.lg,
-	},
-	sectionTitle: {
-		fontSize: SIZES.fontLg,
+	title: {
+		fontSize: SIZES.font2Xl,
 		fontWeight: '700',
 		color: COLORS.text,
-		marginBottom: SPACING.md,
+		flexShrink: 1,
+		paddingRight: SPACING.md,
 	},
-	destinationList: {
+	topActions: {
 		flexDirection: 'row',
-		flexWrap: 'wrap',
+		alignItems: 'center',
 		gap: SPACING.sm,
 	},
-	mapButton: {
-		backgroundColor: COLORS.primary,
-		paddingVertical: SPACING.md,
-		paddingHorizontal: SPACING.lg,
-		borderRadius: SIZES.radiusMedium,
+	topActionButton: {
+		width: SIZES.fabSize - SPACING.sm,
+		height: SIZES.fabSize - SPACING.sm,
+		borderRadius: SIZES.radiusRound,
+		backgroundColor: COLORS.background,
 		alignItems: 'center',
-		marginBottom: SPACING.sm,
+		justifyContent: 'center',
+		shadowColor: COLORS.text,
+		shadowOffset: { width: 0, height: 8 },
+		shadowOpacity: 0.2,
+		shadowRadius: 8,
+		elevation: 5,
 	},
-	mapButtonText: {
+	topActionButtonDisabled: {
+		opacity: 0.8,
+	},
+	primaryTopActionButton: {
+		backgroundColor: COLORS.secondary,
+	},
+	streetViewIcon: {
+		width: SIZES.iconMd,
+		height: SIZES.iconMd,
+	},
+	summaryRow: {
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+		gap: SPACING.md,
+	},
+	summaryBlock: {
+		flex: 1,
+	},
+	waitingBlock: {
+		alignItems: 'flex-start',
+	},
+	label: {
 		fontSize: SIZES.fontMd,
-		color: COLORS.background,
-		fontWeight: '600',
-	},
-	directionsButton: {
-		backgroundColor: COLORS.surface,
-		paddingVertical: SPACING.md,
-		paddingHorizontal: SPACING.lg,
-		borderRadius: SIZES.radiusMedium,
-		alignItems: 'center',
-		borderWidth: 1,
-		borderColor: COLORS.primary,
-	},
-	directionsButtonText: {
-		fontSize: SIZES.fontMd,
-		color: COLORS.primary,
-		fontWeight: '600',
-	},
-	metadata: {
-		marginTop: SPACING.lg,
-		paddingTop: SPACING.md,
-		borderTopWidth: 1,
-		borderTopColor: COLORS.surface,
-	},
-	metadataText: {
-		fontSize: SIZES.fontXs,
 		color: COLORS.textSecondary,
 		marginBottom: SPACING.xs,
+	},
+	directionRow: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		gap: SPACING.sm,
+	},
+	value: {
+		fontSize: SIZES.font2Xl,
+		color: COLORS.text,
+		fontWeight: '500',
+	},
+	waitingValue: {
+		fontSize: SIZES.font2Xl,
+		color: COLORS.text,
+		fontWeight: '500',
+	},
+	waitingRecords: {
+		fontSize: SIZES.fontMd,
+		color: COLORS.textSecondary,
+		marginTop: SPACING.xs,
+	},
+	dataSection: {
+		marginTop: SPACING.lg,
+	},
+	commentsSection: {
+		marginTop: SPACING.lg,
+		gap: SPACING.sm,
 	},
 	loadingComments: {
 		fontSize: SIZES.fontSm,
 		color: COLORS.textSecondary,
 		fontStyle: 'italic',
-		marginBottom: SPACING.md,
 	},
 	addCommentButton: {
 		backgroundColor: COLORS.surface,
@@ -410,7 +480,6 @@ const styles = StyleSheet.create({
 		fontWeight: '600',
 	},
 	commentComposer: {
-		marginTop: SPACING.md,
 		padding: SPACING.md,
 		borderRadius: SIZES.radiusMedium,
 		backgroundColor: COLORS.surface,
@@ -444,18 +513,17 @@ const styles = StyleSheet.create({
 		fontWeight: '600',
 		color: COLORS.background,
 	},
-	embarquerButton: {
-		backgroundColor: COLORS.primary,
-		paddingVertical: SPACING.lg,
-		paddingHorizontal: SPACING.lg,
-		borderRadius: SIZES.radiusMedium,
-		alignItems: 'center',
+	hitchButton: {
 		marginTop: SPACING.xl,
-		marginBottom: SPACING.lg,
+		backgroundColor: COLORS.warning,
+		borderRadius: SIZES.radiusXLarge,
+		paddingVertical: SPACING.md + SPACING.xs,
+		alignItems: 'center',
+		justifyContent: 'center',
 	},
-	embarquerButtonText: {
-		fontSize: SIZES.fontLg,
-		color: COLORS.background,
+	hitchButtonText: {
+		fontSize: SIZES.font3Xl,
 		fontWeight: '700',
+		color: COLORS.background,
 	},
 });

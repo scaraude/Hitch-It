@@ -9,6 +9,7 @@ type CommentRow = {
 	spot_id: string;
 	appreciation: string;
 	comment: string;
+	wait_time_minutes?: number | null;
 	created_by: string;
 	created_at: string;
 	updated_at: string;
@@ -39,11 +40,29 @@ const parseCommentText = (value: string, commentId: string): string => {
 	return trimmedComment;
 };
 
+const parseWaitingTimeMinutes = (
+	value: number | null | undefined,
+	commentId: string
+): number | undefined => {
+	if (value === null || value === undefined) {
+		return undefined;
+	}
+
+	if (!Number.isFinite(value) || value < 0) {
+		throw new Error(
+			`Invalid waiting time "${value}" for comment "${commentId}"`
+		);
+	}
+
+	return Math.round(value);
+};
+
 const mapRowToComment = (row: CommentRow): Comment => ({
 	id: createCommentId(row.id),
 	spotId: row.spot_id as SpotId,
 	appreciation: parseCommentAppreciation(row.appreciation, row.id),
 	comment: parseCommentText(row.comment, row.id),
+	waitingTimeMinutes: parseWaitingTimeMinutes(row.wait_time_minutes, row.id),
 	createdAt: new Date(row.created_at),
 	updatedAt: new Date(row.updated_at),
 	createdBy: row.created_by,

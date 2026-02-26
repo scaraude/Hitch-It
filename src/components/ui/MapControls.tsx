@@ -1,8 +1,8 @@
 import type React from 'react';
-import { useEffect, useRef } from 'react';
-import { Animated, StyleSheet, View } from 'react-native';
-import Svg, { Circle, Path, Polygon } from 'react-native-svg';
+import { StyleSheet, View } from 'react-native';
+import Svg, { Circle, Path } from 'react-native-svg';
 import { COLORS, SPACING } from '../../constants';
+import { CompassIcon } from './CompassIcon';
 import { MapControlButton } from './MapControlButton';
 
 interface MapControlsProps {
@@ -18,41 +18,7 @@ interface MapControlsProps {
 	bottomOffset?: number;
 }
 
-// Animated SVG components
-const AnimatedSvg = Animated.createAnimatedComponent(Svg);
 const LOCATE_ICON_COLOR = '#626262';
-
-const CompassIcon: React.FC<{ heading: number }> = ({ heading }) => {
-	const rotateAnim = useRef(new Animated.Value(-heading)).current;
-
-	useEffect(() => {
-		Animated.spring(rotateAnim, {
-			toValue: -heading,
-			useNativeDriver: true,
-			speed: 12,
-			bounciness: 2,
-		}).start();
-	}, [heading, rotateAnim]);
-
-	const rotation = rotateAnim.interpolate({
-		inputRange: [-360, 360],
-		outputRange: ['-360deg', '360deg'],
-	});
-
-	return (
-		<AnimatedSvg
-			width={22}
-			height={22}
-			viewBox="0 0 24 24"
-			style={{ transform: [{ rotate: rotation }] }}
-		>
-			{/* North pointer - red */}
-			<Polygon points="12,2 15,12 12,10 9,12" fill="#E74C3C" />
-			{/* South pointer - dark gray */}
-			<Polygon points="12,22 9,12 12,14 15,12" fill="#5D6D7E" />
-		</AnimatedSvg>
-	);
-};
 
 const LocateIcon: React.FC<{ active?: boolean }> = ({ active }) => (
 	<Svg width={22} height={22} viewBox="0 0 24 24">
@@ -97,7 +63,7 @@ export const MapControls: React.FC<MapControlsProps> = ({
 			{/* Compass - only visible when rotated */}
 			{isRotated && (
 				<MapControlButton
-					icon={<CompassIcon heading={mapHeading} />}
+					icon={<CompassIcon heading={mapHeading} animated />}
 					onPress={onResetHeading}
 					accessibilityLabel="Réorienter la carte vers le nord"
 					size="medium"

@@ -24,20 +24,25 @@ export const CommentList: React.FC<CommentListProps> = ({ comments }) => {
 
 				return (
 					<View key={comment.id} style={styles.card}>
-						<View
-							style={[
-								styles.appreciationBadge,
-								{ backgroundColor: appreciationConfig.color },
-							]}
-						>
-							<Text style={styles.appreciationText}>
-								{appreciationConfig.emoji} {appreciationConfig.label}
-							</Text>
+						<View style={styles.cardHeader}>
+							<View style={styles.authorContainer}>
+								<Text style={styles.author}>{comment.createdBy}</Text>
+								<Text style={styles.metadata}>
+									{formatDate(comment.createdAt)}
+								</Text>
+							</View>
+							<View
+								style={[
+									styles.appreciationBadge,
+									{ backgroundColor: appreciationConfig.color },
+								]}
+							>
+								<Text style={styles.appreciationText}>
+									{appreciationConfig.emoji} {appreciationConfig.label}
+								</Text>
+							</View>
 						</View>
 						<Text style={styles.comment}>{comment.comment}</Text>
-						<Text style={styles.metadata}>
-							Par {comment.createdBy} • {formatDate(comment.createdAt)}
-						</Text>
 					</View>
 				);
 			})}
@@ -55,8 +60,21 @@ const styles = StyleSheet.create({
 		padding: SPACING.md,
 		gap: SPACING.sm,
 	},
+	cardHeader: {
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+		alignItems: 'flex-start',
+		gap: SPACING.sm,
+	},
+	authorContainer: {
+		flexShrink: 1,
+	},
+	author: {
+		color: COLORS.text,
+		fontSize: SIZES.fontSm,
+		fontWeight: '700',
+	},
 	appreciationBadge: {
-		alignSelf: 'flex-start',
 		borderRadius: SIZES.radiusRound,
 		paddingVertical: SPACING.xs,
 		paddingHorizontal: SPACING.sm,
@@ -74,6 +92,7 @@ const styles = StyleSheet.create({
 	metadata: {
 		color: COLORS.textSecondary,
 		fontSize: SIZES.fontXs,
+		fontStyle: 'italic',
 	},
 	emptyState: {
 		fontSize: SIZES.fontSm,
