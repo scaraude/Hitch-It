@@ -1,24 +1,20 @@
 import { Ionicons } from '@expo/vector-icons';
+import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import type React from 'react';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import {
 	Image,
 	Linking,
 	Pressable,
-	ScrollView,
 	StyleSheet,
 	Text,
 	View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CommentEditor, CommentList } from '../../comment/components';
 import { useSpotComments } from '../../comment/hooks';
 import type { CommentAppreciation } from '../../comment/types';
-import {
-	BottomSheetHeader,
-	bottomSheetStyles,
-	CompassIcon,
-	toastUtils,
-} from '../../components/ui';
+import { CompassIcon, toastUtils } from '../../components/ui';
 import { COLORS, SIZES, SPACING } from '../../constants';
 import { A11Y_LABELS } from '../../constants/accessibility';
 import { DIRECTION_HEADING_DEGREES } from '../constants';
@@ -36,6 +32,12 @@ const EMPTY_MAIN_ROAD = '';
 const EMPTY_DESTINATIONS = '-';
 const GOOGLE_DRIVING_MODE = 'driving';
 const STREET_VIEW_ICON = require('../../../assets/street-view-icon.png');
+const SHEET_SNAP_POINTS = ['56%', '96%'] as const;
+const SHEET_INITIAL_INDEX = 0;
+const SHEET_EXPANDED_INDEX = 1;
+const HANDLE_INDICATOR_WIDTH = 76;
+const HANDLE_INDICATOR_HEIGHT = 6;
+const HANDLE_INDICATOR_OPACITY = 0.65;
 
 const truncateCoordinate = (value: number, decimals: number): string => {
 	const factor = 10 ** decimals;
@@ -91,6 +93,9 @@ export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 	onClose,
 	onEmbarquer,
 }) => {
+	const insets = useSafeAreaInsets();
+	const bottomSheetRef = useRef<BottomSheet>(null);
+	const [isDrawerExpanded, setIsDrawerExpanded] = useState(false);
 	const [isWritingComment, setIsWritingComment] = useState(false);
 	const [draftAppreciation, setDraftAppreciation] = useState<
 		CommentAppreciation | undefined
@@ -100,6 +105,7 @@ export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 		spot.id
 	);
 
+	const snapPoints = useMemo(() => [...SHEET_SNAP_POINTS], []);
 	const directionHeading = DIRECTION_HEADING_DEGREES[spot.direction];
 	const spotTitle = getSpotCoordinatesTitle(spot);
 	const destinationsLabel =
@@ -136,6 +142,19 @@ export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 			? WAITING_MINUTES_FALLBACK
 			: `${averageWaitingTimeMinutes} min`;
 	const waitingRecordsLabel = `${waitingTimes.length} records`;
+
+	const handleSheetChange = useCallback((index: number) => {
+		setIsDrawerExpanded(index >= SHEET_EXPANDED_INDEX);
+	}, []);
+
+	const handleSheetClose = useCallback(() => {
+		setIsDrawerExpanded(false);
+		onClose();
+	}, [onClose]);
+
+	const handleClose = useCallback(() => {
+		bottomSheetRef.current?.close();
+	}, []);
 
 	const handleOpenStreetView = () => {
 		void openExternalUrl(
@@ -181,31 +200,44 @@ export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 	};
 
 	return (
-		<View
-			style={[bottomSheetStyles.container, styles.container]}
-			testID="spot-details-sheet"
+		<BottomSheet
+			ref={bottomSheetRef}
+			index={SHEET_INITIAL_INDEX}
+			snapPoints={snapPoints}
+			enableDynamicSizing={false}
+			enablePanDownToClose
+			onChange={handleSheetChange}
+			onClose={handleSheetClose}
+			style={styles.sheetContainer}
+			backgroundStyle={[
+				styles.sheetBackground,
+				isDrawerExpanded && styles.sheetBackgroundExpanded,
+			]}
+			handleStyle={styles.handle}
+			handleIndicatorStyle={styles.handleIndicator}
 		>
-			<BottomSheetHeader
-				style={styles.header}
-				dragHandleStyle={styles.dragHandle}
-			>
-				<Pressable
-					onPress={onClose}
-					style={styles.closeButton}
-					accessibilityLabel={A11Y_LABELS.closeButton}
-					accessibilityHint={A11Y_LABELS.closeSheetHint}
-					accessibilityRole="button"
-					testID="spot-details-close"
-				>
-					<Ionicons name="close" size={18} color={COLORS.textSecondary} />
-				</Pressable>
-			</BottomSheetHeader>
-
-			<ScrollView
+			<BottomSheetScrollView
 				style={styles.content}
-				contentContainerStyle={styles.contentContainer}
+				contentContainerStyle={[
+					styles.contentContainer,
+					{ paddingBottom: insets.bottom + SPACING.xl },
+				]}
 				showsVerticalScrollIndicator={false}
+				testID="spot-details-sheet"
 			>
+				<View style={styles.headerRow}>
+					<Pressable
+						onPress={handleClose}
+						style={styles.closeButton}
+						accessibilityLabel={A11Y_LABELS.closeButton}
+						accessibilityHint={A11Y_LABELS.closeSheetHint}
+						accessibilityRole="button"
+						testID="spot-details-close"
+					>
+						<Ionicons name="close" size={18} color={COLORS.textSecondary} />
+					</Pressable>
+				</View>
+
 				<View style={styles.titleRow}>
 					<Text style={styles.title}>{spotTitle}</Text>
 					<View style={styles.topActions}>
@@ -350,33 +382,51 @@ export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 						<Text style={styles.hitchButtonText}>Hitch it</Text>
 					</Pressable>
 				) : null}
-			</ScrollView>
-		</View>
+			</BottomSheetScrollView>
+		</BottomSheet>
 	);
 };
 
 const styles = StyleSheet.create({
-	container: {
-		maxHeight: '82%',
+	sheetContainer: {
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: -2 },
+		shadowOpacity: SIZES.shadowOpacity,
+		shadowRadius: SIZES.shadowRadius,
+		elevation: 5,
 	},
-	header: {
-		paddingHorizontal: SPACING.lg,
-		position: 'relative',
+	sheetBackground: {
+		backgroundColor: COLORS.background,
+		borderTopLeftRadius: SIZES.radiusXLarge,
+		borderTopRightRadius: SIZES.radiusXLarge,
 	},
-	dragHandle: {
-		marginBottom: SPACING.md,
+	sheetBackgroundExpanded: {
+		borderTopLeftRadius: SIZES.radiusLarge,
+		borderTopRightRadius: SIZES.radiusLarge,
 	},
-	closeButton: {
-		position: 'absolute',
-		left: SPACING.lg,
-		top: SPACING.sm,
-		padding: SPACING.xs,
+	handle: {
+		paddingTop: SPACING.sm,
+		paddingBottom: SPACING.md,
+	},
+	handleIndicator: {
+		width: HANDLE_INDICATOR_WIDTH,
+		height: HANDLE_INDICATOR_HEIGHT,
+		borderRadius: SIZES.radiusRound,
+		backgroundColor: COLORS.textSecondary,
+		opacity: HANDLE_INDICATOR_OPACITY,
 	},
 	content: {
 		paddingHorizontal: SPACING.lg,
 	},
 	contentContainer: {
 		paddingBottom: SPACING.xl,
+	},
+	headerRow: {
+		alignItems: 'flex-start',
+		marginBottom: SPACING.xs,
+	},
+	closeButton: {
+		padding: SPACING.xs,
 	},
 	titleRow: {
 		flexDirection: 'row',

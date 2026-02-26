@@ -3,6 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import type React from 'react';
 import { useEffect } from 'react';
 import { Platform } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { ErrorBoundary } from './src/components';
 import { RootNavigator } from './src/navigation';
 import { logger } from './src/utils';
@@ -23,10 +24,12 @@ const App: React.FC = () => {
 	}, []);
 
 	return (
-		<ErrorBoundary>
-			<StatusBar style="dark" />
-			<RootNavigator />
-		</ErrorBoundary>
+		<GestureHandlerRootView style={{ flex: 1 }}>
+			<ErrorBoundary>
+				<StatusBar style="dark" />
+				<RootNavigator />
+			</ErrorBoundary>
+		</GestureHandlerRootView>
 	);
 };
 
