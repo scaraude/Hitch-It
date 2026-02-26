@@ -6,7 +6,7 @@ import type {
 	NavigationState,
 	SpotOnRoute,
 } from '../../navigation/types';
-import type { SpotFormData } from '../../spot/hooks/useSpots';
+import type { SpotFormData } from '../../spot/spotFormTypes';
 import type { Spot, SpotMarkerData } from '../../spot/types';
 import type { Location, MapRegion } from '../../types';
 

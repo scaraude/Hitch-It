@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
 import { createComment } from '../../comment/services';
-import type { CommentAppreciation } from '../../comment/types';
 import { generateCommentId } from '../../comment/utils';
 import { toastUtils } from '../../components/ui';
 import { COLORS } from '../../constants';
@@ -8,16 +7,9 @@ import { useDebouncedValue } from '../../hooks';
 import type { MapBounds, MapRegion } from '../../types';
 import { logger } from '../../utils';
 import { createSpot, getSpotsInBounds } from '../services';
-import type { Direction, Location, Spot, SpotMarkerData } from '../types';
+import type { SpotFormData } from '../spotFormTypes';
+import type { Location, Spot, SpotMarkerData } from '../types';
 import { generateSpotId } from '../utils';
-
-export interface SpotFormData {
-	appreciation: CommentAppreciation;
-	comment: string;
-	roadName: string;
-	direction: Direction;
-	destinations: string[];
-}
 
 export interface UseSpotsReturn {
 	spots: SpotMarkerData[];

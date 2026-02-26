@@ -1,7 +1,7 @@
 import type React from 'react';
 import type { MapViewRef } from '../../../components';
 import type { NavigationRoute, SpotOnRoute } from '../../../navigation/types';
-import type { SpotFormData } from '../../../spot/hooks/useSpots';
+import type { SpotFormData } from '../../../spot/spotFormTypes';
 import type { Spot, SpotMarkerData } from '../../../spot/types';
 import type { Location, MapRegion } from '../../../types';
 import type {

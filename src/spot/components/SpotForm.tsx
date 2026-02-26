@@ -1,82 +1,33 @@
 import type React from 'react';
-import { useCallback, useState } from 'react';
-import {
-	Pressable,
-	ScrollView,
-	StyleSheet,
-	Text,
-	TextInput,
-	View,
-} from 'react-native';
+import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { CommentEditor } from '../../comment/components';
-import type { CommentAppreciation } from '../../comment/types';
 import { bottomSheetStyles } from '../../components/ui';
-import { COLORS, SIZES, SPACING } from '../../constants';
+import { COLORS } from '../../constants';
 import { A11Y_LABELS } from '../../constants/accessibility';
 import { DIRECTIONS } from '../constants';
-import type { Direction } from '../types';
+import { useSpotForm } from '../hooks';
+import { spotFormStyles as styles } from './spotFormStyles';
+import type { SpotFormProps } from './spotFormTypes';
 import { DestinationChip, DestinationInput } from './ui';
 
-interface SpotFormData {
-	appreciation: CommentAppreciation;
-	comment: string;
-	roadName: string;
-	direction: Direction;
-	destinations: string[];
-}
-
-interface SpotFormProps {
-	onSubmit: (data: SpotFormData) => void;
-	onCancel: () => void;
-}
-
 export const SpotForm: React.FC<SpotFormProps> = ({ onSubmit, onCancel }) => {
-	const [appreciation, setAppreciation] = useState<
-		CommentAppreciation | undefined
-	>(undefined);
-	const [comment, setComment] = useState('');
-	const [roadName, setRoadName] = useState('');
-	const [direction, setDirection] = useState<Direction | undefined>(undefined);
-	const [destinationInput, setDestinationInput] = useState('');
-	const [destinations, setDestinations] = useState<string[]>([]);
-	const isFormValid =
-		roadName.trim().length > 0 &&
-		!!direction &&
-		destinations.length > 0 &&
-		appreciation !== undefined &&
-		comment.trim().length > 0;
-
-	const handleAddDestination = useCallback(() => {
-		const trimmed = destinationInput.trim();
-		if (!trimmed) return;
-		setDestinations(previous => [...previous, trimmed]);
-		setDestinationInput('');
-	}, [destinationInput]);
-
-	const handleRemoveDestination = useCallback((index: number) => {
-		setDestinations(previous => previous.filter((_, i) => i !== index));
-	}, []);
-
-	const handleSubmit = useCallback(() => {
-		if (!isFormValid || !direction || appreciation === undefined) {
-			return;
-		}
-		onSubmit({
-			appreciation,
-			comment: comment.trim(),
-			roadName: roadName.trim(),
-			direction,
-			destinations,
-		});
-	}, [
+	const {
 		appreciation,
 		comment,
-		destinations,
-		direction,
-		isFormValid,
-		onSubmit,
 		roadName,
-	]);
+		direction,
+		destinationInput,
+		destinations,
+		isFormValid,
+		onAppreciationChange,
+		onCommentChange,
+		onRoadNameChange,
+		onDirectionChange,
+		onDestinationInputChange,
+		onAddDestination,
+		onRemoveDestination,
+		onSubmitForm,
+	} = useSpotForm({ onSubmit });
 
 	return (
 		<View
@@ -95,7 +46,7 @@ export const SpotForm: React.FC<SpotFormProps> = ({ onSubmit, onCancel }) => {
 					<TextInput
 						style={styles.input}
 						value={roadName}
-						onChangeText={setRoadName}
+						onChangeText={onRoadNameChange}
 						placeholder="Ex: A6, D907, Route de Lyon..."
 						placeholderTextColor={COLORS.textSecondary}
 						accessibilityLabel={A11Y_LABELS.roadNameInput}
@@ -113,7 +64,7 @@ export const SpotForm: React.FC<SpotFormProps> = ({ onSubmit, onCancel }) => {
 									styles.directionButton,
 									direction === dir && styles.directionButtonSelected,
 								]}
-								onPress={() => setDirection(dir)}
+								onPress={() => onDirectionChange(dir)}
 								accessibilityLabel={`${A11Y_LABELS.direction} : ${dir}`}
 								accessibilityRole="button"
 								accessibilityState={{ selected: direction === dir }}
@@ -134,8 +85,8 @@ export const SpotForm: React.FC<SpotFormProps> = ({ onSubmit, onCancel }) => {
 					<Text style={styles.label}>Destinations *</Text>
 					<DestinationInput
 						value={destinationInput}
-						onChangeText={setDestinationInput}
-						onAdd={handleAddDestination}
+						onChangeText={onDestinationInputChange}
+						onAdd={onAddDestination}
 					/>
 
 					{destinations.length > 0 ? (
@@ -144,7 +95,7 @@ export const SpotForm: React.FC<SpotFormProps> = ({ onSubmit, onCancel }) => {
 								<DestinationChip
 									key={dest}
 									destination={dest}
-									onRemove={() => handleRemoveDestination(index)}
+									onRemove={() => onRemoveDestination(index)}
 								/>
 							))}
 						</View>
@@ -154,8 +105,8 @@ export const SpotForm: React.FC<SpotFormProps> = ({ onSubmit, onCancel }) => {
 						<CommentEditor
 							appreciation={appreciation}
 							comment={comment}
-							onAppreciationChange={setAppreciation}
-							onCommentChange={setComment}
+							onAppreciationChange={onAppreciationChange}
+							onCommentChange={onCommentChange}
 						/>
 					</View>
 				</ScrollView>
@@ -178,7 +129,7 @@ export const SpotForm: React.FC<SpotFormProps> = ({ onSubmit, onCancel }) => {
 							styles.submitButton,
 							!isFormValid && styles.submitButtonDisabled,
 						]}
-						onPress={handleSubmit}
+						onPress={onSubmitForm}
 						disabled={!isFormValid}
 						accessibilityLabel={A11Y_LABELS.confirmSpot}
 						accessibilityHint={A11Y_LABELS.confirmSpotHint}
@@ -192,102 +143,3 @@ export const SpotForm: React.FC<SpotFormProps> = ({ onSubmit, onCancel }) => {
 		</View>
 	);
 };
-
-const styles = StyleSheet.create({
-	container: {
-		maxHeight: '80%',
-	},
-	formContent: {
-		padding: SPACING.lg,
-	},
-	scrollView: {
-		maxHeight: 500,
-	},
-	title: {
-		fontSize: SIZES.font2Xl,
-		fontWeight: 'bold',
-		color: COLORS.text,
-		marginBottom: SPACING.lg,
-	},
-	label: {
-		fontSize: SIZES.fontMd,
-		fontWeight: '600',
-		color: COLORS.text,
-		marginTop: SPACING.md,
-		marginBottom: SPACING.sm,
-	},
-	input: {
-		borderWidth: 1,
-		borderColor: COLORS.surface,
-		backgroundColor: COLORS.surface,
-		borderRadius: SIZES.radiusMedium,
-		padding: SPACING.md,
-		fontSize: SIZES.fontMd,
-		color: COLORS.text,
-	},
-	directionGrid: {
-		flexDirection: 'row',
-		flexWrap: 'wrap',
-		gap: SPACING.sm,
-	},
-	directionButton: {
-		width: '23%',
-		paddingVertical: SPACING.sm,
-		borderRadius: SIZES.radiusMedium,
-		borderWidth: 1,
-		borderColor: COLORS.surface,
-		backgroundColor: COLORS.surface,
-		alignItems: 'center',
-	},
-	directionButtonSelected: {
-		backgroundColor: COLORS.primary,
-		borderColor: COLORS.primary,
-	},
-	directionText: {
-		fontSize: SIZES.fontXs,
-		color: COLORS.text,
-		fontWeight: '500',
-	},
-	directionTextSelected: {
-		color: COLORS.background,
-	},
-	destinationList: {
-		flexDirection: 'row',
-		flexWrap: 'wrap',
-		gap: SPACING.sm,
-		marginTop: SPACING.sm,
-	},
-	commentSection: {
-		marginTop: SPACING.lg,
-	},
-	actions: {
-		flexDirection: 'row',
-		gap: SPACING.md,
-		marginTop: SPACING.lg,
-	},
-	button: {
-		flex: 1,
-		paddingVertical: SPACING.md,
-		borderRadius: SIZES.radiusMedium,
-		alignItems: 'center',
-	},
-	cancelButton: {
-		backgroundColor: COLORS.surface,
-	},
-	cancelButtonText: {
-		fontSize: SIZES.fontMd,
-		fontWeight: '600',
-		color: COLORS.text,
-	},
-	submitButton: {
-		backgroundColor: COLORS.primary,
-	},
-	submitButtonDisabled: {
-		backgroundColor: COLORS.textSecondary,
-	},
-	submitButtonText: {
-		fontSize: SIZES.fontMd,
-		fontWeight: '600',
-		color: COLORS.background,
-	},
-});
