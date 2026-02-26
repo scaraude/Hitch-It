@@ -124,8 +124,6 @@ const MapViewComponent = forwardRef<MapViewRef, MapViewComponentProps>(
 					<Marker
 						key={marker.id}
 						coordinate={marker.coordinates}
-						title={marker.title}
-						description={marker.description}
 						pinColor={marker.color || MAP_CONFIG.defaultMarkerColor}
 						tracksViewChanges={false}
 						onPress={() => handleMarkerPress(marker.id)}

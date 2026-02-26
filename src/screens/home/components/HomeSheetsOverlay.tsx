@@ -5,6 +5,7 @@ import {
 	Pressable,
 	StyleSheet,
 	Text,
+	View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
@@ -144,19 +145,25 @@ export const HomeSheetsOverlay: React.FC<HomeSheetsOverlayProps> = ({
 			)}
 
 			{shouldShowSpotHitchButton && selectedSpot ? (
-				<Pressable
-					style={({ pressed }) => [
-						styles.spotHitchButton,
-						{ bottom: insets.bottom + SPOT_HITCH_BOTTOM_OFFSET },
-						pressed && styles.spotHitchButtonPressed,
+				<View
+					style={[
+						styles.spotHitchContainer,
+						{ paddingBottom: insets.bottom + SPOT_HITCH_BOTTOM_OFFSET },
 					]}
-					onPress={() => onSpotEmbarquer(selectedSpot)}
-					accessibilityLabel="Hitch from this spot"
-					accessibilityRole="button"
-					testID="spot-embarquer-button"
 				>
-					<Text style={styles.spotHitchButtonText}>Hitch it</Text>
-				</Pressable>
+					<Pressable
+						style={({ pressed }) => [
+							styles.spotHitchButton,
+							pressed && styles.spotHitchButtonPressed,
+						]}
+						onPress={() => onSpotEmbarquer(selectedSpot)}
+						accessibilityLabel="Hitch from this spot"
+						accessibilityRole="button"
+						testID="spot-embarquer-button"
+					>
+						<Text style={styles.spotHitchButtonText}>Hitch it</Text>
+					</Pressable>
+				</View>
 			) : null}
 
 			<Toast />
@@ -165,10 +172,16 @@ export const HomeSheetsOverlay: React.FC<HomeSheetsOverlayProps> = ({
 };
 
 const styles = StyleSheet.create({
-	spotHitchButton: {
+	spotHitchContainer: {
 		position: 'absolute',
-		left: SPOT_HITCH_HORIZONTAL_PADDING,
-		right: SPOT_HITCH_HORIZONTAL_PADDING,
+		left: 0,
+		right: 0,
+		bottom: 0,
+		paddingTop: SPACING.md,
+		paddingHorizontal: SPOT_HITCH_HORIZONTAL_PADDING,
+		backgroundColor: COLORS.background,
+	},
+	spotHitchButton: {
 		backgroundColor: COLORS.warning,
 		borderRadius: SIZES.radiusXLarge,
 		paddingVertical: SPACING.md + SPACING.xs,
