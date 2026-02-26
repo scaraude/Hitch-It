@@ -1,7 +1,15 @@
 import type React from 'react';
-import { KeyboardAvoidingView, Platform } from 'react-native';
+import {
+	KeyboardAvoidingView,
+	Platform,
+	Pressable,
+	StyleSheet,
+	Text,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import { ActionButtons } from '../../../components';
+import { COLORS, SIZES, SPACING } from '../../../constants';
 import {
 	DriverDirectionSheet,
 	EmbarquerSheet,
@@ -11,8 +19,11 @@ import type { NavigationRoute, SpotOnRoute } from '../../../navigation/types';
 import { SpotDetailsSheet, SpotForm } from '../../../spot/components';
 import type { Spot } from '../../../spot/types';
 import type { Location } from '../../../types';
-import { homeScreenStyles as styles } from '../homeScreenStyles';
+import { homeScreenStyles as homeStyles } from '../homeScreenStyles';
 import type { NamedLocation } from '../types';
+
+const SPOT_HITCH_BOTTOM_OFFSET = SPACING.sm;
+const SPOT_HITCH_HORIZONTAL_PADDING = SPACING.lg;
 
 interface HomeSheetsOverlayProps {
 	isPlacingSpot: boolean;
@@ -32,9 +43,7 @@ interface HomeSheetsOverlayProps {
 	onSubmitSpotForm: React.ComponentProps<typeof SpotForm>['onSubmit'];
 	onCancelSpotForm: () => void;
 	onCloseSpotDetails: () => void;
-	onSpotEmbarquer: NonNullable<
-		React.ComponentProps<typeof SpotDetailsSheet>['onEmbarquer']
-	>;
+	onSpotEmbarquer: (spot: Spot) => void;
 	onEmbarquerStart: React.ComponentProps<typeof EmbarquerSheet>['onStart'];
 	onDriverDirectionCompare: React.ComponentProps<
 		typeof DriverDirectionSheet
@@ -71,9 +80,17 @@ export const HomeSheetsOverlay: React.FC<HomeSheetsOverlayProps> = ({
 	onSaveJourney,
 	onDiscardJourney,
 }) => {
+	const insets = useSafeAreaInsets();
+	const shouldShowSpotHitchButton =
+		!!selectedSpot &&
+		!isShowingForm &&
+		!showEmbarquerSheet &&
+		!showDriverDirectionSheet &&
+		!showCompletionSheet;
+
 	return (
 		<KeyboardAvoidingView
-			style={styles.nonMapOverlay}
+			style={homeStyles.nonMapOverlay}
 			behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
 			keyboardVerticalOffset={0}
 			pointerEvents="box-none"
@@ -94,7 +111,6 @@ export const HomeSheetsOverlay: React.FC<HomeSheetsOverlayProps> = ({
 					key={selectedSpot.id as string}
 					spot={selectedSpot}
 					onClose={onCloseSpotDetails}
-					onEmbarquer={onSpotEmbarquer}
 				/>
 			)}
 
@@ -127,7 +143,49 @@ export const HomeSheetsOverlay: React.FC<HomeSheetsOverlayProps> = ({
 				/>
 			)}
 
+			{shouldShowSpotHitchButton && selectedSpot ? (
+				<Pressable
+					style={({ pressed }) => [
+						styles.spotHitchButton,
+						{ bottom: insets.bottom + SPOT_HITCH_BOTTOM_OFFSET },
+						pressed && styles.spotHitchButtonPressed,
+					]}
+					onPress={() => onSpotEmbarquer(selectedSpot)}
+					accessibilityLabel="Hitch from this spot"
+					accessibilityRole="button"
+					testID="spot-embarquer-button"
+				>
+					<Text style={styles.spotHitchButtonText}>Hitch it</Text>
+				</Pressable>
+			) : null}
+
 			<Toast />
 		</KeyboardAvoidingView>
 	);
 };
+
+const styles = StyleSheet.create({
+	spotHitchButton: {
+		position: 'absolute',
+		left: SPOT_HITCH_HORIZONTAL_PADDING,
+		right: SPOT_HITCH_HORIZONTAL_PADDING,
+		backgroundColor: COLORS.warning,
+		borderRadius: SIZES.radiusXLarge,
+		paddingVertical: SPACING.md + SPACING.xs,
+		alignItems: 'center',
+		justifyContent: 'center',
+		shadowColor: COLORS.text,
+		shadowOffset: { width: 0, height: 6 },
+		shadowOpacity: 0.18,
+		shadowRadius: 10,
+		elevation: 6,
+	},
+	spotHitchButtonPressed: {
+		opacity: 0.9,
+	},
+	spotHitchButtonText: {
+		fontSize: SIZES.font3Xl,
+		fontWeight: '700',
+		color: COLORS.background,
+	},
+});

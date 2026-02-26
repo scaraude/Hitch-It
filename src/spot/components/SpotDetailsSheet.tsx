@@ -23,7 +23,6 @@ import type { Spot } from '../types';
 interface SpotDetailsSheetProps {
 	spot: Spot;
 	onClose: () => void;
-	onEmbarquer?: (spot: Spot) => void;
 }
 
 const TITLE_COORDINATE_DECIMALS = 3;
@@ -91,7 +90,6 @@ const openExternalUrl = async (
 export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 	spot,
 	onClose,
-	onEmbarquer,
 }) => {
 	const insets = useSafeAreaInsets();
 	const bottomSheetRef = useRef<BottomSheet>(null);
@@ -370,18 +368,6 @@ export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 						</Pressable>
 					)}
 				</View>
-
-				{onEmbarquer ? (
-					<Pressable
-						style={styles.hitchButton}
-						onPress={() => onEmbarquer(spot)}
-						accessibilityLabel="Hitch from this spot"
-						accessibilityRole="button"
-						testID="spot-embarquer-button"
-					>
-						<Text style={styles.hitchButtonText}>Hitch it</Text>
-					</Pressable>
-				) : null}
 			</BottomSheetScrollView>
 		</BottomSheet>
 	);
@@ -561,19 +547,6 @@ const styles = StyleSheet.create({
 	submitCommentText: {
 		fontSize: SIZES.fontSm,
 		fontWeight: '600',
-		color: COLORS.background,
-	},
-	hitchButton: {
-		marginTop: SPACING.xl,
-		backgroundColor: COLORS.warning,
-		borderRadius: SIZES.radiusXLarge,
-		paddingVertical: SPACING.md + SPACING.xs,
-		alignItems: 'center',
-		justifyContent: 'center',
-	},
-	hitchButtonText: {
-		fontSize: SIZES.font3Xl,
-		fontWeight: '700',
 		color: COLORS.background,
 	},
 });
