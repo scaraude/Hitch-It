@@ -1,12 +1,14 @@
+import { useCallback } from 'react';
 import type { MapRegion } from '../../../types';
-import type { HomeScreenViewModel } from '../types';
-import { useHomeActionAdapters } from './useHomeActionAdapters';
+import type {
+	HomeFixedOverlayState,
+	HomeMapLayerState,
+	HomeScreenViewModel,
+	HomeSheetsOverlayState,
+	HomeTabId,
+	NamedLocation,
+} from '../types';
 import { useHomeControllerState } from './useHomeControllerState';
-import {
-	buildHomeFixedOverlayState,
-	buildHomeMapLayerState,
-	buildHomeSheetsOverlayState,
-} from './useHomeViewModelBuilders';
 
 interface UseHomeControllerArgs {
 	onRegionChange: (region: MapRegion) => void;
@@ -17,29 +19,59 @@ export const useHomeController = ({
 }: UseHomeControllerArgs): HomeScreenViewModel => {
 	const state = useHomeControllerState({ onRegionChange });
 
-	const {
-		handleTabPress,
-		handleStopNavigationPress,
-		onLongPressEmbarquer,
-		onConfirmSpotPlacement,
-		handleEmbarquerStartPress,
-		handleSaveJourneyPress,
-		handleDiscardJourneyPress,
-	} = useHomeActionAdapters({
-		startPlacingSpot: state.startPlacingSpot,
-		handleSearchToggle: state.handleSearchToggle,
-		handleStopNavigationAndOpenSearch: state.handleStopNavigationAndOpenSearch,
-		handleLongPressEmbarquer: state.handleLongPressEmbarquer,
-		longPressMarker: state.longPressMarker,
-		clearLongPressMarker: state.clearLongPressMarker,
-		confirmSpotPlacement: state.confirmSpotPlacement,
-		mapRegion: state.mapRegion,
-		handleEmbarquerStart: state.handleEmbarquerStart,
-		handleSaveJourney: state.handleSaveJourney,
-		handleDiscardJourney: state.handleDiscardJourney,
-	});
+	// Action adapters (inlined from useHomeActionAdapters)
+	const handleTabPress = useCallback(
+		(tabId: HomeTabId) => {
+			switch (tabId) {
+				case 'add':
+					state.startPlacingSpot();
+					break;
+				case 'search':
+					state.handleSearchToggle();
+					break;
+				case 'home':
+				case 'history':
+				case 'profile':
+					break;
+			}
+		},
+		[state.handleSearchToggle, state.startPlacingSpot]
+	);
 
-	const mapLayer = buildHomeMapLayerState({
+	const handleStopNavigationPress = useCallback(() => {
+		void state.handleStopNavigationAndOpenSearch();
+	}, [state.handleStopNavigationAndOpenSearch]);
+
+	const onLongPressEmbarquer = useCallback(() => {
+		state.handleLongPressEmbarquer(state.longPressMarker);
+		state.clearLongPressMarker();
+	}, [
+		state.clearLongPressMarker,
+		state.handleLongPressEmbarquer,
+		state.longPressMarker,
+	]);
+
+	const onConfirmSpotPlacement = useCallback(() => {
+		state.confirmSpotPlacement(state.mapRegion);
+	}, [state.confirmSpotPlacement, state.mapRegion]);
+
+	const handleEmbarquerStartPress = useCallback(
+		(start: NamedLocation, destination: NamedLocation) => {
+			void state.handleEmbarquerStart(start, destination);
+		},
+		[state.handleEmbarquerStart]
+	);
+
+	const handleSaveJourneyPress = useCallback(() => {
+		void state.handleSaveJourney();
+	}, [state.handleSaveJourney]);
+
+	const handleDiscardJourneyPress = useCallback(() => {
+		void state.handleDiscardJourney();
+	}, [state.handleDiscardJourney]);
+
+	// Build view models directly (inlined from useHomeViewModelBuilders)
+	const mapLayer: HomeMapLayerState = {
 		locationLoading: state.locationLoading,
 		currentRegion: state.currentRegion,
 		mapViewRef: state.mapViewRef,
@@ -57,9 +89,9 @@ export const useHomeController = ({
 		onMarkerPress: state.handleMarkerPress,
 		onLongPress: state.handleLongPress,
 		onMapPress: state.handleMapPress,
-	});
+	};
 
-	const fixedOverlay = buildHomeFixedOverlayState({
+	const fixedOverlay: HomeFixedOverlayState = {
 		isNavigationActive: state.navigation.isActive,
 		navigationRoute: state.navigation.route,
 		hasDriverComparison: state.hasDriverComparison,
@@ -84,9 +116,9 @@ export const useHomeController = ({
 		onClearDriverDirectionComparison: state.handleDriverDirectionClear,
 		onLongPressEmbarquer,
 		onTabPress: handleTabPress,
-	});
+	};
 
-	const sheetsOverlay = buildHomeSheetsOverlayState({
+	const sheetsOverlay: HomeSheetsOverlayState = {
 		isPlacingSpot: state.isPlacingSpot,
 		isShowingForm: state.isShowingForm,
 		selectedSpot: state.selectedSpot,
@@ -111,7 +143,7 @@ export const useHomeController = ({
 		onEmbarquerClose: state.handleEmbarquerClose,
 		onSaveJourney: handleSaveJourneyPress,
 		onDiscardJourney: handleDiscardJourneyPress,
-	});
+	};
 
 	return { mapLayer, fixedOverlay, sheetsOverlay };
 };

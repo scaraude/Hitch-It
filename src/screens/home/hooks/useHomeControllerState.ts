@@ -36,22 +36,26 @@ export const useHomeControllerState = ({
 	});
 
 	const mapSearchState = useHomeMapSearchState({
-		navigation: navigationState.navigation,
+		isNavigationActive: navigationState.navigation.isActive,
+		navigationRoute: navigationState.navigation.route,
+		driverRoute: navigationState.navigation.driverRoute,
+		spotsOnRoute: navigationState.navigation.spotsOnRoute,
+		commonSpotsOnRoute: navigationState.navigation.commonSpotsOnRoute,
+		hasDriverComparison: sessionState.hasDriverComparison,
+		onClearDriverComparison: sessionState.handleDriverDirectionClear,
+		onStopNavigation: sessionState.handleStopNavigation,
 		spots: spotState.spots,
 		selectedSpot: spotState.selectedSpot,
 		isPlacingSpot: spotState.isPlacingSpot,
 		isShowingForm: spotState.isShowingForm,
+		onSelectSpot: spotState.selectSpot,
+		onSelectRouteSpot: spotState.selectSpotEntity,
 		showEmbarquerSheet: sessionState.showEmbarquerSheet,
 		showCompletionSheet: sessionState.showCompletionSheet,
-		hasDriverComparison: sessionState.hasDriverComparison,
-		onClearDriverComparison: sessionState.handleDriverDirectionClear,
-		onStopNavigation: sessionState.handleStopNavigation,
 		onEmbarquerFromSearch: sessionState.handleEmbarquerFromSearch,
 		mapViewRef,
 		currentRegion,
 		onRegionChange,
-		onSelectSpot: spotState.selectSpot,
-		onSelectRouteSpot: spotState.selectSpotEntity,
 		userLocation,
 	});
 

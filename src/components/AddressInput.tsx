@@ -13,11 +13,9 @@ import {
 	type ViewStyle,
 } from 'react-native';
 import { COLORS, SIZES, SPACING } from '../constants';
-import { useDebouncedValue } from '../hooks/useDebouncedValue';
+import { usePlaceSuggestions } from '../hooks';
 import type { SearchSuggestion } from '../services/geocodingService';
-import { searchPlaces } from '../services/geocodingService';
 import type { Location } from '../types';
-import { logger } from '../utils/logger';
 
 interface AddressInputProps {
 	placeholder: string;
@@ -56,69 +54,14 @@ export function AddressInput({
 	showTopSuggestionLabel = false,
 	disableSuggestions = false,
 }: AddressInputProps) {
-	const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
-	const [isLoading, setIsLoading] = useState(false);
 	const [isFocused, setIsFocused] = useState(false);
-
-	const debouncedSearchText = useDebouncedValue(value, 300);
-	const suggestionsOpacity = useRef(new Animated.Value(0)).current;
 	const blurTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-	useEffect(() => {
-		let isMounted = true;
-
-		const fetchSuggestions = async () => {
-			if (disableSuggestions) {
-				if (isMounted) {
-					setIsLoading(false);
-					setSuggestions([]);
-					suggestionsOpacity.setValue(0);
-				}
-				return;
-			}
-
-			if (!debouncedSearchText.trim()) {
-				if (isMounted) {
-					setSuggestions([]);
-					suggestionsOpacity.setValue(0);
-				}
-				return;
-			}
-
-			if (isMounted) {
-				setIsLoading(true);
-			}
-			try {
-				const results = await searchPlaces(debouncedSearchText);
-				if (!isMounted) return;
-
-				setSuggestions(results);
-				if (results.length > 0) {
-					Animated.timing(suggestionsOpacity, {
-						toValue: 1,
-						duration: 200,
-						useNativeDriver: true,
-					}).start();
-				}
-			} catch (error) {
-				if (!isMounted) return;
-
-				logger.app.error('Failed to fetch search suggestions', error);
-				setSuggestions([]);
-				suggestionsOpacity.setValue(0);
-			} finally {
-				if (isMounted) {
-					setIsLoading(false);
-				}
-			}
-		};
-
-		void fetchSuggestions();
-
-		return () => {
-			isMounted = false;
-		};
-	}, [debouncedSearchText, disableSuggestions, suggestionsOpacity]);
+	const { suggestions, isLoading, suggestionsOpacity, clearSuggestions } =
+		usePlaceSuggestions({
+			searchText: value,
+			disabled: disableSuggestions,
+		});
 
 	const handleSuggestionPress = useCallback(
 		async (suggestion: SearchSuggestion) => {
@@ -127,27 +70,22 @@ export function AddressInput({
 			}
 			onLocationSelected(suggestion.location, suggestion.name);
 			onChangeText(suggestion.name);
-			setSuggestions([]);
+			clearSuggestions();
 			Keyboard.dismiss();
 		},
-		[hapticFeedback, onChangeText, onLocationSelected]
+		[hapticFeedback, onChangeText, onLocationSelected, clearSuggestions]
 	);
 
 	const handleBlur = useCallback(() => {
 		setIsFocused(false);
-		// Delay hiding suggestions to allow press to register
 		if (blurTimeoutRef.current) {
 			clearTimeout(blurTimeoutRef.current);
 		}
 
 		blurTimeoutRef.current = setTimeout(() => {
-			Animated.timing(suggestionsOpacity, {
-				toValue: 0,
-				duration: 150,
-				useNativeDriver: true,
-			}).start(() => setSuggestions([]));
+			clearSuggestions();
 		}, 200);
-	}, [suggestionsOpacity]);
+	}, [clearSuggestions]);
 
 	useEffect(() => {
 		return () => {
