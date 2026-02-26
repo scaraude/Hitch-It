@@ -8,10 +8,8 @@ import {
 } from '../../../components';
 import { APP_CONFIG } from '../../../constants';
 import { NavigationHeader } from '../../../navigation/components';
-import type { NavigationRoute } from '../../../navigation/types';
-import type { Location } from '../../../types';
+import { useHomeScreenContext } from '../context/HomeScreenContext';
 import { homeScreenStyles as styles } from '../homeScreenStyles';
-import type { HomeTabId } from '../types';
 
 const MAP_CONTROLS_OFFSET_WITH_BOTTOM_BAR = 110;
 const MAP_CONTROLS_OFFSET_DEFAULT = 24;
@@ -20,59 +18,36 @@ const NAVIGATION_COMPARE_BUTTON_BOTTOM_OFFSET = 56;
 const COMPARE_BUTTON_LABEL = 'Comparer direction conducteur';
 const CLEAR_COMPARE_BUTTON_LABEL = 'Effacer comparaison';
 
-interface HomeFixedOverlayProps {
-	isNavigationActive: boolean;
-	navigationRoute: NavigationRoute | null;
-	hasDriverComparison: boolean;
-	canUseSearch: boolean;
-	isSearchOpen: boolean;
-	searchText: string;
-	shouldShowSearchEmbarquer: boolean;
-	isPlacingSpot: boolean;
-	isShowingForm: boolean;
-	mapHeading: number;
-	isFollowingUser: boolean;
-	shouldShowBottomBar: boolean;
-	longPressMarker: Location | null;
-	onStopNavigation: () => void;
-	onSearchTextChange: (text: string) => void;
-	onSearchLocationSelected: (location: Location, name: string) => void;
-	onSearchToggle: () => void;
-	onSearchEmbarquer: () => void;
-	onResetHeading: () => void;
-	onLocateUser: () => void;
-	onOpenDriverDirectionSheet: () => void;
-	onClearDriverDirectionComparison: () => void;
-	onLongPressEmbarquer: () => void;
-	onTabPress: (tabId: HomeTabId) => void;
-}
+export const HomeFixedOverlay: React.FC = () => {
+	const {
+		fixedOverlay: {
+			isNavigationActive,
+			navigationRoute,
+			hasDriverComparison,
+			canUseSearch,
+			isSearchOpen,
+			searchText,
+			shouldShowSearchEmbarquer,
+			isPlacingSpot,
+			isShowingForm,
+			mapHeading,
+			isFollowingUser,
+			shouldShowBottomBar,
+			longPressMarker,
+			onStopNavigation,
+			onSearchTextChange,
+			onSearchLocationSelected,
+			onSearchToggle,
+			onSearchEmbarquer,
+			onResetHeading,
+			onLocateUser,
+			onOpenDriverDirectionSheet,
+			onClearDriverDirectionComparison,
+			onLongPressEmbarquer,
+			onTabPress,
+		},
+	} = useHomeScreenContext();
 
-export const HomeFixedOverlay: React.FC<HomeFixedOverlayProps> = ({
-	isNavigationActive,
-	navigationRoute,
-	hasDriverComparison,
-	canUseSearch,
-	isSearchOpen,
-	searchText,
-	shouldShowSearchEmbarquer,
-	isPlacingSpot,
-	isShowingForm,
-	mapHeading,
-	isFollowingUser,
-	shouldShowBottomBar,
-	longPressMarker,
-	onStopNavigation,
-	onSearchTextChange,
-	onSearchLocationSelected,
-	onSearchToggle,
-	onSearchEmbarquer,
-	onResetHeading,
-	onLocateUser,
-	onOpenDriverDirectionSheet,
-	onClearDriverDirectionComparison,
-	onLongPressEmbarquer,
-	onTabPress,
-}) => {
 	const insets = useSafeAreaInsets();
 	const controlsBottomOffset = isNavigationActive
 		? MAP_CONTROLS_OFFSET_WITH_NAVIGATION + insets.bottom

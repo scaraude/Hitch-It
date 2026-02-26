@@ -1,67 +1,38 @@
 import type React from 'react';
-import type { RefObject } from 'react';
 import { View } from 'react-native';
 import { Marker } from 'react-native-maps';
-import {
-	LoadingSpinner,
-	MapViewComponent,
-	type MapViewRef,
-} from '../../../components';
+import { LoadingSpinner, MapViewComponent } from '../../../components';
 import { COLORS } from '../../../constants';
 import {
 	DestinationMarker,
 	RoutePolyline,
 } from '../../../navigation/components';
-import type { NavigationRoute } from '../../../navigation/types';
-import type { SpotMarkerData } from '../../../spot/types';
-import type { Location, MapRegion } from '../../../types';
+import { useHomeScreenContext } from '../context/HomeScreenContext';
 import { homeScreenStyles as styles } from '../homeScreenStyles';
-import type { NamedLocation } from '../types';
 
-interface DestinationMarkerData {
-	location: Location;
-	name: string;
-}
+export const HomeMapLayer: React.FC = () => {
+	const {
+		mapLayer: {
+			locationLoading,
+			currentRegion,
+			mapViewRef,
+			visibleSpots,
+			navigationRoute,
+			driverRoute,
+			navigationDestinationMarker,
+			searchDestination,
+			longPressMarker,
+			isPlacingSpot,
+			showEmbarquerSheet,
+			isNavigationActive,
+			onRegionChange,
+			onHeadingChange,
+			onMarkerPress,
+			onLongPress,
+			onMapPress,
+		},
+	} = useHomeScreenContext();
 
-interface HomeMapLayerProps {
-	locationLoading: boolean;
-	currentRegion: MapRegion;
-	mapViewRef: RefObject<MapViewRef | null>;
-	visibleSpots: SpotMarkerData[];
-	navigationRoute: NavigationRoute | null;
-	driverRoute: NavigationRoute | null;
-	navigationDestinationMarker: DestinationMarkerData | null;
-	searchDestination: NamedLocation | null;
-	longPressMarker: Location | null;
-	isPlacingSpot: boolean;
-	showEmbarquerSheet: boolean;
-	isNavigationActive: boolean;
-	onRegionChange: (region: MapRegion) => void;
-	onHeadingChange: (heading: number) => void;
-	onMarkerPress: (markerId: string) => void;
-	onLongPress: (location: Location) => void;
-	onMapPress: (location: Location) => void;
-}
-
-export const HomeMapLayer: React.FC<HomeMapLayerProps> = ({
-	locationLoading,
-	currentRegion,
-	mapViewRef,
-	visibleSpots,
-	navigationRoute,
-	driverRoute,
-	navigationDestinationMarker,
-	searchDestination,
-	longPressMarker,
-	isPlacingSpot,
-	showEmbarquerSheet,
-	isNavigationActive,
-	onRegionChange,
-	onHeadingChange,
-	onMarkerPress,
-	onLongPress,
-	onMapPress,
-}) => {
 	return (
 		<View style={styles.mapContainer}>
 			{locationLoading ? (

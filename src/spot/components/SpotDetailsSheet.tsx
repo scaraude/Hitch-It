@@ -19,17 +19,20 @@ import { COLORS, SIZES, SPACING } from '../../constants';
 import { A11Y_LABELS } from '../../constants/accessibility';
 import { DIRECTION_HEADING_DEGREES } from '../constants';
 import type { Spot } from '../types';
+import {
+	buildGoogleItineraryUrl,
+	buildGoogleStreetViewUrl,
+	EMPTY_DESTINATIONS,
+	EMPTY_MAIN_ROAD,
+	getSpotCoordinatesTitle,
+	getWaitingTimeLabels,
+} from './spotDetailsSheetHelpers';
 
 interface SpotDetailsSheetProps {
 	spot: Spot;
 	onClose: () => void;
 }
 
-const TITLE_COORDINATE_DECIMALS = 3;
-const WAITING_MINUTES_FALLBACK = '-';
-const EMPTY_MAIN_ROAD = '';
-const EMPTY_DESTINATIONS = '-';
-const GOOGLE_DRIVING_MODE = 'driving';
 const STREET_VIEW_ICON = require('../../../assets/street-view-icon.png');
 const SHEET_SNAP_POINTS = ['56%', '96%'] as const;
 const SHEET_INITIAL_INDEX = 0;
@@ -37,39 +40,6 @@ const SHEET_EXPANDED_INDEX = 1;
 const HANDLE_INDICATOR_WIDTH = 76;
 const HANDLE_INDICATOR_HEIGHT = 6;
 const HANDLE_INDICATOR_OPACITY = 0.65;
-
-const truncateCoordinate = (value: number, decimals: number): string => {
-	const factor = 10 ** decimals;
-	const truncatedValue =
-		value < 0
-			? Math.ceil(value * factor) / factor
-			: Math.floor(value * factor) / factor;
-
-	return truncatedValue.toFixed(decimals);
-};
-
-const getSpotCoordinatesTitle = (spot: Spot): string => {
-	const latitude = truncateCoordinate(
-		spot.coordinates.latitude,
-		TITLE_COORDINATE_DECIMALS
-	);
-	const longitude = truncateCoordinate(
-		spot.coordinates.longitude,
-		TITLE_COORDINATE_DECIMALS
-	);
-
-	return `${latitude}, ${longitude}`;
-};
-
-const buildGoogleStreetViewUrl = (spot: Spot): string => {
-	const { latitude, longitude } = spot.coordinates;
-	return `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${latitude},${longitude}`;
-};
-
-const buildGoogleItineraryUrl = (spot: Spot): string => {
-	const { latitude, longitude } = spot.coordinates;
-	return `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}&travelmode=${GOOGLE_DRIVING_MODE}`;
-};
 
 const openExternalUrl = async (
 	url: string,
@@ -110,36 +80,10 @@ export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 		spot.destinations.length > 0
 			? spot.destinations.join(', ')
 			: EMPTY_DESTINATIONS;
-
-	const waitingTimes = useMemo(
-		() =>
-			comments
-				.map(comment => comment.waitingTimeMinutes)
-				.filter(
-					(value): value is number =>
-						typeof value === 'number' && Number.isFinite(value) && value >= 0
-				),
+	const { waitingTimeLabel, waitingRecordsLabel } = useMemo(
+		() => getWaitingTimeLabels(comments),
 		[comments]
 	);
-
-	const averageWaitingTimeMinutes = useMemo(() => {
-		if (waitingTimes.length === 0) {
-			return undefined;
-		}
-
-		const totalWaitingTime = waitingTimes.reduce(
-			(total, waitingTime) => total + waitingTime,
-			0
-		);
-
-		return Math.round(totalWaitingTime / waitingTimes.length);
-	}, [waitingTimes]);
-
-	const waitingTimeLabel =
-		averageWaitingTimeMinutes === undefined
-			? WAITING_MINUTES_FALLBACK
-			: `${averageWaitingTimeMinutes} min`;
-	const waitingRecordsLabel = `${waitingTimes.length} records`;
 
 	const handleSheetChange = useCallback((index: number) => {
 		setIsDrawerExpanded(index >= SHEET_EXPANDED_INDEX);

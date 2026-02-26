@@ -16,71 +16,43 @@ import {
 	EmbarquerSheet,
 	NavigationCompleteSheet,
 } from '../../../navigation/components';
-import type { NavigationRoute, SpotOnRoute } from '../../../navigation/types';
 import { SpotDetailsSheet, SpotForm } from '../../../spot/components';
-import type { Spot } from '../../../spot/types';
-import type { Location } from '../../../types';
+import { useHomeScreenContext } from '../context/HomeScreenContext';
 import { homeScreenStyles as homeStyles } from '../homeScreenStyles';
-import type { NamedLocation } from '../types';
 
 const SPOT_HITCH_BOTTOM_OFFSET = SPACING.sm;
 const SPOT_HITCH_HORIZONTAL_PADDING = SPACING.lg;
 
-interface HomeSheetsOverlayProps {
-	isPlacingSpot: boolean;
-	isShowingForm: boolean;
-	selectedSpot: Spot | null;
-	showEmbarquerSheet: boolean;
-	showDriverDirectionSheet: boolean;
-	showCompletionSheet: boolean;
-	navigationRoute: NavigationRoute | null;
-	navigationSpotsOnRoute: SpotOnRoute[];
-	journeyDurationMinutes: number;
-	embarquerOrigin: NamedLocation | null;
-	embarquerDestination: NamedLocation | null;
-	userLocation: Location | null;
-	onConfirmSpotPlacement: () => void;
-	onCancelSpotPlacement: () => void;
-	onSubmitSpotForm: React.ComponentProps<typeof SpotForm>['onSubmit'];
-	onCancelSpotForm: () => void;
-	onCloseSpotDetails: () => void;
-	onSpotEmbarquer: (spot: Spot) => void;
-	onEmbarquerStart: React.ComponentProps<typeof EmbarquerSheet>['onStart'];
-	onDriverDirectionCompare: React.ComponentProps<
-		typeof DriverDirectionSheet
-	>['onCompare'];
-	onCloseDriverDirectionSheet: () => void;
-	onEmbarquerClose: () => void;
-	onSaveJourney: () => void;
-	onDiscardJourney: () => void;
-}
+export const HomeSheetsOverlay: React.FC = () => {
+	const {
+		sheetsOverlay: {
+			isPlacingSpot,
+			isShowingForm,
+			selectedSpot,
+			showEmbarquerSheet,
+			showDriverDirectionSheet,
+			showCompletionSheet,
+			navigationRoute,
+			navigationSpotsOnRoute,
+			journeyDurationMinutes,
+			embarquerOrigin,
+			embarquerDestination,
+			userLocation,
+			onConfirmSpotPlacement,
+			onCancelSpotPlacement,
+			onSubmitSpotForm,
+			onCancelSpotForm,
+			onCloseSpotDetails,
+			onSpotEmbarquer,
+			onEmbarquerStart,
+			onDriverDirectionCompare,
+			onCloseDriverDirectionSheet,
+			onEmbarquerClose,
+			onSaveJourney,
+			onDiscardJourney,
+		},
+	} = useHomeScreenContext();
 
-export const HomeSheetsOverlay: React.FC<HomeSheetsOverlayProps> = ({
-	isPlacingSpot,
-	isShowingForm,
-	selectedSpot,
-	showEmbarquerSheet,
-	showDriverDirectionSheet,
-	showCompletionSheet,
-	navigationRoute,
-	navigationSpotsOnRoute,
-	journeyDurationMinutes,
-	embarquerOrigin,
-	embarquerDestination,
-	userLocation,
-	onConfirmSpotPlacement,
-	onCancelSpotPlacement,
-	onSubmitSpotForm,
-	onCancelSpotForm,
-	onCloseSpotDetails,
-	onSpotEmbarquer,
-	onEmbarquerStart,
-	onDriverDirectionCompare,
-	onCloseDriverDirectionSheet,
-	onEmbarquerClose,
-	onSaveJourney,
-	onDiscardJourney,
-}) => {
 	const insets = useSafeAreaInsets();
 	const shouldShowSpotHitchButton =
 		!!selectedSpot &&
