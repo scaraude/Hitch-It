@@ -6,7 +6,8 @@ import { useNavigation } from '../../../navigation/context/NavigationContext';
 import { useSpotContext } from '../../../spot/context';
 import type { MapRegion } from '../../../types';
 import type { HomeControllerState } from '../types';
-import { useHomeMapSearchState } from './useHomeMapSearchState';
+import { useHomeMapState } from './useHomeMapState';
+import { useHomeSearchState } from './useHomeSearchState';
 import { useHomeSessionState } from './useHomeSessionState';
 
 interface UseHomeControllerStateArgs {
@@ -35,7 +36,19 @@ export const useHomeControllerState = ({
 		onDeselectSpot: spotState.deselectSpot,
 	});
 
-	const mapSearchState = useHomeMapSearchState({
+	const searchState = useHomeSearchState({
+		isNavigationActive: navigationState.navigation.isActive,
+		isPlacingSpot: spotState.isPlacingSpot,
+		isShowingForm: spotState.isShowingForm,
+		showEmbarquerSheet: sessionState.showEmbarquerSheet,
+		showCompletionSheet: sessionState.showCompletionSheet,
+		selectedSpot: spotState.selectedSpot,
+		onEmbarquerFromSearch: sessionState.handleEmbarquerFromSearch,
+		onStopNavigation: sessionState.handleStopNavigation,
+		mapViewRef,
+	});
+
+	const mapState = useHomeMapState({
 		isNavigationActive: navigationState.navigation.isActive,
 		navigationRoute: navigationState.navigation.route,
 		driverRoute: navigationState.navigation.driverRoute,
@@ -43,16 +56,14 @@ export const useHomeControllerState = ({
 		commonSpotsOnRoute: navigationState.navigation.commonSpotsOnRoute,
 		hasDriverComparison: sessionState.hasDriverComparison,
 		onClearDriverComparison: sessionState.handleDriverDirectionClear,
-		onStopNavigation: sessionState.handleStopNavigation,
+		onStopNavigationAndOpenSearch:
+			searchState.handleStopNavigationAndOpenSearch,
 		spots: spotState.spots,
-		selectedSpot: spotState.selectedSpot,
 		isPlacingSpot: spotState.isPlacingSpot,
 		isShowingForm: spotState.isShowingForm,
+		isSearchOpen: searchState.isSearchOpen,
 		onSelectSpot: spotState.selectSpot,
 		onSelectRouteSpot: spotState.selectSpotEntity,
-		showEmbarquerSheet: sessionState.showEmbarquerSheet,
-		showCompletionSheet: sessionState.showCompletionSheet,
-		onEmbarquerFromSearch: sessionState.handleEmbarquerFromSearch,
 		mapViewRef,
 		currentRegion,
 		onRegionChange,
@@ -64,7 +75,7 @@ export const useHomeControllerState = ({
 		currentRegion,
 		locationLoading,
 		mapViewRef,
-		visibleSpots: mapSearchState.visibleSpots,
+		visibleSpots: mapState.visibleSpots,
 		navigation: navigationState.navigation,
 		selectedSpot: spotState.selectedSpot,
 		isPlacingSpot: spotState.isPlacingSpot,
@@ -73,16 +84,16 @@ export const useHomeControllerState = ({
 		showCompletionSheet: sessionState.showCompletionSheet,
 		isDriverDirectionSheetOpen: sessionState.isDriverDirectionSheetOpen,
 		hasDriverComparison: sessionState.hasDriverComparison,
-		shouldShowBottomBar: mapSearchState.shouldShowBottomBar,
-		canUseSearch: mapSearchState.canUseSearch,
-		shouldShowSearchEmbarquer: mapSearchState.shouldShowSearchEmbarquer,
-		searchText: mapSearchState.searchText,
-		searchDestination: mapSearchState.searchDestination,
-		isSearchOpen: mapSearchState.isSearchOpen,
-		mapHeading: mapSearchState.mapHeading,
-		isFollowingUser: mapSearchState.isFollowingUser,
-		longPressMarker: mapSearchState.longPressMarker,
-		mapRegion: mapSearchState.mapRegion,
+		shouldShowBottomBar: searchState.shouldShowBottomBar,
+		canUseSearch: searchState.canUseSearch,
+		shouldShowSearchEmbarquer: searchState.shouldShowSearchEmbarquer,
+		searchText: searchState.searchText,
+		searchDestination: searchState.searchDestination,
+		isSearchOpen: searchState.isSearchOpen,
+		mapHeading: mapState.mapHeading,
+		isFollowingUser: mapState.isFollowingUser,
+		longPressMarker: mapState.longPressMarker,
+		mapRegion: mapState.mapRegion,
 		journeyDurationMinutes: sessionState.journeyDurationMinutes,
 		embarquerOrigin: sessionState.embarquerOrigin,
 		embarquerDestination: sessionState.embarquerDestination,
@@ -92,17 +103,17 @@ export const useHomeControllerState = ({
 		submitSpotForm: spotState.submitSpotForm,
 		cancelSpotForm: spotState.cancelSpotForm,
 		deselectSpot: spotState.deselectSpot,
-		handleSearchToggle: mapSearchState.handleSearchToggle,
-		handleSearchTextChange: mapSearchState.handleSearchTextChange,
-		handleSearchLocationSelected: mapSearchState.handleSearchLocationSelected,
-		handleSearchEmbarquer: mapSearchState.handleSearchEmbarquer,
-		handleRegionChange: mapSearchState.handleRegionChange,
-		handleHeadingChange: mapSearchState.handleHeadingChange,
-		handleMarkerPress: mapSearchState.handleMarkerPress,
-		handleLongPress: mapSearchState.handleLongPress,
-		handleMapPress: mapSearchState.handleMapPress,
-		handleResetHeading: mapSearchState.handleResetHeading,
-		handleLocateUser: mapSearchState.handleLocateUser,
+		handleSearchToggle: searchState.handleSearchToggle,
+		handleSearchTextChange: searchState.handleSearchTextChange,
+		handleSearchLocationSelected: searchState.handleSearchLocationSelected,
+		handleSearchEmbarquer: searchState.handleSearchEmbarquer,
+		handleRegionChange: mapState.handleRegionChange,
+		handleHeadingChange: mapState.handleHeadingChange,
+		handleMarkerPress: mapState.handleMarkerPress,
+		handleLongPress: mapState.handleLongPress,
+		handleMapPress: mapState.handleMapPress,
+		handleResetHeading: mapState.handleResetHeading,
+		handleLocateUser: mapState.handleLocateUser,
 		openDriverDirectionSheet: sessionState.openDriverDirectionSheet,
 		handleDriverDirectionClear: sessionState.handleDriverDirectionClear,
 		handleDriverDirectionCompare: sessionState.handleDriverDirectionCompare,
@@ -111,9 +122,9 @@ export const useHomeControllerState = ({
 		handleSpotEmbarquer: sessionState.handleSpotEmbarquer,
 		handleEmbarquerStart: sessionState.handleEmbarquerStart,
 		handleLongPressEmbarquer: sessionState.handleLongPressEmbarquer,
-		clearLongPressMarker: mapSearchState.clearLongPressMarker,
+		clearLongPressMarker: mapState.clearLongPressMarker,
 		handleStopNavigationAndOpenSearch:
-			mapSearchState.handleStopNavigationAndOpenSearch,
+			searchState.handleStopNavigationAndOpenSearch,
 		handleSaveJourney: sessionState.handleSaveJourney,
 		handleDiscardJourney: sessionState.handleDiscardJourney,
 	};

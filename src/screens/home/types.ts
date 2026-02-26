@@ -17,6 +17,8 @@ export interface NamedLocation {
 	name: string;
 }
 
+// === View Model Types (used by components) ===
+
 export interface HomeMapLayerState {
 	locationLoading: boolean;
 	currentRegion: MapRegion;
@@ -97,43 +99,50 @@ export interface HomeScreenViewModel {
 	sheetsOverlay: HomeSheetsOverlayState;
 }
 
-export interface HomeControllerState {
+// === Controller State (internal, grouped by concern) ===
+
+interface LocationState {
 	userLocation: Location | null;
 	currentRegion: MapRegion;
 	locationLoading: boolean;
+}
+
+interface MapState {
 	mapViewRef: React.RefObject<MapViewRef | null>;
+	mapRegion: MapRegion;
+	mapHeading: number;
+	isFollowingUser: boolean;
+	longPressMarker: Location | null;
 	visibleSpots: SpotMarkerData[];
-	navigation: NavigationState;
+}
+
+interface SearchState {
+	canUseSearch: boolean;
+	shouldShowBottomBar: boolean;
+	isSearchOpen: boolean;
+	searchText: string;
+	searchDestination: NamedLocation | null;
+	shouldShowSearchEmbarquer: boolean;
+}
+
+interface SpotState {
 	selectedSpot: Spot | null;
 	isPlacingSpot: boolean;
 	isShowingForm: boolean;
+}
+
+interface SessionState {
+	navigation: NavigationState;
 	showEmbarquerSheet: boolean;
 	showCompletionSheet: boolean;
 	isDriverDirectionSheetOpen: boolean;
 	hasDriverComparison: boolean;
-	shouldShowBottomBar: boolean;
-	canUseSearch: boolean;
-	shouldShowSearchEmbarquer: boolean;
-	searchText: string;
-	searchDestination: NamedLocation | null;
-	isSearchOpen: boolean;
-	mapHeading: number;
-	isFollowingUser: boolean;
-	longPressMarker: Location | null;
-	mapRegion: MapRegion;
 	journeyDurationMinutes: number;
 	embarquerOrigin: NamedLocation | null;
 	embarquerDestination: NamedLocation | null;
-	startPlacingSpot: () => void;
-	confirmSpotPlacement: (region: MapRegion) => void;
-	cancelSpotPlacement: () => void;
-	submitSpotForm: (formData: SpotFormData) => void;
-	cancelSpotForm: () => void;
-	deselectSpot: () => void;
-	handleSearchToggle: () => void;
-	handleSearchTextChange: (text: string) => void;
-	handleSearchLocationSelected: (location: Location, name: string) => void;
-	handleSearchEmbarquer: () => void;
+}
+
+interface MapActions {
 	handleRegionChange: (region: MapRegion) => void;
 	handleHeadingChange: (heading: number) => void;
 	handleMarkerPress: (markerId: string) => void;
@@ -141,12 +150,33 @@ export interface HomeControllerState {
 	handleMapPress: (location: Location) => void;
 	handleResetHeading: () => void;
 	handleLocateUser: () => void;
+	clearLongPressMarker: () => void;
+}
+
+interface SearchActions {
+	handleSearchToggle: () => void;
+	handleSearchTextChange: (text: string) => void;
+	handleSearchLocationSelected: (location: Location, name: string) => void;
+	handleSearchEmbarquer: () => void;
+	handleStopNavigationAndOpenSearch: () => Promise<void>;
+}
+
+interface SpotActions {
+	startPlacingSpot: () => void;
+	confirmSpotPlacement: (region: MapRegion) => void;
+	cancelSpotPlacement: () => void;
+	submitSpotForm: (formData: SpotFormData) => void;
+	cancelSpotForm: () => void;
+	deselectSpot: () => void;
+}
+
+interface SessionActions {
 	openDriverDirectionSheet: () => void;
+	closeDriverDirectionSheet: () => void;
 	handleDriverDirectionClear: () => void;
 	handleDriverDirectionCompare: (
 		driverDestination: NamedLocation
 	) => Promise<void>;
-	closeDriverDirectionSheet: () => void;
 	handleEmbarquerClose: () => void;
 	handleSpotEmbarquer: (spot: Spot) => void;
 	handleEmbarquerStart: (
@@ -154,8 +184,16 @@ export interface HomeControllerState {
 		destination: NamedLocation
 	) => Promise<void>;
 	handleLongPressEmbarquer: (location: Location | null) => void;
-	clearLongPressMarker: () => void;
-	handleStopNavigationAndOpenSearch: () => Promise<void>;
 	handleSaveJourney: () => Promise<void>;
 	handleDiscardJourney: () => Promise<void>;
 }
+
+export type HomeControllerState = LocationState &
+	MapState &
+	SearchState &
+	SpotState &
+	SessionState &
+	MapActions &
+	SearchActions &
+	SpotActions &
+	SessionActions;

@@ -1,15 +1,14 @@
 import { useFocusEffect } from '@react-navigation/native';
 import type { RefObject } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { BackHandler, Keyboard, Platform } from 'react-native';
+import { BackHandler, Platform } from 'react-native';
 import type { MapViewRef } from '../../../components';
 import type { NavigationRoute, SpotOnRoute } from '../../../navigation/types';
 import type { Spot, SpotMarkerData } from '../../../spot/types';
 import type { Location, MapRegion } from '../../../types';
-import { logger, polylineToRegion } from '../../../utils';
-import type { NamedLocation } from '../types';
+import { polylineToRegion } from '../../../utils';
 
-interface UseHomeMapSearchStateArgs {
+interface UseHomeMapStateArgs {
 	// Navigation state
 	isNavigationActive: boolean;
 	navigationRoute: NavigationRoute | null;
@@ -18,18 +17,14 @@ interface UseHomeMapSearchStateArgs {
 	commonSpotsOnRoute: SpotOnRoute[];
 	hasDriverComparison: boolean;
 	onClearDriverComparison: () => void;
-	onStopNavigation: () => Promise<void>;
+	onStopNavigationAndOpenSearch: () => Promise<void>;
 	// Spot state
 	spots: SpotMarkerData[];
-	selectedSpot: Spot | null;
 	isPlacingSpot: boolean;
 	isShowingForm: boolean;
+	isSearchOpen: boolean;
 	onSelectSpot: (spotId: string) => void;
 	onSelectRouteSpot: (spot: Spot) => void;
-	// Embarquer
-	showEmbarquerSheet: boolean;
-	showCompletionSheet: boolean;
-	onEmbarquerFromSearch: (destination: NamedLocation) => void;
 	// Map
 	mapViewRef: RefObject<MapViewRef | null>;
 	currentRegion: MapRegion;
@@ -37,20 +32,7 @@ interface UseHomeMapSearchStateArgs {
 	userLocation: Location | null;
 }
 
-interface UseHomeMapSearchStateReturn {
-	// Visibility
-	canUseSearch: boolean;
-	shouldShowBottomBar: boolean;
-	// Search
-	searchText: string;
-	searchDestination: NamedLocation | null;
-	isSearchOpen: boolean;
-	shouldShowSearchEmbarquer: boolean;
-	handleSearchToggle: () => void;
-	handleSearchTextChange: (text: string) => void;
-	handleSearchLocationSelected: (location: Location, name: string) => void;
-	handleSearchEmbarquer: () => void;
-	handleStopNavigationAndOpenSearch: () => Promise<void>;
+export interface UseHomeMapStateReturn {
 	// Map interactions
 	mapRegion: MapRegion;
 	longPressMarker: Location | null;
@@ -69,7 +51,7 @@ interface UseHomeMapSearchStateReturn {
 	visibleSpots: SpotMarkerData[];
 }
 
-export const useHomeMapSearchState = ({
+export const useHomeMapState = ({
 	isNavigationActive,
 	navigationRoute,
 	driverRoute,
@@ -77,132 +59,19 @@ export const useHomeMapSearchState = ({
 	commonSpotsOnRoute,
 	hasDriverComparison,
 	onClearDriverComparison,
-	onStopNavigation,
+	onStopNavigationAndOpenSearch,
 	spots,
-	selectedSpot,
 	isPlacingSpot,
 	isShowingForm,
+	isSearchOpen,
 	onSelectSpot,
 	onSelectRouteSpot,
-	showEmbarquerSheet,
-	showCompletionSheet,
-	onEmbarquerFromSearch,
 	mapViewRef,
 	currentRegion,
 	onRegionChange,
 	userLocation,
-}: UseHomeMapSearchStateArgs): UseHomeMapSearchStateReturn => {
-	// === Visibility State (inlined from useHomeVisibilityState) ===
-	const { canUseSearch, shouldShowBottomBar } = useMemo(() => {
-		const isOverlayBlocking =
-			isPlacingSpot ||
-			isShowingForm ||
-			showEmbarquerSheet ||
-			Boolean(selectedSpot) ||
-			showCompletionSheet;
-		const canSearch = !isNavigationActive && !isOverlayBlocking;
-
-		return {
-			canUseSearch: canSearch,
-			shouldShowBottomBar: !isNavigationActive && !isOverlayBlocking,
-		};
-	}, [
-		isNavigationActive,
-		isPlacingSpot,
-		isShowingForm,
-		selectedSpot,
-		showCompletionSheet,
-		showEmbarquerSheet,
-	]);
-
-	// === Search State (inlined from useHomeSearch) ===
-	const [searchText, setSearchText] = useState('');
-	const [searchDestination, setSearchDestination] =
-		useState<NamedLocation | null>(null);
-	const [isSearchOpen, setIsSearchOpen] = useState(false);
-
-	const handleSearchOpen = useCallback(() => {
-		if (!canUseSearch) return;
-		setIsSearchOpen(true);
-	}, [canUseSearch]);
-
-	const handleSearchToggle = useCallback(() => {
-		if (!canUseSearch) return;
-		setIsSearchOpen(prev => !prev);
-		if (isSearchOpen) {
-			Keyboard.dismiss();
-		}
-	}, [canUseSearch, isSearchOpen]);
-
-	const handleSearchClear = useCallback(() => {
-		setSearchText('');
-		setSearchDestination(null);
-		setIsSearchOpen(false);
-		Keyboard.dismiss();
-	}, []);
-
-	const handleSearchTextChange = useCallback(
-		(text: string) => {
-			setSearchText(text);
-			if (searchDestination && text !== searchDestination.name) {
-				setSearchDestination(null);
-			}
-		},
-		[searchDestination]
-	);
-
-	const handleSearchLocationSelected = useCallback(
-		(location: Location, name: string) => {
-			setSearchDestination({ location, name });
-			setSearchText(name);
-
-			const region: MapRegion = {
-				latitude: location.latitude,
-				longitude: location.longitude,
-				latitudeDelta: 0.05,
-				longitudeDelta: 0.05,
-			};
-
-			mapViewRef.current?.animateToRegion(region, 1000);
-			logger.navigation.info(`Search destination set: ${name}`);
-		},
-		[mapViewRef]
-	);
-
-	const handleSearchEmbarquer = useCallback(() => {
-		if (!searchDestination) return;
-		onEmbarquerFromSearch(searchDestination);
-		setIsSearchOpen(false);
-		Keyboard.dismiss();
-	}, [onEmbarquerFromSearch, searchDestination]);
-
-	useEffect(() => {
-		if (!canUseSearch && isSearchOpen) {
-			setIsSearchOpen(false);
-		}
-	}, [canUseSearch, isSearchOpen]);
-
-	// === Search Reopen After Navigation (inlined from useHomeSearchReopenAfterNavigation) ===
-	const [
-		shouldOpenSearchAfterNavigationStop,
-		setShouldOpenSearchAfterNavigationStop,
-	] = useState(false);
-
-	const handleStopNavigationAndOpenSearch = useCallback(async () => {
-		setShouldOpenSearchAfterNavigationStop(true);
-		await onStopNavigation();
-	}, [onStopNavigation]);
-
-	useEffect(() => {
-		if (!shouldOpenSearchAfterNavigationStop || !canUseSearch) {
-			return;
-		}
-
-		handleSearchOpen();
-		setShouldOpenSearchAfterNavigationStop(false);
-	}, [canUseSearch, handleSearchOpen, shouldOpenSearchAfterNavigationStop]);
-
-	// === Map Interactions (inlined from useHomeMapInteractions) ===
+}: UseHomeMapStateArgs): UseHomeMapStateReturn => {
+	// === Map Region & Long Press ===
 	const [mapRegion, setMapRegion] = useState<MapRegion>(currentRegion);
 	const [longPressMarker, setLongPressMarker] = useState<Location | null>(null);
 	const shouldIgnoreNextMapPressRef = useRef(false);
@@ -271,7 +140,7 @@ export const useHomeMapSearchState = ({
 		[clearLongPressMarker]
 	);
 
-	// === Map Controls (inlined from useHomeMapControls) ===
+	// === Map Controls (heading, locate user) ===
 	const [mapHeading, setMapHeading] = useState(0);
 	const [isFollowingUser, setIsFollowingUser] = useState(false);
 	const followUserTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
@@ -318,7 +187,7 @@ export const useHomeMapSearchState = ({
 		};
 	}, []);
 
-	// === Navigation Map Data (inlined from useHomeNavigationMapData) ===
+	// === Navigation Route Animation ===
 	useEffect(() => {
 		if (isNavigationActive && navigationRoute) {
 			const polyline =
@@ -330,6 +199,7 @@ export const useHomeMapSearchState = ({
 		}
 	}, [driverRoute, isNavigationActive, mapViewRef, navigationRoute]);
 
+	// === Visible Spots (filtered during navigation) ===
 	const visibleSpots = useMemo(
 		() =>
 			isNavigationActive
@@ -343,7 +213,7 @@ export const useHomeMapSearchState = ({
 		[commonSpotsOnRoute, driverRoute, isNavigationActive, spots, spotsOnRoute]
 	);
 
-	// === Back Handler for Android ===
+	// === Android Back Handler (map-related) ===
 	useFocusEffect(
 		useCallback(() => {
 			if (Platform.OS !== 'android') {
@@ -351,12 +221,6 @@ export const useHomeMapSearchState = ({
 			}
 
 			const onBackPress = () => {
-				// Handle search back
-				if (isSearchOpen) {
-					handleSearchClear();
-					return true;
-				}
-
 				// Handle navigation back
 				if (isNavigationActive) {
 					if (hasDriverComparison) {
@@ -364,7 +228,7 @@ export const useHomeMapSearchState = ({
 						return true;
 					}
 
-					void handleStopNavigationAndOpenSearch();
+					void onStopNavigationAndOpenSearch();
 					return true;
 				}
 
@@ -385,34 +249,15 @@ export const useHomeMapSearchState = ({
 			return () => subscription.remove();
 		}, [
 			clearLongPressMarker,
-			handleSearchClear,
-			handleStopNavigationAndOpenSearch,
 			hasDriverComparison,
 			isNavigationActive,
-			isSearchOpen,
 			longPressMarker,
 			onClearDriverComparison,
+			onStopNavigationAndOpenSearch,
 		])
 	);
 
-	const shouldShowSearchEmbarquer =
-		!!searchDestination && !isNavigationActive && !showEmbarquerSheet;
-
 	return {
-		// Visibility
-		canUseSearch,
-		shouldShowBottomBar,
-		// Search
-		searchText,
-		searchDestination,
-		isSearchOpen,
-		shouldShowSearchEmbarquer,
-		handleSearchToggle,
-		handleSearchTextChange,
-		handleSearchLocationSelected,
-		handleSearchEmbarquer,
-		handleStopNavigationAndOpenSearch,
-		// Map interactions
 		mapRegion,
 		longPressMarker,
 		clearLongPressMarker,
@@ -420,13 +265,11 @@ export const useHomeMapSearchState = ({
 		handleMarkerPress,
 		handleLongPress,
 		handleMapPress,
-		// Map controls
 		mapHeading,
 		isFollowingUser,
 		handleHeadingChange,
 		handleResetHeading,
 		handleLocateUser,
-		// Navigation map data
 		visibleSpots,
 	};
 };
