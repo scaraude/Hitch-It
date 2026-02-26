@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import type React from 'react';
+import { useState } from 'react';
 import {
 	Linking,
 	Platform,
@@ -9,28 +10,40 @@ import {
 	Text,
 	View,
 } from 'react-native';
-import { BottomSheetHeader, bottomSheetStyles } from '../../components/ui';
+import { CommentEditor, CommentList } from '../../comment/components';
+import { useSpotComments } from '../../comment/hooks';
+import type { CommentAppreciation } from '../../comment/types';
+import {
+	BottomSheetHeader,
+	bottomSheetStyles,
+	toastUtils,
+} from '../../components/ui';
 import { COLORS, SIZES, SPACING } from '../../constants';
 import { A11Y_LABELS } from '../../constants/accessibility';
 import { formatDate } from '../../utils';
-import { APPRECIATION_CONFIG, DIRECTION_CONFIG } from '../constants';
+import { DIRECTION_CONFIG } from '../constants';
 import type { Spot } from '../types';
 import { DestinationChip } from './ui';
 
 interface SpotDetailsSheetProps {
 	spot: Spot;
 	onClose: () => void;
-	onAddComment?: () => void;
 	onEmbarquer?: (spot: Spot) => void;
 }
 
 export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 	spot,
 	onClose,
-	onAddComment,
 	onEmbarquer,
 }) => {
-	const appreciationConfig = APPRECIATION_CONFIG[spot.appreciation];
+	const [isWritingComment, setIsWritingComment] = useState(false);
+	const [draftAppreciation, setDraftAppreciation] = useState<
+		CommentAppreciation | undefined
+	>(undefined);
+	const [draftComment, setDraftComment] = useState('');
+	const { comments, isLoading, isSubmitting, submitComment } = useSpotComments(
+		spot.id
+	);
 	const directionEmoji = DIRECTION_CONFIG[spot.direction].emoji;
 
 	const handleOpenMap = () => {
@@ -60,6 +73,35 @@ export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 		}
 	};
 
+	const handleStartComment = () => {
+		setIsWritingComment(true);
+	};
+
+	const handleCancelComment = () => {
+		setIsWritingComment(false);
+		setDraftAppreciation(undefined);
+		setDraftComment('');
+	};
+
+	const handleSubmitComment = async () => {
+		if (draftAppreciation === undefined) {
+			toastUtils.error(
+				'Appréciation requise',
+				'Sélectionne une appréciation pour ton commentaire.'
+			);
+			return;
+		}
+
+		const submitted = await submitComment({
+			appreciation: draftAppreciation,
+			comment: draftComment,
+		});
+
+		if (submitted) {
+			handleCancelComment();
+		}
+	};
+
 	return (
 		<View
 			style={[bottomSheetStyles.container, styles.container]}
@@ -82,21 +124,6 @@ export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 			</BottomSheetHeader>
 
 			<ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-				{/* Appreciation Badge */}
-				<View
-					style={[
-						styles.appreciationBadge,
-						{ backgroundColor: appreciationConfig.color },
-					]}
-				>
-					<Text style={styles.appreciationEmoji}>
-						{appreciationConfig.emoji}
-					</Text>
-					<Text style={styles.appreciationText}>
-						{appreciationConfig.label}
-					</Text>
-				</View>
-
 				{/* Road Name */}
 				<Text style={styles.roadName}>{spot.roadName}</Text>
 
@@ -167,13 +194,56 @@ export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 				{/* Comments Section (placeholder for future) */}
 				<View style={styles.section}>
 					<Text style={styles.sectionTitle}>Commentaires</Text>
-					<Text style={styles.noComments}>
-						Aucun commentaire pour le moment
-					</Text>
-					{onAddComment ? (
+
+					{isLoading ? (
+						<Text style={styles.loadingComments}>
+							Chargement des commentaires...
+						</Text>
+					) : (
+						<CommentList comments={comments} />
+					)}
+
+					{isWritingComment ? (
+						<View style={styles.commentComposer}>
+							<CommentEditor
+								appreciation={draftAppreciation}
+								comment={draftComment}
+								onAppreciationChange={setDraftAppreciation}
+								onCommentChange={setDraftComment}
+							/>
+							<View style={styles.commentComposerActions}>
+								<Pressable
+									style={[
+										styles.commentComposerButton,
+										styles.cancelCommentButton,
+									]}
+									onPress={handleCancelComment}
+									disabled={isSubmitting}
+									accessibilityLabel={A11Y_LABELS.cancelAction}
+									accessibilityRole="button"
+								>
+									<Text style={styles.cancelCommentText}>Annuler</Text>
+								</Pressable>
+								<Pressable
+									style={[
+										styles.commentComposerButton,
+										styles.submitCommentButton,
+									]}
+									onPress={handleSubmitComment}
+									disabled={isSubmitting}
+									accessibilityLabel={A11Y_LABELS.submitComment}
+									accessibilityRole="button"
+								>
+									<Text style={styles.submitCommentText}>
+										{isSubmitting ? 'Envoi...' : 'Publier'}
+									</Text>
+								</Pressable>
+							</View>
+						</View>
+					) : (
 						<Pressable
 							style={styles.addCommentButton}
-							onPress={onAddComment}
+							onPress={handleStartComment}
 							accessibilityLabel={A11Y_LABELS.addComment}
 							accessibilityRole="button"
 						>
@@ -181,7 +251,7 @@ export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 								+ Ajouter un commentaire
 							</Text>
 						</Pressable>
-					) : null}
+					)}
 				</View>
 
 				{/* Embarquer Button */}
@@ -236,24 +306,6 @@ const styles = StyleSheet.create({
 	content: {
 		paddingHorizontal: SPACING.lg,
 		paddingBottom: SPACING.xl,
-	},
-	appreciationBadge: {
-		flexDirection: 'row',
-		alignItems: 'center',
-		alignSelf: 'flex-start',
-		paddingVertical: SPACING.sm,
-		paddingHorizontal: SPACING.md,
-		borderRadius: SIZES.radiusXLarge,
-		marginBottom: SPACING.md,
-	},
-	appreciationEmoji: {
-		fontSize: SIZES.fontXl,
-		marginRight: SPACING.sm,
-	},
-	appreciationText: {
-		fontSize: SIZES.fontMd,
-		fontWeight: '700',
-		color: COLORS.background,
 	},
 	roadName: {
 		fontSize: SIZES.font3Xl,
@@ -339,7 +391,7 @@ const styles = StyleSheet.create({
 		color: COLORS.textSecondary,
 		marginBottom: SPACING.xs,
 	},
-	noComments: {
+	loadingComments: {
 		fontSize: SIZES.fontSm,
 		color: COLORS.textSecondary,
 		fontStyle: 'italic',
@@ -356,6 +408,41 @@ const styles = StyleSheet.create({
 		fontSize: SIZES.fontSm,
 		color: COLORS.primary,
 		fontWeight: '600',
+	},
+	commentComposer: {
+		marginTop: SPACING.md,
+		padding: SPACING.md,
+		borderRadius: SIZES.radiusMedium,
+		backgroundColor: COLORS.surface,
+		gap: SPACING.md,
+	},
+	commentComposerActions: {
+		flexDirection: 'row',
+		gap: SPACING.sm,
+	},
+	commentComposerButton: {
+		flex: 1,
+		paddingVertical: SPACING.md,
+		borderRadius: SIZES.radiusMedium,
+		alignItems: 'center',
+	},
+	cancelCommentButton: {
+		backgroundColor: COLORS.background,
+		borderWidth: 1,
+		borderColor: COLORS.border,
+	},
+	submitCommentButton: {
+		backgroundColor: COLORS.primary,
+	},
+	cancelCommentText: {
+		fontSize: SIZES.fontSm,
+		fontWeight: '600',
+		color: COLORS.text,
+	},
+	submitCommentText: {
+		fontSize: SIZES.fontSm,
+		fontWeight: '600',
+		color: COLORS.background,
 	},
 	embarquerButton: {
 		backgroundColor: COLORS.primary,

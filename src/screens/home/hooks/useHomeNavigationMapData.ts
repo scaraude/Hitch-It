@@ -46,7 +46,7 @@ export const useHomeNavigationMapData = ({
 						id: spot.id as string,
 						coordinates: spot.coordinates,
 						title: spot.roadName,
-						description: `${spot.appreciation} - ${spot.direction}`,
+						description: spot.direction,
 					}))
 				: spots,
 		[commonSpotsOnRoute, driverRoute, isNavigationActive, spots, spotsOnRoute]

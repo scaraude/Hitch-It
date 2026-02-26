@@ -7,6 +7,7 @@ export const A11Y_LABELS = {
 	openMap: "Ouvrir dans l'application Cartes",
 	getDirections: "Obtenir l'itinéraire",
 	addComment: 'Ajouter un commentaire',
+	submitComment: 'Publier le commentaire',
 	removeDestination: 'Supprimer la destination',
 	addDestination: 'Ajouter une destination',
 
@@ -24,6 +25,7 @@ export const A11Y_LABELS = {
 	roadNamePlaceholder: 'ex: D117, Route Nationale',
 	destinationInput: 'Destination',
 	destinationPlaceholder: 'ex: Paris, Lyon',
+	commentInput: 'Commentaire du spot',
 
 	// Appreciation
 	appreciationPerfect: 'Appréciation : Parfait',

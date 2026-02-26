@@ -90,3 +90,5 @@ bugreport*
 data/
 spots.geojson
 spots.json
+# generated import artifact
+spots_clustered.json

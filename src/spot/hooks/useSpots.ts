@@ -1,21 +1,19 @@
 import { useEffect, useMemo, useState } from 'react';
+import { createComment } from '../../comment/services';
+import type { CommentAppreciation } from '../../comment/types';
+import { generateCommentId } from '../../comment/utils';
 import { toastUtils } from '../../components/ui';
 import { COLORS } from '../../constants';
 import { useDebouncedValue } from '../../hooks';
 import type { MapBounds, MapRegion } from '../../types';
 import { logger } from '../../utils';
 import { createSpot, getSpotsInBounds } from '../services';
-import type {
-	Appreciation,
-	Direction,
-	Location,
-	Spot,
-	SpotMarkerData,
-} from '../types';
+import type { Direction, Location, Spot, SpotMarkerData } from '../types';
 import { generateSpotId } from '../utils';
 
 export interface SpotFormData {
-	appreciation: Appreciation;
+	appreciation: CommentAppreciation;
+	comment: string;
 	roadName: string;
 	direction: Direction;
 	destinations: string[];
@@ -58,7 +56,7 @@ export const useSpots = (
 				id: spot.id as string,
 				coordinates: spot.coordinates,
 				title: spot.roadName,
-				description: `${spot.appreciation} - ${spot.direction}`,
+				description: spot.direction,
 				color: COLORS.secondary,
 			})),
 		[fullSpots]
@@ -138,9 +136,17 @@ export const useSpots = (
 			id: generateSpotId(),
 			coordinates: pendingLocation,
 			roadName: formData.roadName,
-			appreciation: formData.appreciation,
 			direction: formData.direction,
 			destinations: formData.destinations,
+			createdAt: now,
+			updatedAt: now,
+			createdBy: 'CurrentUser',
+		};
+		const newComment = {
+			id: generateCommentId(),
+			spotId: newSpot.id,
+			appreciation: formData.appreciation,
+			comment: formData.comment.trim(),
 			createdAt: now,
 			updatedAt: now,
 			createdBy: 'CurrentUser',
@@ -149,7 +155,7 @@ export const useSpots = (
 		logger.spot.info('Submitting spot form', {
 			roadName: formData.roadName,
 			direction: formData.direction,
-			appreciation: formData.appreciation,
+			commentAppreciation: formData.appreciation,
 			destinationsCount: formData.destinations.length,
 		});
 
@@ -157,13 +163,25 @@ export const useSpots = (
 		setPendingLocation(null);
 
 		void createSpot(newSpot)
-			.then(() => {
+			.then(async () => {
 				setFullSpots(previous => [...previous, newSpot]);
 				logger.spot.info('Spot created and added to state', { id: newSpot.id });
-				toastUtils.success(
-					'Spot créé',
-					`Nouveau spot sur ${formData.roadName}`
-				);
+
+				try {
+					await createComment(newComment);
+					toastUtils.success(
+						'Spot créé',
+						`Nouveau spot sur ${formData.roadName}`
+					);
+				} catch (error) {
+					logger.spot.error('Spot created but comment creation failed', error, {
+						spotId: newSpot.id,
+					});
+					toastUtils.info(
+						'Spot créé',
+						"Le spot est enregistré, mais le commentaire n'a pas pu être ajouté."
+					);
+				}
 			})
 			.catch(error => {
 				logger.spot.error('Failed to create spot in database', error);

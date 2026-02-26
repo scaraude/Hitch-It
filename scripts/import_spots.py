@@ -3,9 +3,9 @@
 Import and cluster hitchhiking spots from raw database.
 
 Usage:
-    python scripts/import_spots.py --input data/spots.csv --dry-run
-    python scripts/import_spots.py --input data/spots.sqlite --output spots_clustered.json
-    python scripts/import_spots.py --input data/spots.csv --upload
+    python scripts/import_spots.py --input data/points.csv --dry-run
+    python scripts/import_spots.py --input data/dump.sqlite --output spots_clustered.json
+    python scripts/import_spots.py --input data/dump.sqlite --upload
 
 Requirements:
     pip install pandas scikit-learn hdbscan requests python-dotenv supabase
@@ -67,7 +67,21 @@ def load_data(input_path: str) -> pd.DataFrame:
         df = pd.read_csv(path, low_memory=False)
     elif path.suffix in (".sqlite", ".db"):
         conn = sqlite3.connect(path)
-        df = pd.read_sql("SELECT * FROM point", conn)  # Adjust table name if needed
+        tables = pd.read_sql(
+            "SELECT name FROM sqlite_master WHERE type='table'",
+            conn
+        )["name"].tolist()
+
+        if "points" in tables:
+            table_name = "points"
+        elif "point" in tables:
+            table_name = "point"
+        else:
+            raise ValueError(
+                f"Could not find 'points' or 'point' table in {path.name}. Found: {tables}"
+            )
+
+        df = pd.read_sql(f"SELECT * FROM {table_name}", conn)
         conn.close()
     else:
         raise ValueError(f"Unsupported format: {path.suffix}")
@@ -266,9 +280,18 @@ def reverse_geocode(lat: float, lon: float) -> str:
         return "Unknown road"
 
 
-def map_to_spot_schema(df: pd.DataFrame) -> list[dict]:
-    """Convert dataframe to Spot schema."""
+def get_optional_string(value) -> str | None:
+    if pd.isna(value):
+        return None
+
+    text = str(value).strip()
+    return text if text else None
+
+
+def map_to_spot_schema(df: pd.DataFrame) -> tuple[list[dict], list[dict]]:
+    """Convert dataframe to Spot and comment schemas."""
     spots = []
+    comments = []
 
     for i, row in df.iterrows():
         # Reverse geocode if enabled (with rate limiting)
@@ -284,11 +307,17 @@ def map_to_spot_schema(df: pd.DataFrame) -> list[dict]:
             # Could reverse geocode destination too, for now just note coords
             destinations = [f"→ {row['dest_lat']:.2f}, {row['dest_lon']:.2f}"]
 
+        spot_id = str(uuid.uuid4())
+        created_at = (
+            row["parsed_date"].isoformat()
+            if pd.notna(row.get("parsed_date"))
+            else datetime.now().isoformat()
+        )
+
         spot = {
-            "id": str(uuid.uuid4()),
+            "id": spot_id,
             "latitude": float(row["lat"]),
             "longitude": float(row["lon"]),
-            "appreciation": rating_to_appreciation(row["rating"]),
             "direction": compute_direction(
                 row["lat"], row["lon"],
                 row.get("dest_lat"), row.get("dest_lon")
@@ -296,7 +325,7 @@ def map_to_spot_schema(df: pd.DataFrame) -> list[dict]:
             "road_name": road_name,
             "destinations": destinations,
             "created_by": "import",
-            "created_at": row["parsed_date"].isoformat() if pd.notna(row.get("parsed_date")) else datetime.now().isoformat(),
+            "created_at": created_at,
             "updated_at": datetime.now().isoformat(),
             # Metadata for debugging (won't be uploaded)
             "_original_id": int(row["id"]) if pd.notna(row.get("id")) else None,
@@ -307,10 +336,28 @@ def map_to_spot_schema(df: pd.DataFrame) -> list[dict]:
         }
         spots.append(spot)
 
+        comment = get_optional_string(row.get("comment"))
+        nickname = get_optional_string(row.get("nickname"))
+
+        if comment:
+            comment_row = {
+                "id": str(uuid.uuid4()),
+                "spot_id": spot_id,
+                "appreciation": rating_to_appreciation(row.get("rating")),
+                "comment": comment,
+                "created_by": nickname or "import",
+                "created_at": created_at,
+                "updated_at": datetime.now().isoformat(),
+            }
+            comments.append(comment_row)
+            spot["_comment_appreciation"] = comment_row["appreciation"]
+        else:
+            spot["_comment_appreciation"] = None
+
         if CONFIG["max_spots"] and len(spots) >= CONFIG["max_spots"]:
             break
 
-    return spots
+    return spots, comments
 
 
 # =============================================================================
@@ -330,12 +377,12 @@ def export_geojson(spots: list[dict], output_path: str):
             "properties": {
                 "id": spot["id"],
                 "created_at": spot["created_at"],
-                "appreciation": spot["appreciation"],
                 "direction": spot["direction"],
                 "road_name": spot["road_name"],
                 "score": spot.get("_score"),
                 "rating": spot.get("_rating"),
                 "comment": spot.get("_comment") if pd.notna(spot.get("_comment")) else None,
+                "comment_appreciation": spot.get("_comment_appreciation"),
             }
         }
         features.append(feature)
@@ -365,8 +412,8 @@ def export_json(spots: list[dict], output_path: str):
     print(f"Exported {len(spots)} spots to {output_path}")
 
 
-def upload_to_supabase(spots: list[dict]):
-    """Upload spots to Supabase."""
+def upload_to_supabase(spots: list[dict], comments: list[dict]):
+    """Upload spots and comments to Supabase."""
     try:
         from supabase import create_client
         from dotenv import load_dotenv
@@ -375,10 +422,13 @@ def upload_to_supabase(spots: list[dict]):
         load_dotenv()
 
         url = os.getenv("SUPABASE_URL")
-        key = os.getenv("SUPABASE_ANON_KEY")  # Need service role for bulk insert
+        key = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_ANON_KEY")
 
         if not url or not key:
-            print("Error: Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in .env")
+            print(
+                "Error: Missing SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY "
+                "(or fallback SUPABASE_ANON_KEY) in .env"
+            )
             return
 
         client = create_client(url, key)
@@ -396,7 +446,24 @@ def upload_to_supabase(spots: list[dict]):
             client.table("spots").insert(batch).execute()
             print(f"Uploaded batch {i//batch_size + 1}/{(len(clean_spots)-1)//batch_size + 1}")
 
-        print(f"Successfully uploaded {len(spots)} spots to Supabase")
+        # Clean comments for upload
+        clean_comments = [
+            {k: v for k, v in comment.items() if not k.startswith("_")}
+            for comment in comments
+        ]
+
+        if clean_comments:
+            for i in range(0, len(clean_comments), batch_size):
+                batch = clean_comments[i:i + batch_size]
+                client.table("comments").insert(batch).execute()
+                print(
+                    "Uploaded comment batch "
+                    f"{i//batch_size + 1}/{(len(clean_comments)-1)//batch_size + 1}"
+                )
+
+        print(
+            f"Successfully uploaded {len(spots)} spots and {len(clean_comments)} comments to Supabase"
+        )
 
     except ImportError:
         print("Error: pip install supabase python-dotenv")
@@ -438,9 +505,10 @@ def main():
     df = df.sort_values("score_total", ascending=False)
 
     # Map to schema
-    spots = map_to_spot_schema(df)
+    spots, comments = map_to_spot_schema(df)
 
     print(f"\nFinal: {len(spots)} spots ready")
+    print(f"Final: {len(comments)} comments ready")
     print(f"Top 5 scores: {[f'{s['_score']:.2f}' for s in spots[:5]]}")
 
     if args.dry_run:
@@ -455,7 +523,7 @@ def main():
             export_json(spots, args.output)
 
     if args.upload:
-        upload_to_supabase(spots)
+        upload_to_supabase(spots, comments)
 
 
 if __name__ == "__main__":

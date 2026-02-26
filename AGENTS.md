@@ -239,7 +239,6 @@ id TEXT PRIMARY KEY,
 latitude DOUBLE PRECISION,
 longitude DOUBLE PRECISION,
 road_name TEXT,
-appreciation TEXT,
 direction TEXT,
 destinations JSONB,
 created_by TEXT,
@@ -247,34 +246,48 @@ created_at TIMESTAMPTZ,
 updated_at TIMESTAMPTZ
 ```
 
-### `travels`
+### `comments`
 
 ```sql
 id TEXT PRIMARY KEY,
-user_id TEXT,
-start_date TIMESTAMPTZ,
-end_date TIMESTAMPTZ,
-origin TEXT,
-destination TEXT,
-status TEXT,
-total_distance DOUBLE PRECISION,
-total_wait_time INTEGER,
+spot_id TEXT REFERENCES spots(id) ON DELETE CASCADE,
+appreciation TEXT,
+comment TEXT,
+created_by TEXT,
 created_at TIMESTAMPTZ,
 updated_at TIMESTAMPTZ
 ```
 
-### `travel_steps`
+### `journeys`
 
 ```sql
 id TEXT PRIMARY KEY,
-travel_id TEXT REFERENCES travels(id) ON DELETE CASCADE,
-type TEXT,
-spot_id TEXT REFERENCES spots(id),
-start_time TIMESTAMPTZ,
-end_time TIMESTAMPTZ,
+user_id TEXT,
+status TEXT,
+started_at TIMESTAMPTZ,
+ended_at TIMESTAMPTZ,
+title TEXT,
 notes TEXT,
+total_distance_km DOUBLE PRECISION,
+is_shared BOOLEAN,
+share_token TEXT,
 created_at TIMESTAMPTZ,
 updated_at TIMESTAMPTZ
+```
+
+### `journey_points`
+
+```sql
+id TEXT PRIMARY KEY,
+journey_id TEXT REFERENCES journeys(id) ON DELETE CASCADE,
+type TEXT,
+spot_id TEXT REFERENCES spots(id),
+latitude DOUBLE PRECISION,
+longitude DOUBLE PRECISION,
+timestamp TIMESTAMPTZ,
+wait_time_minutes INTEGER,
+notes TEXT,
+created_at TIMESTAMPTZ
 ```
 
 ---
@@ -359,4 +372,3 @@ Use Supabase MCP: `generate_typescript_types`
 - Android emulator: Android Studio + AVD required
 
 Supabase project: `nyniwfqrvlztwhnexheu`
-

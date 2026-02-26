@@ -91,6 +91,7 @@ export const HomeSheetsOverlay: React.FC<HomeSheetsOverlayProps> = ({
 
 			{selectedSpot && !isShowingForm && (
 				<SpotDetailsSheet
+					key={selectedSpot.id as string}
 					spot={selectedSpot}
 					onClose={onCloseSpotDetails}
 					onEmbarquer={onSpotEmbarquer}

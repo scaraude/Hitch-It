@@ -6,7 +6,7 @@ import {
 	isSpotInBounds,
 	logger,
 } from '@/utils';
-import { Appreciation, Direction, type Spot } from '../types';
+import { Direction, type Spot } from '../types';
 import { createSpotId } from '../utils';
 
 type SpotRow = {
@@ -14,7 +14,6 @@ type SpotRow = {
 	latitude: number;
 	longitude: number;
 	road_name: string;
-	appreciation: string;
 	direction: string;
 	destinations: string[] | null;
 	created_at: string;
@@ -22,19 +21,7 @@ type SpotRow = {
 	created_by: string;
 };
 
-const appreciationValues = new Set(Object.values(Appreciation));
 const directionValues = new Set(Object.values(Direction));
-
-const parseAppreciation = (
-	value: string,
-	spotId: string
-): Spot['appreciation'] => {
-	if (appreciationValues.has(value as Appreciation)) {
-		return value as Spot['appreciation'];
-	}
-
-	throw new Error(`Invalid spot appreciation "${value}" for spot "${spotId}"`);
-};
 
 const parseDirection = (value: string, spotId: string): Spot['direction'] => {
 	if (directionValues.has(value as Direction)) {
@@ -61,7 +48,6 @@ const mapRowToSpot = (row: SpotRow): Spot => ({
 		longitude: row.longitude,
 	},
 	roadName: row.road_name,
-	appreciation: parseAppreciation(row.appreciation, row.id),
 	direction: parseDirection(row.direction, row.id),
 	destinations: parseDestinations(row.destinations),
 	createdAt: new Date(row.created_at),
@@ -217,7 +203,6 @@ export const createSpot = async (spot: Spot): Promise<void> => {
 			latitude: spot.coordinates.latitude,
 			longitude: spot.coordinates.longitude,
 			road_name: spot.roadName,
-			appreciation: spot.appreciation,
 			direction: spot.direction,
 			destinations: spot.destinations,
 			created_at: spot.createdAt.toISOString(),
@@ -244,7 +229,6 @@ export const updateSpot = async (spot: Spot): Promise<void> => {
 				latitude: spot.coordinates.latitude,
 				longitude: spot.coordinates.longitude,
 				road_name: spot.roadName,
-				appreciation: spot.appreciation,
 				direction: spot.direction,
 				destinations: spot.destinations,
 				updated_at: spot.updatedAt.toISOString(),

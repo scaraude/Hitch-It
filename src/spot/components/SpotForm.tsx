@@ -8,15 +8,18 @@ import {
 	TextInput,
 	View,
 } from 'react-native';
+import { CommentEditor } from '../../comment/components';
+import type { CommentAppreciation } from '../../comment/types';
 import { bottomSheetStyles } from '../../components/ui';
 import { COLORS, SIZES, SPACING } from '../../constants';
 import { A11Y_LABELS } from '../../constants/accessibility';
-import { APPRECIATION_CONFIG, APPRECIATIONS, DIRECTIONS } from '../constants';
-import type { Appreciation, Direction } from '../types';
+import { DIRECTIONS } from '../constants';
+import type { Direction } from '../types';
 import { DestinationChip, DestinationInput } from './ui';
 
 interface SpotFormData {
-	appreciation: Appreciation;
+	appreciation: CommentAppreciation;
+	comment: string;
 	roadName: string;
 	direction: Direction;
 	destinations: string[];
@@ -28,9 +31,10 @@ interface SpotFormProps {
 }
 
 export const SpotForm: React.FC<SpotFormProps> = ({ onSubmit, onCancel }) => {
-	const [appreciation, setAppreciation] = useState<Appreciation | undefined>(
-		undefined
-	);
+	const [appreciation, setAppreciation] = useState<
+		CommentAppreciation | undefined
+	>(undefined);
+	const [comment, setComment] = useState('');
 	const [roadName, setRoadName] = useState('');
 	const [direction, setDirection] = useState<Direction | undefined>(undefined);
 	const [destinationInput, setDestinationInput] = useState('');
@@ -39,7 +43,8 @@ export const SpotForm: React.FC<SpotFormProps> = ({ onSubmit, onCancel }) => {
 		roadName.trim().length > 0 &&
 		!!direction &&
 		destinations.length > 0 &&
-		appreciation !== undefined;
+		appreciation !== undefined &&
+		comment.trim().length > 0;
 
 	const handleAddDestination = useCallback(() => {
 		const trimmed = destinationInput.trim();
@@ -58,11 +63,20 @@ export const SpotForm: React.FC<SpotFormProps> = ({ onSubmit, onCancel }) => {
 		}
 		onSubmit({
 			appreciation,
+			comment: comment.trim(),
 			roadName: roadName.trim(),
 			direction,
 			destinations,
 		});
-	}, [appreciation, destinations, direction, isFormValid, onSubmit, roadName]);
+	}, [
+		appreciation,
+		comment,
+		destinations,
+		direction,
+		isFormValid,
+		onSubmit,
+		roadName,
+	]);
 
 	return (
 		<View
@@ -75,33 +89,6 @@ export const SpotForm: React.FC<SpotFormProps> = ({ onSubmit, onCancel }) => {
 					showsVerticalScrollIndicator={false}
 				>
 					<Text style={styles.title}>Nouveau Spot</Text>
-
-					{/* Appreciation */}
-					<Text style={styles.label}>Appréciation *</Text>
-					<View style={styles.buttonGroup}>
-						{APPRECIATIONS.map(app => (
-							<Pressable
-								key={app}
-								style={[
-									styles.optionButton,
-									appreciation === app && styles.optionButtonSelected,
-								]}
-								onPress={() => setAppreciation(app)}
-								accessibilityLabel={`${A11Y_LABELS[`appreciation${app.charAt(0).toUpperCase()}${app.slice(1)}` as keyof typeof A11Y_LABELS]}`}
-								accessibilityRole="button"
-								accessibilityState={{ selected: appreciation === app }}
-							>
-								<Text
-									style={[
-										styles.optionText,
-										appreciation === app && styles.optionTextSelected,
-									]}
-								>
-									{APPRECIATION_CONFIG[app].label}
-								</Text>
-							</Pressable>
-						))}
-					</View>
 
 					{/* Road Name */}
 					<Text style={styles.label}>Nom de la route *</Text>
@@ -162,6 +149,15 @@ export const SpotForm: React.FC<SpotFormProps> = ({ onSubmit, onCancel }) => {
 							))}
 						</View>
 					) : null}
+
+					<View style={styles.commentSection}>
+						<CommentEditor
+							appreciation={appreciation}
+							comment={comment}
+							onAppreciationChange={setAppreciation}
+							onCommentChange={setComment}
+						/>
+					</View>
 				</ScrollView>
 
 				{/* Action Buttons */}
@@ -229,32 +225,6 @@ const styles = StyleSheet.create({
 		fontSize: SIZES.fontMd,
 		color: COLORS.text,
 	},
-	buttonGroup: {
-		flexDirection: 'row',
-		gap: SPACING.sm,
-	},
-	optionButton: {
-		flex: 1,
-		paddingVertical: SPACING.md,
-		paddingHorizontal: SPACING.sm,
-		borderRadius: SIZES.radiusMedium,
-		borderWidth: 1,
-		borderColor: COLORS.surface,
-		backgroundColor: COLORS.surface,
-		alignItems: 'center',
-	},
-	optionButtonSelected: {
-		backgroundColor: COLORS.primary,
-		borderColor: COLORS.primary,
-	},
-	optionText: {
-		fontSize: SIZES.fontSm,
-		color: COLORS.text,
-		fontWeight: '600',
-	},
-	optionTextSelected: {
-		color: COLORS.background,
-	},
 	directionGrid: {
 		flexDirection: 'row',
 		flexWrap: 'wrap',
@@ -286,6 +256,9 @@ const styles = StyleSheet.create({
 		flexWrap: 'wrap',
 		gap: SPACING.sm,
 		marginTop: SPACING.sm,
+	},
+	commentSection: {
+		marginTop: SPACING.lg,
 	},
 	actions: {
 		flexDirection: 'row',

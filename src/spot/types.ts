@@ -12,12 +12,6 @@ export enum Direction {
 	NorthWest = 'North-West',
 }
 
-export enum Appreciation {
-	Perfect = 'perfect',
-	Good = 'good',
-	Bad = 'bad',
-}
-
 export interface Location {
 	latitude: number;
 	longitude: number;
@@ -33,7 +27,6 @@ export interface SpotMarkerData {
 
 export interface Spot {
 	id: SpotId;
-	appreciation: Appreciation;
 	roadName: string;
 	direction: Direction;
 	destinations: string[];
