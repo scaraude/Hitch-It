@@ -150,10 +150,6 @@ export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 		onClose();
 	}, [onClose]);
 
-	const handleClose = useCallback(() => {
-		bottomSheetRef.current?.close();
-	}, []);
-
 	const handleOpenStreetView = () => {
 		void openExternalUrl(
 			buildGoogleStreetViewUrl(spot),
@@ -223,19 +219,6 @@ export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 				showsVerticalScrollIndicator={false}
 				testID="spot-details-sheet"
 			>
-				<View style={styles.headerRow}>
-					<Pressable
-						onPress={handleClose}
-						style={styles.closeButton}
-						accessibilityLabel={A11Y_LABELS.closeButton}
-						accessibilityHint={A11Y_LABELS.closeSheetHint}
-						accessibilityRole="button"
-						testID="spot-details-close"
-					>
-						<Ionicons name="close" size={18} color={COLORS.textSecondary} />
-					</Pressable>
-				</View>
-
 				<View style={styles.titleRow}>
 					<Text style={styles.title}>{spotTitle}</Text>
 					<View style={styles.topActions}>
