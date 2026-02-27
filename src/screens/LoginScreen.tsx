@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
 	KeyboardAvoidingView,
 	Platform,
@@ -19,14 +19,63 @@ import type { RootStackParamList } from '../navigation/types';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
+const RESEND_COOLDOWN_SECONDS = 30;
+
 export default function LoginScreen() {
 	const navigation = useNavigation<NavigationProp>();
-	const { login } = useAuth();
+	const { login, resendConfirmationEmail } = useAuth();
 
 	const [identifier, setIdentifier] = useState('');
 	const [password, setPassword] = useState('');
 	const [error, setError] = useState('');
 	const [isLoading, setIsLoading] = useState(false);
+	const [showEmailConfirmation, setShowEmailConfirmation] = useState(false);
+	const [resendCooldown, setResendCooldown] = useState(0);
+	const [isResending, setIsResending] = useState(false);
+	const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+	useEffect(() => {
+		return () => {
+			if (cooldownRef.current) {
+				clearInterval(cooldownRef.current);
+			}
+		};
+	}, []);
+
+	const startCooldown = () => {
+		setResendCooldown(RESEND_COOLDOWN_SECONDS);
+		cooldownRef.current = setInterval(() => {
+			setResendCooldown(prev => {
+				if (prev <= 1) {
+					if (cooldownRef.current) {
+						clearInterval(cooldownRef.current);
+						cooldownRef.current = null;
+					}
+					return 0;
+				}
+				return prev - 1;
+			});
+		}, 1000);
+	};
+
+	const handleResendEmail = async () => {
+		const email = identifier.includes('@') ? identifier.trim() : '';
+		if (!email) {
+			setError('Please enter your email address to resend the confirmation.');
+			return;
+		}
+
+		setIsResending(true);
+		const result = await resendConfirmationEmail(email);
+		setIsResending(false);
+
+		if (result.error) {
+			setError(result.error);
+		} else {
+			setError('');
+			startCooldown();
+		}
+	};
 
 	const handleLogin = async () => {
 		if (!identifier.trim() || !password) {
@@ -35,6 +84,7 @@ export default function LoginScreen() {
 		}
 
 		setError('');
+		setShowEmailConfirmation(false);
 		setIsLoading(true);
 
 		const result = await login({ identifier: identifier.trim(), password });
@@ -43,6 +93,9 @@ export default function LoginScreen() {
 
 		if (result.error) {
 			setError(result.error);
+			if (result.emailNotConfirmed) {
+				setShowEmailConfirmation(true);
+			}
 		} else {
 			navigation.navigate('Home');
 		}
@@ -72,6 +125,37 @@ export default function LoginScreen() {
 
 				<View style={styles.form}>
 					{error ? <Text style={styles.errorText}>{error}</Text> : null}
+
+					{showEmailConfirmation && (
+						<View style={styles.confirmationBox}>
+							<Ionicons
+								name="mail-outline"
+								size={SIZES.iconMd}
+								color={COLORS.warning}
+								style={styles.confirmationIcon}
+							/>
+							<Text style={styles.confirmationText}>
+								Check your inbox and spam folder for the confirmation link.
+							</Text>
+							<Pressable
+								style={[
+									styles.resendButton,
+									(resendCooldown > 0 || isResending) &&
+									styles.resendButtonDisabled,
+								]}
+								onPress={handleResendEmail}
+								disabled={resendCooldown > 0 || isResending}
+							>
+								<Text style={styles.resendButtonText}>
+									{isResending
+										? 'Sending...'
+										: resendCooldown > 0
+											? `Resend in ${resendCooldown}s`
+											: 'Resend confirmation email'}
+								</Text>
+							</Pressable>
+						</View>
+					)}
 
 					<View style={styles.inputContainer}>
 						<Ionicons
@@ -216,6 +300,39 @@ const styles = StyleSheet.create({
 	},
 	linkText: {
 		color: COLORS.primary,
+		fontSize: SIZES.fontSm,
+		fontWeight: '600',
+	},
+	confirmationBox: {
+		backgroundColor: COLORS.surface,
+		borderRadius: SIZES.radiusMedium,
+		borderWidth: 1,
+		borderColor: COLORS.warning,
+		padding: SPACING.md,
+		alignItems: 'center',
+		gap: SPACING.sm,
+	},
+	confirmationIcon: {
+		marginBottom: SPACING.xs,
+	},
+	confirmationText: {
+		color: COLORS.text,
+		fontSize: SIZES.fontSm,
+		textAlign: 'center',
+		lineHeight: 20,
+	},
+	resendButton: {
+		backgroundColor: COLORS.warning,
+		paddingVertical: SPACING.sm,
+		paddingHorizontal: SPACING.md,
+		borderRadius: SIZES.radiusMedium,
+		marginTop: SPACING.xs,
+	},
+	resendButtonDisabled: {
+		opacity: 0.6,
+	},
+	resendButtonText: {
+		color: COLORS.textLight,
 		fontSize: SIZES.fontSm,
 		fontWeight: '600',
 	},

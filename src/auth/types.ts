@@ -24,6 +24,7 @@ export interface AuthState {
 
 export interface AuthActionResult {
 	error?: string;
+	emailNotConfirmed?: boolean;
 }
 
 /**
@@ -50,4 +51,5 @@ export interface AuthContextValue extends AuthState {
 	signUp: (credentials: SignUpCredentials) => Promise<AuthActionResult>;
 	login: (credentials: LoginCredentials) => Promise<AuthActionResult>;
 	logout: () => Promise<AuthActionResult>;
+	resendConfirmationEmail: (email: string) => Promise<AuthActionResult>;
 }

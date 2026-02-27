@@ -77,6 +77,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
 		return result;
 	};
 
+	const resendConfirmationEmail = async (email: string) => {
+		return authService.resendConfirmationEmail(email);
+	};
+
 	const value: AuthContextValue = {
 		user,
 		isLoading,
@@ -84,6 +88,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 		signUp,
 		login,
 		logout,
+		resendConfirmationEmail,
 	};
 
 	return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

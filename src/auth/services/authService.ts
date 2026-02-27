@@ -112,6 +112,15 @@ export async function login(
 
 		if (authError) {
 			logger.error('Login error', authError);
+
+			// Check if the error is due to unconfirmed email
+			if (authError.message?.includes('Email not confirmed')) {
+				return {
+					error: 'Please verify your email address before signing in.',
+					emailNotConfirmed: true,
+				};
+			}
+
 			return { error: 'Invalid credentials' };
 		}
 
@@ -139,6 +148,31 @@ export async function logout(): Promise<AuthActionResult> {
 		return {};
 	} catch (error) {
 		logger.error('Logout error', error);
+		return { error: 'An unexpected error occurred' };
+	}
+}
+
+/**
+ * Resend confirmation email to user
+ */
+export async function resendConfirmationEmail(
+	email: string
+): Promise<AuthActionResult> {
+	try {
+		const { error } = await supabase.auth.resend({
+			type: 'signup',
+			email,
+		});
+
+		if (error) {
+			logger.error('Resend confirmation email error', error);
+			return { error: error.message };
+		}
+
+		logger.info('Confirmation email resent successfully', { email });
+		return {};
+	} catch (error) {
+		logger.error('Resend confirmation email error', error);
 		return { error: 'An unexpected error occurred' };
 	}
 }
