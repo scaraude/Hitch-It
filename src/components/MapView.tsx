@@ -120,15 +120,19 @@ const MapViewComponent = forwardRef<MapViewRef, MapViewComponentProps>(
 				onLongPress={handleLongPress}
 				onPress={handlePress}
 			>
-				{markers.map(marker => (
-					<Marker
-						key={marker.id}
-						coordinate={marker.coordinates}
-						pinColor={marker.color || MAP_CONFIG.defaultMarkerColor}
-						tracksViewChanges={false}
-						onPress={() => handleMarkerPress(marker.id)}
-					/>
-				))}
+				{markers.map(marker => {
+					const pinColor = marker.color || MAP_CONFIG.defaultMarkerColor;
+					return (
+						<Marker
+							key={`${marker.id}-${pinColor}`}
+							identifier={`${marker.id}-${pinColor}`}
+							coordinate={marker.coordinates}
+							pinColor={pinColor}
+							tracksViewChanges={false}
+							onPress={() => handleMarkerPress(marker.id)}
+						/>
+					);
+				})}
 				{children}
 			</MapView>
 		);

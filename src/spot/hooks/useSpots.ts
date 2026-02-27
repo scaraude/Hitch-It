@@ -28,6 +28,8 @@ export interface UseSpotsReturn {
 }
 
 const MIN_ZOOM_LEVEL = 8;
+const DEFAULT_SPOT_MARKER_COLOR = COLORS.secondary;
+const SELECTED_SPOT_MARKER_COLOR = COLORS.error;
 
 export const useSpots = (
 	bounds: MapBounds | null,
@@ -46,9 +48,12 @@ export const useSpots = (
 				coordinates: spot.coordinates,
 				title: spot.roadName,
 				description: spot.direction,
-				color: COLORS.secondary,
+				color:
+					selectedSpot?.id === spot.id
+						? SELECTED_SPOT_MARKER_COLOR
+						: DEFAULT_SPOT_MARKER_COLOR,
 			})),
-		[fullSpots]
+		[fullSpots, selectedSpot]
 	);
 
 	useEffect(() => {
