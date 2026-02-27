@@ -62,9 +62,11 @@ type CachedRegion = {
 };
 
 const cache: CachedRegion[] = [];
-const CACHE_PADDING = 0.1;
+const CACHE_PADDING_FACTOR = 0.1;
 const CACHE_TTL_MS = 60_000;
 const MAX_CACHE_REGIONS = 12;
+const SPOTS_PAGE_SIZE = 1_000;
+const MAX_SPOT_PAGES = 10;
 
 const pruneCache = () => {
 	const oldestAllowed = Date.now() - CACHE_TTL_MS;
@@ -84,6 +86,56 @@ const clearSpotCache = () => {
 	cache.length = 0;
 };
 
+const findCachedRegion = (bounds: MapBounds): CachedRegion | null => {
+	for (let i = cache.length - 1; i >= 0; i--) {
+		if (isFullyContained(bounds, cache[i].bounds)) {
+			return cache[i];
+		}
+	}
+
+	return null;
+};
+
+const fetchSpotsForBounds = async (bounds: MapBounds): Promise<Spot[]> => {
+	const rows: SpotRow[] = [];
+
+	for (let page = 0; page < MAX_SPOT_PAGES; page++) {
+		const rangeStart = page * SPOTS_PAGE_SIZE;
+		const rangeEnd = rangeStart + SPOTS_PAGE_SIZE - 1;
+		const { data, error } = await supabase
+			.from('spots')
+			.select('*')
+			.gte('latitude', bounds.south)
+			.lte('latitude', bounds.north)
+			.gte('longitude', bounds.west)
+			.lte('longitude', bounds.east)
+			.order('id', { ascending: true })
+			.range(rangeStart, rangeEnd);
+
+		if (error) {
+			throw error;
+		}
+
+		const pageRows = (data ?? []) as SpotRow[];
+		rows.push(...pageRows);
+
+		if (pageRows.length < SPOTS_PAGE_SIZE) {
+			break;
+		}
+	}
+
+	if (rows.length >= SPOTS_PAGE_SIZE * MAX_SPOT_PAGES) {
+		logger.repository.warn('Spots query reached pagination safety cap', {
+			count: rows.length,
+			pageSize: SPOTS_PAGE_SIZE,
+			maxPages: MAX_SPOT_PAGES,
+			bounds,
+		});
+	}
+
+	return rows.map(mapRowToSpot);
+};
+
 export const getSpotsInBounds = async (bounds: MapBounds): Promise<Spot[]> => {
 	logger.repository.debug('Fetching spots in bounds', {
 		north: bounds.north,
@@ -94,9 +146,7 @@ export const getSpotsInBounds = async (bounds: MapBounds): Promise<Spot[]> => {
 
 	pruneCache();
 
-	const cachedRegion = cache.find(region =>
-		isFullyContained(bounds, region.bounds)
-	);
+	const cachedRegion = findCachedRegion(bounds);
 
 	if (cachedRegion) {
 		logger.repository.debug('Cache hit - filtering from cached spots');
@@ -111,35 +161,26 @@ export const getSpotsInBounds = async (bounds: MapBounds): Promise<Spot[]> => {
 
 	logger.repository.debug('Cache miss - fetching from database');
 	try {
-		const { data, error } = await supabase
-			.from('spots')
-			.select('*')
-			.gte('latitude', bounds.south)
-			.lte('latitude', bounds.north)
-			.gte('longitude', bounds.west)
-			.lte('longitude', bounds.east)
-			.limit(1000);
+		const expandedBounds = expandBounds(bounds, CACHE_PADDING_FACTOR);
+		const spotsInExpandedBounds = await fetchSpotsForBounds(expandedBounds);
+		const spotsInRequestedBounds = spotsInExpandedBounds.filter(spot =>
+			isSpotInBounds(spot.coordinates, bounds)
+		);
 
-		if (error) {
-			throw error;
-		}
-
-		const spots = (data ?? []).map(row => mapRowToSpot(row as SpotRow));
-
-		const expandedBounds = expandBounds(bounds, CACHE_PADDING);
 		cache.push({
 			bounds: expandedBounds,
-			spots,
+			spots: spotsInExpandedBounds,
 			fetchedAt: new Date(),
 		});
 		pruneCache();
 
 		logger.repository.info('Spots fetched and cached', {
-			count: spots.length,
+			count: spotsInRequestedBounds.length,
+			cachedCount: spotsInExpandedBounds.length,
 			cacheSize: cache.length,
 		});
 
-		return spots;
+		return spotsInRequestedBounds;
 	} catch (error) {
 		logger.repository.error('Failed to fetch spots in bounds', error);
 		throw error;

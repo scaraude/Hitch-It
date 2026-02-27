@@ -3,7 +3,6 @@ import { createComment } from '../../comment/services';
 import { generateCommentId } from '../../comment/utils';
 import { toastUtils } from '../../components/ui';
 import { COLORS } from '../../constants';
-import { useDebouncedValue } from '../../hooks';
 import type { MapBounds, MapRegion } from '../../types';
 import { logger } from '../../utils';
 import { createSpot, getSpotsInBounds } from '../services';
@@ -28,7 +27,7 @@ export interface UseSpotsReturn {
 	deselectSpot: () => void;
 }
 
-const MIN_ZOOM_LEVEL = 10;
+const MIN_ZOOM_LEVEL = 8;
 
 export const useSpots = (
 	bounds: MapBounds | null,
@@ -39,8 +38,6 @@ export const useSpots = (
 	const [isShowingForm, setIsShowingForm] = useState(false);
 	const [pendingLocation, setPendingLocation] = useState<Location | null>(null);
 	const [selectedSpot, setSelectedSpot] = useState<Spot | null>(null);
-
-	const debouncedBounds = useDebouncedValue(bounds, 300);
 
 	const spotMarkers: SpotMarkerData[] = useMemo(
 		() =>
@@ -61,7 +58,7 @@ export const useSpots = (
 			return;
 		}
 
-		if (!debouncedBounds) {
+		if (!bounds) {
 			return;
 		}
 
@@ -70,10 +67,10 @@ export const useSpots = (
 		const loadSpotsInView = async () => {
 			logger.spot.info('Loading spots for viewport', {
 				zoomLevel,
-				bounds: debouncedBounds,
+				bounds,
 			});
 			try {
-				const spots = await getSpotsInBounds(debouncedBounds);
+				const spots = await getSpotsInBounds(bounds);
 				if (isMounted) {
 					setFullSpots(spots);
 					logger.spot.info('Spots loaded successfully', {
@@ -96,7 +93,7 @@ export const useSpots = (
 		return () => {
 			isMounted = false;
 		};
-	}, [debouncedBounds, zoomLevel]);
+	}, [bounds, zoomLevel]);
 
 	const startPlacingSpot = () => {
 		logger.spot.info('User started placing spot');
