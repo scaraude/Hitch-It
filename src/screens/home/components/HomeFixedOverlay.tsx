@@ -1,7 +1,10 @@
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type React from 'react';
 import { useCallback } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useAuth } from '../../../auth';
 import {
 	BottomNavBar,
 	MapControls,
@@ -9,6 +12,7 @@ import {
 } from '../../../components';
 import { APP_CONFIG } from '../../../constants';
 import { NavigationHeader } from '../../../navigation/components';
+import type { RootStackParamList } from '../../../navigation/types';
 import {
 	useHomeMap,
 	useHomeNav,
@@ -19,6 +23,7 @@ import {
 import { homeScreenStyles as styles } from '../homeScreenStyles';
 
 type HomeTabId = 'home' | 'search' | 'add' | 'history' | 'profile';
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const MAP_CONTROLS_OFFSET_WITH_BOTTOM_BAR = 110;
 const MAP_CONTROLS_OFFSET_DEFAULT = 24;
@@ -28,6 +33,9 @@ const COMPARE_BUTTON_LABEL = 'Comparer direction conducteur';
 const CLEAR_COMPARE_BUTTON_LABEL = 'Effacer comparaison';
 
 export const HomeFixedOverlay: React.FC = () => {
+	const rootNavigation = useNavigation<NavigationProp>();
+	const { isAuthenticated } = useAuth();
+
 	const nav = useHomeNav();
 	const session = useHomeSession();
 	const search = useHomeSearch();
@@ -80,8 +88,20 @@ export const HomeFixedOverlay: React.FC = () => {
 		(tabId: HomeTabId) => {
 			if (tabId === 'add') spot.startPlacingSpot();
 			else if (tabId === 'search') search.handleSearchToggle();
+			else if (tabId === 'profile') {
+				if (isAuthenticated) {
+					rootNavigation.navigate('Profile');
+				} else {
+					rootNavigation.navigate('Login');
+				}
+			}
 		},
-		[search.handleSearchToggle, spot.startPlacingSpot]
+		[
+			isAuthenticated,
+			rootNavigation,
+			search.handleSearchToggle,
+			spot.startPlacingSpot,
+		]
 	);
 
 	return (
@@ -150,7 +170,11 @@ export const HomeFixedOverlay: React.FC = () => {
 			)}
 
 			{search.shouldShowBottomBar && (
-				<BottomNavBar activeTab="home" onTabPress={handleTabPress} />
+				<BottomNavBar
+					activeTab="home"
+					onTabPress={handleTabPress}
+					isAuthenticated={isAuthenticated}
+				/>
 			)}
 		</View>
 	);

@@ -37,14 +37,20 @@ const TABS: TabConfig[] = [
 	},
 ];
 
+function getProfileLabel(isAuthenticated: boolean): string {
+	return isAuthenticated ? 'Profile' : 'Log in';
+}
+
 interface BottomNavBarProps {
 	activeTab?: TabId;
 	onTabPress: (tabId: TabId) => void;
+	isAuthenticated?: boolean;
 }
 
 export const BottomNavBar: React.FC<BottomNavBarProps> = ({
 	activeTab = 'home',
 	onTabPress,
+	isAuthenticated = false,
 }) => {
 	const insets = useSafeAreaInsets();
 
@@ -110,7 +116,9 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
 								<Text
 									style={[styles.tabLabel, isActive && styles.tabLabelActive]}
 								>
-									{tab.label}
+									{tab.id === 'profile'
+										? getProfileLabel(isAuthenticated)
+										: tab.label}
 								</Text>
 							</Pressable>
 						);

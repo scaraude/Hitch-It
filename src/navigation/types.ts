@@ -6,10 +6,9 @@ import type { Spot } from '../spot/types';
  */
 export type RootStackParamList = {
 	Home: undefined;
-	// Future screens can be added here:
-	// SpotDetails: { spotId: SpotId };
-	// Profile: { userId: string };
-	// Settings: undefined;
+	Login: undefined;
+	SignUp: undefined;
+	Profile: undefined;
 };
 
 /**
