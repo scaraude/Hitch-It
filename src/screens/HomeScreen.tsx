@@ -9,9 +9,8 @@ import { calculateZoomLevel, regionToBounds } from '../utils';
 import { HomeFixedOverlay } from './home/components/HomeFixedOverlay';
 import { HomeMapLayer } from './home/components/HomeMapLayer';
 import { HomeSheetsOverlay } from './home/components/HomeSheetsOverlay';
-import { HomeScreenContextProvider } from './home/context/HomeScreenContext';
+import { HomeStateProvider } from './home/context/HomeStateContext';
 import { homeScreenStyles as styles } from './home/homeScreenStyles';
-import { useHomeController } from './home/hooks/useHomeController';
 
 interface HomeScreenContentProps {
 	onRegionChange: (region: MapRegion) => void;
@@ -20,16 +19,14 @@ interface HomeScreenContentProps {
 const HomeScreenContent: React.FC<HomeScreenContentProps> = ({
 	onRegionChange,
 }) => {
-	const homeViewModel = useHomeController({ onRegionChange });
-
 	return (
-		<HomeScreenContextProvider value={homeViewModel}>
+		<HomeStateProvider onRegionChange={onRegionChange}>
 			<View style={styles.container}>
 				<HomeMapLayer />
 				<HomeFixedOverlay />
 				<HomeSheetsOverlay />
 			</View>
-		</HomeScreenContextProvider>
+		</HomeStateProvider>
 	);
 };
 

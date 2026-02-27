@@ -1,4 +1,5 @@
 import type React from 'react';
+import { useCallback } from 'react';
 import {
 	KeyboardAvoidingView,
 	Platform,
@@ -17,49 +18,55 @@ import {
 	NavigationCompleteSheet,
 } from '../../../navigation/components';
 import { SpotDetailsSheet, SpotForm } from '../../../spot/components';
-import { useHomeScreenContext } from '../context/HomeScreenContext';
+import {
+	useHomeLocation,
+	useHomeMap,
+	useHomeNav,
+	useHomeSession,
+	useHomeSpot,
+} from '../context/HomeStateContext';
 import { homeScreenStyles as homeStyles } from '../homeScreenStyles';
+import type { NamedLocation } from '../types';
 
 const SPOT_HITCH_BOTTOM_OFFSET = SPACING.sm;
 const SPOT_HITCH_HORIZONTAL_PADDING = SPACING.lg;
 
 export const HomeSheetsOverlay: React.FC = () => {
-	const {
-		sheetsOverlay: {
-			isPlacingSpot,
-			isShowingForm,
-			selectedSpot,
-			showEmbarquerSheet,
-			showDriverDirectionSheet,
-			showCompletionSheet,
-			navigationRoute,
-			navigationSpotsOnRoute,
-			journeyDurationMinutes,
-			embarquerOrigin,
-			embarquerDestination,
-			userLocation,
-			onConfirmSpotPlacement,
-			onCancelSpotPlacement,
-			onSubmitSpotForm,
-			onCancelSpotForm,
-			onCloseSpotDetails,
-			onSpotEmbarquer,
-			onEmbarquerStart,
-			onDriverDirectionCompare,
-			onCloseDriverDirectionSheet,
-			onEmbarquerClose,
-			onSaveJourney,
-			onDiscardJourney,
-		},
-	} = useHomeScreenContext();
+	const { userLocation } = useHomeLocation();
+	const spot = useHomeSpot();
+	const session = useHomeSession();
+	const nav = useHomeNav();
+	const map = useHomeMap();
 
 	const insets = useSafeAreaInsets();
+
+	const { selectedSpot } = spot;
+
 	const shouldShowSpotHitchButton =
 		!!selectedSpot &&
-		!isShowingForm &&
-		!showEmbarquerSheet &&
-		!showDriverDirectionSheet &&
-		!showCompletionSheet;
+		!spot.isShowingForm &&
+		!session.showEmbarquerSheet &&
+		!session.isDriverDirectionSheetOpen &&
+		!session.showCompletionSheet;
+
+	const handleConfirmSpotPlacement = useCallback(() => {
+		spot.confirmSpotPlacement(map.mapRegion);
+	}, [map.mapRegion, spot.confirmSpotPlacement]);
+
+	const handleEmbarquerStart = useCallback(
+		(start: NamedLocation, destination: NamedLocation) => {
+			void session.handleEmbarquerStart(start, destination);
+		},
+		[session.handleEmbarquerStart]
+	);
+
+	const handleSaveJourney = useCallback(() => {
+		void session.handleSaveJourney();
+	}, [session.handleSaveJourney]);
+
+	const handleDiscardJourney = useCallback(() => {
+		void session.handleDiscardJourney();
+	}, [session.handleDiscardJourney]);
 
 	return (
 		<KeyboardAvoidingView
@@ -68,55 +75,56 @@ export const HomeSheetsOverlay: React.FC = () => {
 			keyboardVerticalOffset={0}
 			pointerEvents="box-none"
 		>
-			{isPlacingSpot ? (
+			{spot.isPlacingSpot && (
 				<ActionButtons
-					onConfirm={onConfirmSpotPlacement}
-					onCancel={onCancelSpotPlacement}
+					onConfirm={handleConfirmSpotPlacement}
+					onCancel={spot.cancelSpotPlacement}
 				/>
-			) : null}
-
-			{isShowingForm && (
-				<SpotForm onSubmit={onSubmitSpotForm} onCancel={onCancelSpotForm} />
 			)}
 
-			{selectedSpot && !isShowingForm && (
+			{spot.isShowingForm && (
+				<SpotForm
+					onSubmit={spot.submitSpotForm}
+					onCancel={spot.cancelSpotForm}
+				/>
+			)}
+
+			{selectedSpot && !spot.isShowingForm && (
 				<SpotDetailsSheet
 					key={selectedSpot.id as string}
 					spot={selectedSpot}
-					onClose={onCloseSpotDetails}
+					onClose={spot.deselectSpot}
 				/>
 			)}
 
-			{/* Embarquer sheet */}
-			{showEmbarquerSheet && (
+			{session.showEmbarquerSheet && (
 				<EmbarquerSheet
-					initialStart={embarquerOrigin ?? undefined}
-					initialDestination={embarquerDestination ?? undefined}
+					initialStart={session.embarquerOrigin ?? undefined}
+					initialDestination={session.embarquerDestination ?? undefined}
 					currentPosition={userLocation}
-					onStart={onEmbarquerStart}
-					onClose={onEmbarquerClose}
+					onStart={handleEmbarquerStart}
+					onClose={session.handleEmbarquerClose}
 				/>
 			)}
 
-			{showDriverDirectionSheet && (
+			{session.isDriverDirectionSheetOpen && (
 				<DriverDirectionSheet
-					onCompare={onDriverDirectionCompare}
-					onClose={onCloseDriverDirectionSheet}
+					onCompare={session.handleDriverDirectionCompare}
+					onClose={session.closeDriverDirectionSheet}
 				/>
 			)}
 
-			{/* Navigation complete sheet */}
-			{showCompletionSheet && navigationRoute && (
+			{session.showCompletionSheet && nav.navigation.route && (
 				<NavigationCompleteSheet
-					route={navigationRoute}
-					spotsUsed={navigationSpotsOnRoute}
-					durationMinutes={journeyDurationMinutes}
-					onSave={onSaveJourney}
-					onDiscard={onDiscardJourney}
+					route={nav.navigation.route}
+					spotsUsed={nav.navigation.spotsOnRoute}
+					durationMinutes={session.journeyDurationMinutes}
+					onSave={handleSaveJourney}
+					onDiscard={handleDiscardJourney}
 				/>
 			)}
 
-			{shouldShowSpotHitchButton && selectedSpot ? (
+			{shouldShowSpotHitchButton && selectedSpot && (
 				<View
 					style={[
 						styles.spotHitchContainer,
@@ -128,7 +136,7 @@ export const HomeSheetsOverlay: React.FC = () => {
 							styles.spotHitchButton,
 							pressed && styles.spotHitchButtonPressed,
 						]}
-						onPress={() => onSpotEmbarquer(selectedSpot)}
+						onPress={() => session.handleSpotEmbarquer(selectedSpot)}
 						accessibilityLabel="Hitch from this spot"
 						accessibilityRole="button"
 						testID="spot-embarquer-button"
@@ -136,7 +144,7 @@ export const HomeSheetsOverlay: React.FC = () => {
 						<Text style={styles.spotHitchButtonText}>Hitch it</Text>
 					</Pressable>
 				</View>
-			) : null}
+			)}
 
 			<Toast />
 		</KeyboardAvoidingView>

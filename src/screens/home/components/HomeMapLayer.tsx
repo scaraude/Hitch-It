@@ -7,31 +7,25 @@ import {
 	DestinationMarker,
 	RoutePolyline,
 } from '../../../navigation/components';
-import { useHomeScreenContext } from '../context/HomeScreenContext';
+import {
+	useHomeLocation,
+	useHomeMap,
+	useHomeMapRef,
+	useHomeNav,
+	useHomeSearch,
+	useHomeSession,
+	useHomeSpot,
+} from '../context/HomeStateContext';
 import { homeScreenStyles as styles } from '../homeScreenStyles';
 
 export const HomeMapLayer: React.FC = () => {
-	const {
-		mapLayer: {
-			locationLoading,
-			currentRegion,
-			mapViewRef,
-			visibleSpots,
-			navigationRoute,
-			driverRoute,
-			navigationDestinationMarker,
-			searchDestination,
-			longPressMarker,
-			isPlacingSpot,
-			showEmbarquerSheet,
-			isNavigationActive,
-			onRegionChange,
-			onHeadingChange,
-			onMarkerPress,
-			onLongPress,
-			onMapPress,
-		},
-	} = useHomeScreenContext();
+	const { currentRegion, locationLoading } = useHomeLocation();
+	const mapViewRef = useHomeMapRef();
+	const map = useHomeMap();
+	const nav = useHomeNav();
+	const search = useHomeSearch();
+	const session = useHomeSession();
+	const spot = useHomeSpot();
 
 	return (
 		<View style={styles.mapContainer}>
@@ -42,63 +36,58 @@ export const HomeMapLayer: React.FC = () => {
 					<MapViewComponent
 						ref={mapViewRef}
 						initialRegion={currentRegion}
-						markers={visibleSpots}
-						onRegionChange={onRegionChange}
-						onHeadingChange={onHeadingChange}
-						onMarkerPress={onMarkerPress}
-						onLongPress={onLongPress}
-						onPress={onMapPress}
+						markers={map.visibleSpots}
+						onRegionChange={map.handleRegionChange}
+						onHeadingChange={map.handleHeadingChange}
+						onMarkerPress={map.handleMarkerPress}
+						onLongPress={map.handleLongPress}
+						onPress={map.handleMapPress}
 					>
-						{/* Destination marker (before navigation starts) */}
-						{navigationDestinationMarker && (
+						{nav.navigation.destinationMarker && (
 							<DestinationMarker
-								location={navigationDestinationMarker.location}
-								name={navigationDestinationMarker.name}
+								location={nav.navigation.destinationMarker.location}
+								name={nav.navigation.destinationMarker.name}
 							/>
 						)}
 
-						{/* Search marker */}
-						{searchDestination &&
-							!isNavigationActive &&
-							!showEmbarquerSheet && (
+						{search.searchDestination &&
+							!nav.navigation.isActive &&
+							!session.showEmbarquerSheet && (
 								<Marker
-									coordinate={searchDestination.location}
+									coordinate={search.searchDestination.location}
 									pinColor={COLORS.error}
 									tracksViewChanges={false}
 								/>
 							)}
 
-						{/* Driver route polyline (comparison mode) */}
-						{driverRoute && (
+						{nav.navigation.driverRoute && (
 							<RoutePolyline
-								route={driverRoute}
+								route={nav.navigation.driverRoute}
 								strokeColor={COLORS.primary}
 								strokeWidth={3}
 								zIndex={1}
 							/>
 						)}
 
-						{/* User route polyline (during navigation) */}
-						{navigationRoute && (
+						{nav.navigation.route && (
 							<RoutePolyline
-								route={navigationRoute}
+								route={nav.navigation.route}
 								strokeColor={COLORS.secondary}
 								strokeWidth={5}
 								zIndex={2}
 							/>
 						)}
 
-						{/* Long press marker */}
-						{longPressMarker && (
+						{map.longPressMarker && (
 							<Marker
-								coordinate={longPressMarker}
+								coordinate={map.longPressMarker}
 								pinColor={COLORS.error}
 								tracksViewChanges={false}
 							/>
 						)}
 					</MapViewComponent>
 
-					{isPlacingSpot && (
+					{spot.isPlacingSpot && (
 						<View style={styles.centerMarker}>
 							<View style={styles.markerPin} />
 						</View>

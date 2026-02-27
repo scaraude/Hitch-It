@@ -1,4 +1,5 @@
 import type React from 'react';
+import { useCallback } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -8,8 +9,16 @@ import {
 } from '../../../components';
 import { APP_CONFIG } from '../../../constants';
 import { NavigationHeader } from '../../../navigation/components';
-import { useHomeScreenContext } from '../context/HomeScreenContext';
+import {
+	useHomeMap,
+	useHomeNav,
+	useHomeSearch,
+	useHomeSession,
+	useHomeSpot,
+} from '../context/HomeStateContext';
 import { homeScreenStyles as styles } from '../homeScreenStyles';
+
+type HomeTabId = 'home' | 'search' | 'add' | 'history' | 'profile';
 
 const MAP_CONTROLS_OFFSET_WITH_BOTTOM_BAR = 110;
 const MAP_CONTROLS_OFFSET_DEFAULT = 24;
@@ -19,58 +28,64 @@ const COMPARE_BUTTON_LABEL = 'Comparer direction conducteur';
 const CLEAR_COMPARE_BUTTON_LABEL = 'Effacer comparaison';
 
 export const HomeFixedOverlay: React.FC = () => {
-	const {
-		fixedOverlay: {
-			isNavigationActive,
-			navigationRoute,
-			hasDriverComparison,
-			canUseSearch,
-			isSearchOpen,
-			searchText,
-			shouldShowSearchEmbarquer,
-			isPlacingSpot,
-			isShowingForm,
-			mapHeading,
-			isFollowingUser,
-			shouldShowBottomBar,
-			longPressMarker,
-			onStopNavigation,
-			onSearchTextChange,
-			onSearchLocationSelected,
-			onSearchToggle,
-			onSearchEmbarquer,
-			onResetHeading,
-			onLocateUser,
-			onOpenDriverDirectionSheet,
-			onClearDriverDirectionComparison,
-			onLongPressEmbarquer,
-			onTabPress,
-		},
-	} = useHomeScreenContext();
+	const nav = useHomeNav();
+	const session = useHomeSession();
+	const search = useHomeSearch();
+	const map = useHomeMap();
+	const spot = useHomeSpot();
 
 	const insets = useSafeAreaInsets();
+
+	const isNavigationActive = nav.navigation.isActive;
+	const navigationRoute = nav.navigation.route;
+
 	const controlsBottomOffset = isNavigationActive
 		? MAP_CONTROLS_OFFSET_WITH_NAVIGATION + insets.bottom
-		: shouldShowBottomBar
+		: search.shouldShowBottomBar
 			? MAP_CONTROLS_OFFSET_WITH_BOTTOM_BAR + insets.bottom
 			: MAP_CONTROLS_OFFSET_DEFAULT + insets.bottom;
-	const shouldShowLongPressEmbarquer = !!longPressMarker && !isSearchOpen;
+
+	const shouldShowLongPressEmbarquer =
+		!!map.longPressMarker && !search.isSearchOpen;
 	const shouldShowBottomEmbarquer =
 		!isNavigationActive &&
-		(shouldShowLongPressEmbarquer || shouldShowSearchEmbarquer);
+		(shouldShowLongPressEmbarquer || search.shouldShowSearchEmbarquer);
+
+	const handleStopNavigation = useCallback(() => {
+		void search.handleStopNavigationAndOpenSearch();
+	}, [search.handleStopNavigationAndOpenSearch]);
+
+	const handleLongPressEmbarquer = useCallback(() => {
+		session.handleLongPressEmbarquer(map.longPressMarker);
+		map.clearLongPressMarker();
+	}, [
+		map.clearLongPressMarker,
+		map.longPressMarker,
+		session.handleLongPressEmbarquer,
+	]);
+
 	const handleBottomEmbarquerPress = shouldShowLongPressEmbarquer
-		? onLongPressEmbarquer
-		: onSearchEmbarquer;
-	const handleDriverDirectionPress = hasDriverComparison
-		? onClearDriverDirectionComparison
-		: onOpenDriverDirectionSheet;
-	const driverDirectionLabel = hasDriverComparison
+		? handleLongPressEmbarquer
+		: search.handleSearchEmbarquer;
+
+	const handleDriverDirectionPress = session.hasDriverComparison
+		? session.handleDriverDirectionClear
+		: session.openDriverDirectionSheet;
+
+	const driverDirectionLabel = session.hasDriverComparison
 		? CLEAR_COMPARE_BUTTON_LABEL
 		: COMPARE_BUTTON_LABEL;
 
+	const handleTabPress = useCallback(
+		(tabId: HomeTabId) => {
+			if (tabId === 'add') spot.startPlacingSpot();
+			else if (tabId === 'search') search.handleSearchToggle();
+		},
+		[search.handleSearchToggle, spot.startPlacingSpot]
+	);
+
 	return (
 		<View style={styles.nonMapOverlay} pointerEvents="box-none">
-			{/* Navigation header (only when active) */}
 			{isNavigationActive && navigationRoute && (
 				<>
 					<Pressable
@@ -94,34 +109,31 @@ export const HomeFixedOverlay: React.FC = () => {
 					<NavigationHeader
 						destinationName={navigationRoute.destinationName}
 						distanceKm={navigationRoute.distanceKm}
-						onStop={onStopNavigation}
+						onStop={handleStopNavigation}
 					/>
 				</>
 			)}
 
-			{/* Search bar overlay (top left) - only when not navigating */}
-			{!isNavigationActive && canUseSearch && (
+			{!isNavigationActive && search.canUseSearch && (
 				<SearchBarOverlay
-					isExpanded={isSearchOpen}
-					searchText={searchText}
-					onSearchTextChange={onSearchTextChange}
-					onLocationSelected={onSearchLocationSelected}
-					onToggle={onSearchToggle}
+					isExpanded={search.isSearchOpen}
+					searchText={search.searchText}
+					onSearchTextChange={search.handleSearchTextChange}
+					onLocationSelected={search.handleSearchLocationSelected}
+					onToggle={search.handleSearchToggle}
 				/>
 			)}
 
-			{/* Map controls (compass + locate) */}
-			{!isPlacingSpot && !isShowingForm && (
+			{!spot.isPlacingSpot && !spot.isShowingForm && (
 				<MapControls
-					mapHeading={mapHeading}
-					isFollowingUser={isFollowingUser}
-					onResetHeading={onResetHeading}
-					onLocateUser={onLocateUser}
+					mapHeading={map.mapHeading}
+					isFollowingUser={map.isFollowingUser}
+					onResetHeading={map.handleResetHeading}
+					onLocateUser={map.handleLocateUser}
 					bottomOffset={controlsBottomOffset}
 				/>
 			)}
 
-			{/* Primary hitch action */}
 			{shouldShowBottomEmbarquer && (
 				<Pressable
 					style={({ pressed }) => [
@@ -137,9 +149,8 @@ export const HomeFixedOverlay: React.FC = () => {
 				</Pressable>
 			)}
 
-			{/* Bottom navigation bar - outside KeyboardAvoidingView */}
-			{shouldShowBottomBar && (
-				<BottomNavBar activeTab="home" onTabPress={onTabPress} />
+			{search.shouldShowBottomBar && (
+				<BottomNavBar activeTab="home" onTabPress={handleTabPress} />
 			)}
 		</View>
 	);

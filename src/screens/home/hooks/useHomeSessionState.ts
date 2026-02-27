@@ -37,7 +37,7 @@ interface UseHomeSessionStateArgs {
 	onDeselectSpot: () => void;
 }
 
-interface UseHomeSessionStateReturn {
+export interface UseHomeSessionStateReturn {
 	// Journey completion
 	showCompletionSheet: boolean;
 	journeyDurationMinutes: number;
