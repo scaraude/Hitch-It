@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../auth';
@@ -13,8 +13,49 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 export default function ProfileScreen() {
 	const navigation = useNavigation<NavigationProp>();
-	const { user, logout } = useAuth();
+	const { user, logout, sendPasswordResetEmail } = useAuth();
 	const [isLoggingOut, setIsLoggingOut] = useState(false);
+	const [isResettingPassword, setIsResettingPassword] = useState(false);
+	const [resetEmailSent, setResetEmailSent] = useState(false);
+	const [resetCooldown, setResetCooldown] = useState(0);
+	const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+	useEffect(() => {
+		return () => {
+			if (cooldownRef.current) {
+				clearInterval(cooldownRef.current);
+			}
+		};
+	}, []);
+
+	const startCooldown = () => {
+		setResetCooldown(60);
+		cooldownRef.current = setInterval(() => {
+			setResetCooldown(prev => {
+				if (prev <= 1) {
+					if (cooldownRef.current) {
+						clearInterval(cooldownRef.current);
+						cooldownRef.current = null;
+					}
+					return 0;
+				}
+				return prev - 1;
+			});
+		}, 1000);
+	};
+
+	const handleResetPassword = async () => {
+		if (!user?.email || isResettingPassword || resetCooldown > 0) return;
+
+		setIsResettingPassword(true);
+		const result = await sendPasswordResetEmail(user.email);
+		setIsResettingPassword(false);
+
+		if (!result.error) {
+			setResetEmailSent(true);
+			startCooldown();
+		}
+	};
 
 	const handleLogout = async () => {
 		setIsLoggingOut(true);
@@ -49,6 +90,31 @@ export default function ProfileScreen() {
 				</View>
 
 				<View style={styles.actions}>
+					<Pressable
+						style={[
+							styles.resetPasswordButton,
+							(isResettingPassword || resetCooldown > 0) &&
+								styles.buttonDisabled,
+						]}
+						onPress={handleResetPassword}
+						disabled={isResettingPassword || resetCooldown > 0}
+					>
+						<Ionicons
+							name="key-outline"
+							size={SIZES.iconSm}
+							color={COLORS.primary}
+						/>
+						<Text style={styles.resetPasswordText}>
+							{isResettingPassword
+								? 'Sending...'
+								: resetEmailSent && resetCooldown > 0
+									? `Email sent (${resetCooldown}s)`
+									: resetEmailSent
+										? 'Resend reset email'
+										: 'Reset Password'}
+						</Text>
+					</Pressable>
+
 					<Pressable
 						style={[styles.logoutButton, isLoggingOut && styles.buttonDisabled]}
 						onPress={handleLogout}
@@ -130,6 +196,23 @@ const styles = StyleSheet.create({
 	},
 	actions: {
 		marginTop: 'auto',
+		gap: SPACING.md,
+	},
+	resetPasswordButton: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		justifyContent: 'center',
+		gap: SPACING.sm,
+		backgroundColor: COLORS.surface,
+		borderWidth: 1,
+		borderColor: COLORS.primary,
+		height: SIZES.buttonHeight,
+		borderRadius: SIZES.radiusMedium,
+	},
+	resetPasswordText: {
+		color: COLORS.primary,
+		fontSize: SIZES.fontMd,
+		fontWeight: '600',
 	},
 	logoutButton: {
 		flexDirection: 'row',

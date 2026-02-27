@@ -178,6 +178,54 @@ export async function resendConfirmationEmail(
 }
 
 /**
+ * Send password reset email to user
+ */
+export async function sendPasswordResetEmail(
+	email: string
+): Promise<AuthActionResult> {
+	try {
+		const { error } = await supabase.auth.resetPasswordForEmail(email, {
+			redirectTo: 'hitchit://reset-password',
+		});
+
+		if (error) {
+			logger.error('Password reset email error', error);
+			return { error: error.message };
+		}
+
+		logger.info('Password reset email sent successfully', { email });
+		return {};
+	} catch (error) {
+		logger.error('Password reset email error', error);
+		return { error: 'An unexpected error occurred' };
+	}
+}
+
+/**
+ * Update user password (for logged-in users)
+ */
+export async function updatePassword(
+	newPassword: string
+): Promise<AuthActionResult> {
+	try {
+		const { error } = await supabase.auth.updateUser({
+			password: newPassword,
+		});
+
+		if (error) {
+			logger.error('Update password error', error);
+			return { error: error.message };
+		}
+
+		logger.info('Password updated successfully');
+		return {};
+	} catch (error) {
+		logger.error('Update password error', error);
+		return { error: 'An unexpected error occurred' };
+	}
+}
+
+/**
  * Get current user from session
  */
 export async function getCurrentUser(): Promise<User | null> {

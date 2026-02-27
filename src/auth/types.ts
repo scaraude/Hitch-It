@@ -52,4 +52,6 @@ export interface AuthContextValue extends AuthState {
 	login: (credentials: LoginCredentials) => Promise<AuthActionResult>;
 	logout: () => Promise<AuthActionResult>;
 	resendConfirmationEmail: (email: string) => Promise<AuthActionResult>;
+	sendPasswordResetEmail: (email: string) => Promise<AuthActionResult>;
+	updatePassword: (newPassword: string) => Promise<AuthActionResult>;
 }

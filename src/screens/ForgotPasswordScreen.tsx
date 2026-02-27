@@ -19,19 +19,17 @@ import type { RootStackParamList } from '../navigation/types';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
-const RESEND_COOLDOWN_SECONDS = 30;
+const RESEND_COOLDOWN_SECONDS = 60;
 
-export default function LoginScreen() {
+export default function ForgotPasswordScreen() {
 	const navigation = useNavigation<NavigationProp>();
-	const { login, resendConfirmationEmail } = useAuth();
+	const { sendPasswordResetEmail } = useAuth();
 
-	const [identifier, setIdentifier] = useState('');
-	const [password, setPassword] = useState('');
+	const [email, setEmail] = useState('');
 	const [error, setError] = useState('');
 	const [isLoading, setIsLoading] = useState(false);
-	const [showEmailConfirmation, setShowEmailConfirmation] = useState(false);
+	const [emailSent, setEmailSent] = useState(false);
 	const [resendCooldown, setResendCooldown] = useState(0);
-	const [isResending, setIsResending] = useState(false);
 	const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
 	useEffect(() => {
@@ -58,51 +56,53 @@ export default function LoginScreen() {
 		}, 1000);
 	};
 
-	const handleResendEmail = async () => {
-		const email = identifier.includes('@') ? identifier.trim() : '';
-		if (!email) {
-			setError('Please enter your email address to resend the confirmation.');
+	const handleSendReset = async () => {
+		const trimmedEmail = email.trim().toLowerCase();
+
+		if (!trimmedEmail) {
+			setError('Please enter your email address');
 			return;
 		}
 
-		setIsResending(true);
-		const result = await resendConfirmationEmail(email);
-		setIsResending(false);
-
-		if (result.error) {
-			setError(result.error);
-		} else {
-			setError('');
-			startCooldown();
-		}
-	};
-
-	const handleLogin = async () => {
-		if (!identifier.trim() || !password) {
-			setError('Please fill in all fields');
+		if (!trimmedEmail.includes('@')) {
+			setError('Please enter a valid email address');
 			return;
 		}
 
 		setError('');
-		setShowEmailConfirmation(false);
 		setIsLoading(true);
 
-		const result = await login({ identifier: identifier.trim(), password });
+		const result = await sendPasswordResetEmail(trimmedEmail);
 
 		setIsLoading(false);
 
 		if (result.error) {
 			setError(result.error);
-			if (result.emailNotConfirmed) {
-				setShowEmailConfirmation(true);
-			}
 		} else {
-			navigation.navigate('Home');
+			setEmailSent(true);
+			startCooldown();
 		}
 	};
 
-	const goToSignUp = () => {
-		navigation.navigate('SignUp');
+	const handleResend = async () => {
+		if (resendCooldown > 0 || isLoading) return;
+
+		setError('');
+		setIsLoading(true);
+
+		const result = await sendPasswordResetEmail(email.trim().toLowerCase());
+
+		setIsLoading(false);
+
+		if (result.error) {
+			setError(result.error);
+		} else {
+			startCooldown();
+		}
+	};
+
+	const goToLogin = () => {
+		navigation.navigate('Login');
 	};
 
 	return (
@@ -119,103 +119,90 @@ export default function LoginScreen() {
 				</Pressable>
 
 				<View style={styles.header}>
-					<Text style={styles.title}>Welcome back</Text>
-					<Text style={styles.subtitle}>Sign in to your account</Text>
+					<Text style={styles.title}>Reset Password</Text>
+					<Text style={styles.subtitle}>
+						{emailSent
+							? 'Check your email for the reset link'
+							: "Enter your email and we'll send you a reset link"}
+					</Text>
 				</View>
 
 				<View style={styles.form}>
 					{error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-					{showEmailConfirmation && (
-						<View style={styles.confirmationBox}>
+					{emailSent ? (
+						<View style={styles.successBox}>
 							<Ionicons
 								name="mail-outline"
-								size={SIZES.iconMd}
-								color={COLORS.warning}
-								style={styles.confirmationIcon}
+								size={SIZES.iconLg}
+								color={COLORS.primary}
+								style={styles.successIcon}
 							/>
-							<Text style={styles.confirmationText}>
-								Check your inbox and spam folder for the confirmation link.
+							<Text style={styles.successText}>
+								We've sent a password reset link to{'\n'}
+								<Text style={styles.emailHighlight}>{email.trim()}</Text>
+							</Text>
+							<Text style={styles.instructionText}>
+								Check your inbox and spam folder. The link will expire in 1
+								hour.
 							</Text>
 							<Pressable
 								style={[
 									styles.resendButton,
-									(resendCooldown > 0 || isResending) &&
+									(resendCooldown > 0 || isLoading) &&
 										styles.resendButtonDisabled,
 								]}
-								onPress={handleResendEmail}
-								disabled={resendCooldown > 0 || isResending}
+								onPress={handleResend}
+								disabled={resendCooldown > 0 || isLoading}
 							>
 								<Text style={styles.resendButtonText}>
-									{isResending
+									{isLoading
 										? 'Sending...'
 										: resendCooldown > 0
 											? `Resend in ${resendCooldown}s`
-											: 'Resend confirmation email'}
+											: 'Resend reset email'}
 								</Text>
 							</Pressable>
 						</View>
+					) : (
+						<>
+							<View style={styles.inputContainer}>
+								<Ionicons
+									name="mail-outline"
+									size={SIZES.iconSm}
+									color={COLORS.textSecondary}
+									style={styles.inputIcon}
+								/>
+								<TextInput
+									style={styles.input}
+									placeholder="Email address"
+									placeholderTextColor={COLORS.textSecondary}
+									value={email}
+									onChangeText={setEmail}
+									autoCapitalize="none"
+									autoCorrect={false}
+									keyboardType="email-address"
+									editable={!isLoading}
+								/>
+							</View>
+
+							<Pressable
+								style={[styles.button, isLoading && styles.buttonDisabled]}
+								onPress={handleSendReset}
+								disabled={isLoading}
+							>
+								<Text style={styles.buttonText}>
+									{isLoading ? 'Sending...' : 'Send Reset Link'}
+								</Text>
+							</Pressable>
+						</>
 					)}
-
-					<View style={styles.inputContainer}>
-						<Ionicons
-							name="person-outline"
-							size={SIZES.iconSm}
-							color={COLORS.textSecondary}
-							style={styles.inputIcon}
-						/>
-						<TextInput
-							style={styles.input}
-							placeholder="Username or email"
-							placeholderTextColor={COLORS.textSecondary}
-							value={identifier}
-							onChangeText={setIdentifier}
-							autoCapitalize="none"
-							autoCorrect={false}
-							editable={!isLoading}
-						/>
-					</View>
-
-					<View style={styles.inputContainer}>
-						<Ionicons
-							name="lock-closed-outline"
-							size={SIZES.iconSm}
-							color={COLORS.textSecondary}
-							style={styles.inputIcon}
-						/>
-						<TextInput
-							style={styles.input}
-							placeholder="Password"
-							placeholderTextColor={COLORS.textSecondary}
-							value={password}
-							onChangeText={setPassword}
-							secureTextEntry
-							editable={!isLoading}
-						/>
-					</View>
-
-					<Pressable
-						style={styles.forgotPasswordLink}
-						onPress={() => navigation.navigate('ForgotPassword')}
-					>
-						<Text style={styles.forgotPasswordText}>Forgot password?</Text>
-					</Pressable>
-
-					<Pressable
-						style={[styles.button, isLoading && styles.buttonDisabled]}
-						onPress={handleLogin}
-						disabled={isLoading}
-					>
-						<Text style={styles.buttonText}>
-							{isLoading ? 'Signing in...' : 'Sign In'}
-						</Text>
-					</Pressable>
 				</View>
 
 				<View style={styles.footer}>
-					<Text style={styles.footerText}>Don't have an account? </Text>
-					<Pressable onPress={goToSignUp}>
-						<Text style={styles.linkText}>Sign Up</Text>
+					<Text style={styles.footerText}>Remember your password? </Text>
+					<Pressable onPress={goToLogin}>
+						<Text style={styles.linkText}>Sign In</Text>
 					</Pressable>
 				</View>
 			</KeyboardAvoidingView>
@@ -310,30 +297,40 @@ const styles = StyleSheet.create({
 		fontSize: SIZES.fontSm,
 		fontWeight: '600',
 	},
-	confirmationBox: {
+	successBox: {
 		backgroundColor: COLORS.surface,
 		borderRadius: SIZES.radiusMedium,
 		borderWidth: 1,
-		borderColor: COLORS.warning,
-		padding: SPACING.md,
+		borderColor: COLORS.primary,
+		padding: SPACING.lg,
 		alignItems: 'center',
 		gap: SPACING.sm,
 	},
-	confirmationIcon: {
+	successIcon: {
 		marginBottom: SPACING.xs,
 	},
-	confirmationText: {
+	successText: {
 		color: COLORS.text,
+		fontSize: SIZES.fontMd,
+		textAlign: 'center',
+		lineHeight: 22,
+	},
+	emailHighlight: {
+		fontWeight: '600',
+		color: COLORS.primary,
+	},
+	instructionText: {
+		color: COLORS.textSecondary,
 		fontSize: SIZES.fontSm,
 		textAlign: 'center',
 		lineHeight: 20,
 	},
 	resendButton: {
-		backgroundColor: COLORS.warning,
+		backgroundColor: COLORS.primary,
 		paddingVertical: SPACING.sm,
 		paddingHorizontal: SPACING.md,
 		borderRadius: SIZES.radiusMedium,
-		marginTop: SPACING.xs,
+		marginTop: SPACING.sm,
 	},
 	resendButtonDisabled: {
 		opacity: 0.6,
@@ -342,13 +339,5 @@ const styles = StyleSheet.create({
 		color: COLORS.textLight,
 		fontSize: SIZES.fontSm,
 		fontWeight: '600',
-	},
-	forgotPasswordLink: {
-		alignSelf: 'flex-end',
-	},
-	forgotPasswordText: {
-		color: COLORS.primary,
-		fontSize: SIZES.fontSm,
-		fontWeight: '500',
 	},
 });

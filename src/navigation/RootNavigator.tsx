@@ -2,6 +2,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import type React from 'react';
 import {
+	ForgotPasswordScreen,
 	HomeScreen,
 	LoginScreen,
 	ProfileScreen,
@@ -26,6 +27,7 @@ export const RootNavigator: React.FC = () => (
 			<Stack.Screen name="Login" component={LoginScreen} />
 			<Stack.Screen name="SignUp" component={SignUpScreen} />
 			<Stack.Screen name="Profile" component={ProfileScreen} />
+			<Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
 		</Stack.Navigator>
 	</NavigationContainer>
 );
