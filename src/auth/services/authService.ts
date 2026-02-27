@@ -37,6 +37,19 @@ export async function signUp(
 			return { error: 'Username is already taken' };
 		}
 
+		// Check if email is already taken
+		// Note: Supabase returns an obfuscated response for duplicate emails to prevent enumeration attacks
+		// We need to check manually to provide a user-friendly error message
+		const { data: existingEmail } = await supabase
+			.from('profiles')
+			.select('id')
+			.eq('email', email.toLowerCase())
+			.single();
+
+		if (existingEmail) {
+			return { error: 'An account with this email already exists' };
+		}
+
 		// Create auth user with username in metadata
 		// The database trigger will automatically create the profile
 		const { data: authData, error: authError } = await supabase.auth.signUp({
