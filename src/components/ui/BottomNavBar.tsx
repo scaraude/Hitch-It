@@ -57,25 +57,24 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
 	return (
 		<View style={styles.wrapper}>
 			{/* Floating add button - positioned above the nav bar */}
-			<View style={styles.addButtonContainer}>
-				<Pressable
-					style={({ pressed }) => [
-						styles.addButton,
-						pressed && styles.addButtonPressed,
-					]}
-					onPress={() => onTabPress('add')}
-					accessibilityLabel="Ajouter un spot"
-					accessibilityRole="button"
-					testID="bottom-nav-add"
-				>
-					<Ionicons
-						name="add"
-						size={36}
-						color={COLORS.background}
-						style={styles.addButtonIcon}
-					/>
-				</Pressable>
-			</View>
+			<Pressable
+				style={({ pressed }) => [
+					styles.addButton,
+					pressed && styles.addButtonPressed,
+				]}
+				onPress={() => onTabPress('add')}
+				accessibilityLabel="Ajouter un spot"
+				accessibilityRole="button"
+				testID="bottom-nav-add"
+			>
+				<Ionicons
+					name="add"
+					size={36}
+					color={COLORS.background}
+					pointerEvents="none"
+					style={styles.addButtonIcon}
+				/>
+			</Pressable>
 
 			{/* Nav bar background */}
 			<View
@@ -111,6 +110,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
 									name={isActive ? tab.activeIcon : tab.icon}
 									size={SIZES.iconMd}
 									color={isActive ? PRIMARY_BLUE : TEXT_GRAY}
+									pointerEvents="none"
 									style={styles.tabIcon}
 								/>
 								<Text
@@ -141,14 +141,6 @@ const styles = StyleSheet.create({
 		left: 0,
 		right: 0,
 		bottom: 0,
-	},
-	addButtonContainer: {
-		position: 'absolute',
-		top: -ADD_BUTTON_OVERFLOW,
-		left: 0,
-		right: 0,
-		alignItems: 'center',
-		zIndex: 1,
 	},
 	container: {
 		backgroundColor: COLORS.background,
@@ -185,6 +177,11 @@ const styles = StyleSheet.create({
 		flex: 1,
 	},
 	addButton: {
+		position: 'absolute',
+		top: -ADD_BUTTON_OVERFLOW,
+		left: '50%',
+		marginLeft: -(ADD_BUTTON_SIZE / 2),
+		zIndex: 1,
 		width: ADD_BUTTON_SIZE,
 		height: ADD_BUTTON_SIZE,
 		borderRadius: ADD_BUTTON_SIZE / 2,
