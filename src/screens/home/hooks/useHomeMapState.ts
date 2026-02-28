@@ -23,8 +23,10 @@ interface UseHomeMapStateArgs {
 	isPlacingSpot: boolean;
 	isShowingForm: boolean;
 	isSearchOpen: boolean;
+	selectedSpot: Spot | null;
 	onSelectSpot: (spotId: string) => void;
 	onSelectRouteSpot: (spot: Spot) => void;
+	onDeselectSpot: () => void;
 	// Map
 	mapViewRef: RefObject<MapViewRef | null>;
 	currentRegion: MapRegion;
@@ -64,8 +66,10 @@ export const useHomeMapState = ({
 	isPlacingSpot,
 	isShowingForm,
 	isSearchOpen,
+	selectedSpot,
 	onSelectSpot,
 	onSelectRouteSpot,
+	onDeselectSpot,
 	mapViewRef,
 	currentRegion,
 	onRegionChange,
@@ -221,6 +225,12 @@ export const useHomeMapState = ({
 			}
 
 			const onBackPress = () => {
+				// Close selected spot sheet first (modal-like behavior)
+				if (selectedSpot) {
+					onDeselectSpot();
+					return true;
+				}
+
 				// Handle navigation back
 				if (isNavigationActive) {
 					if (hasDriverComparison) {
@@ -253,7 +263,9 @@ export const useHomeMapState = ({
 			isNavigationActive,
 			longPressMarker,
 			onClearDriverComparison,
+			onDeselectSpot,
 			onStopNavigationAndOpenSearch,
+			selectedSpot,
 		])
 	);
 
