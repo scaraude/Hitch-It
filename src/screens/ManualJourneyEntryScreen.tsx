@@ -16,12 +16,19 @@ import type {
 	UserId,
 } from '../journey/types';
 import { JourneyPointType, JourneyStatus } from '../journey/types';
-import { calculateRoute } from '../navigation/services/routingService';
-import type { RootStackParamList } from '../navigation/types';
+import { calculateRouteWithWaypoints } from '../navigation/services/routingService';
+import type { RootStackParamList, RoutePoint } from '../navigation/types';
 import type { Location } from '../types';
 import { logger } from '../utils';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+const MILLISECONDS_IN_MINUTE = 60_000;
+const ROUTE_DESTINATION_FALLBACK_NAME = 'Destination';
+
+const toRoutePoint = (location: Location): RoutePoint => ({
+	latitude: location.latitude,
+	longitude: location.longitude,
+});
 
 /**
  * Calculate distance between two points using Haversine formula
@@ -38,17 +45,17 @@ function haversineDistance(
 	const a =
 		Math.sin(dLat / 2) * Math.sin(dLat / 2) +
 		Math.cos((lat1 * Math.PI) / 180) *
-		Math.cos((lat2 * Math.PI) / 180) *
-		Math.sin(dLon / 2) *
-		Math.sin(dLon / 2);
+			Math.cos((lat2 * Math.PI) / 180) *
+			Math.sin(dLon / 2) *
+			Math.sin(dLon / 2);
 	const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 	return R * c;
 }
 
 /**
- * Calculate total distance for a series of points
+ * Calculate total distance for a series of coordinates
  */
-function calculateTotalDistance(points: JourneyPoint[]): number {
+function calculateTotalDistance(points: RoutePoint[]): number {
 	if (points.length < 2) return 0;
 
 	let total = 0;
@@ -84,25 +91,8 @@ export default function ManualJourneyEntryScreen() {
 	);
 
 	const handleConfirmEnd = useCallback(
-		async (location: Location, name: string) => {
+		(location: Location, name: string) => {
 			flow.setEnd(location, name);
-
-			// Calculate route between start and end
-			if (flow.startLocation) {
-				flow.setRouteLoading(true);
-				const result = await calculateRoute(
-					flow.startLocation,
-					location,
-					name || 'Destination'
-				);
-
-				if (result.success) {
-					flow.setRoute(result.route.polyline, result.route.distanceKm);
-				} else {
-					flow.setRouteError(result.message);
-					logger.app.warn('Route calculation failed', { error: result.error });
-				}
-			}
 		},
 		[flow]
 	);
@@ -114,11 +104,36 @@ export default function ManualJourneyEntryScreen() {
 		try {
 			const now = new Date();
 			const journeyId = Crypto.randomUUID() as JourneyId;
+			const endTime = new Date(
+				now.getTime() + (flow.stops.length + 1) * MILLISECONDS_IN_MINUTE
+			);
 
-			const points: JourneyPoint[] = [];
+			const routeWaypoints: RoutePoint[] = [
+				toRoutePoint(flow.startLocation),
+				...flow.stops.map(stop => toRoutePoint(stop.location)),
+				toRoutePoint(flow.endLocation),
+			];
+
+			const routeResult = await calculateRouteWithWaypoints(
+				routeWaypoints,
+				flow.endName || ROUTE_DESTINATION_FALLBACK_NAME
+			);
+
+			const routePolyline = routeResult.success
+				? routeResult.route.polyline
+				: routeWaypoints;
+
+			if (!routeResult.success) {
+				logger.app.warn('Route calculation failed during manual save', {
+					error: routeResult.error,
+					message: routeResult.message,
+				});
+			}
+
+			const stopPoints: JourneyPoint[] = [];
 
 			// Add start point
-			points.push({
+			stopPoints.push({
 				id: Crypto.randomUUID() as JourneyPointId,
 				journeyId,
 				type: JourneyPointType.Stop,
@@ -130,9 +145,11 @@ export default function ManualJourneyEntryScreen() {
 			// Add intermediate stops
 			for (let i = 0; i < flow.stops.length; i++) {
 				const stop = flow.stops[i];
-				const stopTime = new Date(now.getTime() + (i + 1) * 60000);
+				const stopTime = new Date(
+					now.getTime() + (i + 1) * MILLISECONDS_IN_MINUTE
+				);
 
-				points.push({
+				stopPoints.push({
 					id: Crypto.randomUUID() as JourneyPointId,
 					journeyId,
 					type: JourneyPointType.Stop,
@@ -145,8 +162,7 @@ export default function ManualJourneyEntryScreen() {
 			}
 
 			// Add end point
-			const endTime = new Date(now.getTime() + (flow.stops.length + 1) * 60000);
-			points.push({
+			stopPoints.push({
 				id: Crypto.randomUUID() as JourneyPointId,
 				journeyId,
 				type: JourneyPointType.Stop,
@@ -155,16 +171,10 @@ export default function ManualJourneyEntryScreen() {
 				timestamp: endTime,
 			});
 
-			// Use route distance if available, otherwise calculate from points
-			const totalDistanceKm =
-				flow.routeDistanceKm ?? calculateTotalDistance(points);
-
-			// Generate default title if none provided
-			const journeyTitle =
-				flow.title.trim() ||
-				(flow.startName && flow.endName
-					? `${flow.startName} → ${flow.endName}`
-					: `Journey ${now.toLocaleDateString()}`);
+			const totalDistanceKm = routeResult.success
+				? routeResult.route.distanceKm
+				: calculateTotalDistance(routePolyline);
+			const journeyTitle = flow.title.trim();
 
 			const journey: Journey = {
 				id: journeyId,
@@ -172,14 +182,15 @@ export default function ManualJourneyEntryScreen() {
 				status: JourneyStatus.Completed,
 				startedAt: now,
 				endedAt: endTime,
-				title: journeyTitle,
+				title: journeyTitle || undefined,
 				notes: flow.notes.trim() || undefined,
+				routePolyline,
 				totalDistanceKm,
-				points,
+				points: stopPoints,
 			};
 
 			await journeyRepository.saveJourney(journey);
-			await journeyRepository.saveJourneyPoints(points);
+			await journeyRepository.saveJourneyPoints(stopPoints);
 
 			logger.app.info('Manual journey saved', { journeyId });
 
@@ -221,11 +232,11 @@ export default function ManualJourneyEntryScreen() {
 					initialRegion={
 						flow.startLocation
 							? {
-								latitude: flow.startLocation.latitude,
-								longitude: flow.startLocation.longitude,
-								latitudeDelta: 0.05,
-								longitudeDelta: 0.05,
-							}
+									latitude: flow.startLocation.latitude,
+									longitude: flow.startLocation.longitude,
+									latitudeDelta: 0.05,
+									longitudeDelta: 0.05,
+								}
 							: undefined
 					}
 				/>
@@ -245,9 +256,6 @@ export default function ManualJourneyEntryScreen() {
 						notes={flow.notes}
 						isSaving={flow.isSaving}
 						canSave={flow.canSave}
-						routePolyline={flow.routePolyline}
-						isLoadingRoute={flow.isLoadingRoute}
-						routeError={flow.routeError}
 						onAddStop={flow.addStop}
 						onUpdateStop={flow.updateStop}
 						onRemoveStop={flow.removeStop}

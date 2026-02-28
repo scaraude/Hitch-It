@@ -1,7 +1,19 @@
 import * as Crypto from 'expo-crypto';
 import { useCallback, useMemo, useReducer } from 'react';
-import type { RoutePoint } from '../../navigation/types';
 import type { Location } from '../../types';
+
+const TITLE_SEPARATOR = ' → ';
+
+const buildDefaultTitle = (startName: string, endName: string): string => {
+	const normalizedStartName = startName.trim();
+	const normalizedEndName = endName.trim();
+
+	if (!normalizedStartName || !normalizedEndName) {
+		return '';
+	}
+
+	return `${normalizedStartName}${TITLE_SEPARATOR}${normalizedEndName}`;
+};
 /**
  * Steps in the manual journey entry flow
  */
@@ -35,11 +47,6 @@ interface ManualJourneyState {
 	title: string;
 	notes: string;
 	isSaving: boolean;
-	// Route data
-	routePolyline: RoutePoint[] | null;
-	routeDistanceKm: number | null;
-	isLoadingRoute: boolean;
-	routeError: string | null;
 }
 
 type ManualJourneyAction =
@@ -54,13 +61,6 @@ type ManualJourneyAction =
 	| { type: 'GO_TO_STEP'; step: ManualJourneyStep }
 	| { type: 'GO_BACK' }
 	| { type: 'SET_SAVING'; isSaving: boolean }
-	| { type: 'SET_ROUTE_LOADING'; isLoading: boolean }
-	| {
-			type: 'SET_ROUTE';
-			polyline: RoutePoint[];
-			distanceKm: number;
-	  }
-	| { type: 'SET_ROUTE_ERROR'; error: string }
 	| { type: 'RESET' };
 
 const initialState: ManualJourneyState = {
@@ -74,10 +74,6 @@ const initialState: ManualJourneyState = {
 	title: '',
 	notes: '',
 	isSaving: false,
-	routePolyline: null,
-	routeDistanceKm: null,
-	isLoadingRoute: false,
-	routeError: null,
 };
 
 function reducer(
@@ -92,13 +88,16 @@ function reducer(
 				startName: action.name,
 				currentStep: ManualJourneyStep.SelectEnd,
 			};
-		case 'SET_END':
+		case 'SET_END': {
+			const defaultTitle = buildDefaultTitle(state.startName, action.name);
 			return {
 				...state,
 				endLocation: action.location,
 				endName: action.name,
+				title: state.title.trim() ? state.title : defaultTitle,
 				currentStep: ManualJourneyStep.AddStops,
 			};
+		}
 		case 'ADD_STOP':
 			return {
 				...state,
@@ -152,26 +151,6 @@ function reducer(
 			return {
 				...state,
 				isSaving: action.isSaving,
-			};
-		case 'SET_ROUTE_LOADING':
-			return {
-				...state,
-				isLoadingRoute: action.isLoading,
-				routeError: action.isLoading ? null : state.routeError,
-			};
-		case 'SET_ROUTE':
-			return {
-				...state,
-				routePolyline: action.polyline,
-				routeDistanceKm: action.distanceKm,
-				isLoadingRoute: false,
-				routeError: null,
-			};
-		case 'SET_ROUTE_ERROR':
-			return {
-				...state,
-				isLoadingRoute: false,
-				routeError: action.error,
 			};
 		case 'RESET':
 			return initialState;
@@ -238,18 +217,6 @@ export function useManualJourneyFlow() {
 		dispatch({ type: 'RESET' });
 	}, []);
 
-	const setRouteLoading = useCallback((isLoading: boolean) => {
-		dispatch({ type: 'SET_ROUTE_LOADING', isLoading });
-	}, []);
-
-	const setRoute = useCallback((polyline: RoutePoint[], distanceKm: number) => {
-		dispatch({ type: 'SET_ROUTE', polyline, distanceKm });
-	}, []);
-
-	const setRouteError = useCallback((error: string) => {
-		dispatch({ type: 'SET_ROUTE_ERROR', error });
-	}, []);
-
 	const selectedStop = useMemo(() => {
 		if (!state.selectedStopId) return null;
 		return state.stops.find(s => s.id === state.selectedStopId) ?? null;
@@ -259,15 +226,9 @@ export function useManualJourneyFlow() {
 		return (
 			state.startLocation !== null &&
 			state.endLocation !== null &&
-			!state.isSaving &&
-			!state.isLoadingRoute
+			!state.isSaving
 		);
-	}, [
-		state.startLocation,
-		state.endLocation,
-		state.isSaving,
-		state.isLoadingRoute,
-	]);
+	}, [state.startLocation, state.endLocation, state.isSaving]);
 
 	return {
 		...state,
@@ -285,8 +246,5 @@ export function useManualJourneyFlow() {
 		goBack,
 		setSaving,
 		reset,
-		setRouteLoading,
-		setRoute,
-		setRouteError,
 	};
 }

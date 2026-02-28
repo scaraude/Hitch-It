@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import {
 	ActivityIndicator,
 	FlatList,
@@ -33,52 +33,45 @@ export default function JourneyHistoryScreen() {
 	const [isLoadingJourneys, setIsLoadingJourneys] = useState(true);
 	const stats = useJourneyStats(user?.id as UserId | null);
 
-	useEffect(() => {
+	const loadJourneys = useCallback(async () => {
 		if (!user?.id) {
 			setJourneys([]);
 			setIsLoadingJourneys(false);
 			return;
 		}
 
-		let isMounted = true;
+		setIsLoadingJourneys(true);
+		try {
+			const userJourneys = await journeyRepository.getJourneysByUserId(
+				user.id as UserId
+			);
 
-		const loadJourneys = async () => {
-			setIsLoadingJourneys(true);
-			try {
-				const userJourneys = await journeyRepository.getJourneysByUserId(
-					user.id as UserId
-				);
+			const completedJourneys = userJourneys.filter(
+				j => j.status === JourneyStatus.Completed
+			);
 
-				const completedJourneys = userJourneys.filter(
-					j => j.status === JourneyStatus.Completed
-				);
+			const journeysWithPoints = await Promise.all(
+				completedJourneys.map(async journey => {
+					const fullJourney = await journeyRepository.getJourneyById(
+						journey.id
+					);
+					return fullJourney ?? journey;
+				})
+			);
 
-				const journeysWithPoints = await Promise.all(
-					completedJourneys.map(async journey => {
-						const fullJourney = await journeyRepository.getJourneyById(
-							journey.id
-						);
-						return fullJourney ?? journey;
-					})
-				);
-
-				if (isMounted) {
-					setJourneys(journeysWithPoints);
-					setIsLoadingJourneys(false);
-				}
-			} catch {
-				if (isMounted) {
-					setIsLoadingJourneys(false);
-				}
-			}
-		};
-
-		loadJourneys();
-
-		return () => {
-			isMounted = false;
-		};
+			setJourneys(journeysWithPoints);
+		} catch {
+			setJourneys([]);
+		} finally {
+			setIsLoadingJourneys(false);
+		}
 	}, [user?.id]);
+
+	useFocusEffect(
+		useCallback(() => {
+			void loadJourneys();
+		}, [loadJourneys])
+	);
 
 	const handleJourneyPress = (journeyId: JourneyId) => {
 		navigation.navigate('JourneyDetail', { journeyId });

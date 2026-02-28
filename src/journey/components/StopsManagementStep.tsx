@@ -2,7 +2,6 @@ import { Ionicons } from '@expo/vector-icons';
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-	ActivityIndicator,
 	Pressable,
 	ScrollView,
 	StyleSheet,
@@ -15,7 +14,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import MapViewComponent, { type MapViewRef } from '../../components/MapView';
 import { COLORS, SPACING } from '../../constants';
 import { SIZES } from '../../constants/sizes';
-import type { RoutePoint } from '../../navigation/types';
 import type { Location, MapRegion } from '../../types';
 import type { ManualStop } from '../hooks/useManualJourneyFlow';
 
@@ -30,9 +28,6 @@ interface StopsManagementStepProps {
 	notes: string;
 	isSaving: boolean;
 	canSave: boolean;
-	routePolyline: RoutePoint[] | null;
-	isLoadingRoute: boolean;
-	routeError: string | null;
 	onAddStop: (location: Location) => void;
 	onUpdateStop: (id: string, updates: Partial<ManualStop>) => void;
 	onRemoveStop: (id: string) => void;
@@ -59,9 +54,6 @@ export const StopsManagementStep: React.FC<StopsManagementStepProps> = ({
 	notes,
 	isSaving,
 	canSave,
-	routePolyline,
-	isLoadingRoute,
-	routeError,
 	onAddStop,
 	onUpdateStop,
 	onRemoveStop,
@@ -104,17 +96,17 @@ export const StopsManagementStep: React.FC<StopsManagementStepProps> = ({
 		};
 	}, [startLocation, endLocation, stops]);
 
-	// Use calculated route polyline if available, otherwise fallback to straight line
+	// Preview line: straight segments between waypoints in entry order.
 	const polylineCoordinates = useMemo(() => {
-		if (routePolyline && routePolyline.length > 0) {
-			return routePolyline;
-		}
-		// Fallback to straight line
 		return [
 			{ latitude: startLocation.latitude, longitude: startLocation.longitude },
+			...stops.map(stop => ({
+				latitude: stop.location.latitude,
+				longitude: stop.location.longitude,
+			})),
 			{ latitude: endLocation.latitude, longitude: endLocation.longitude },
 		];
-	}, [routePolyline, startLocation, endLocation]);
+	}, [startLocation, endLocation, stops]);
 
 	// Fit map to show all points on mount
 	useEffect(() => {
@@ -199,18 +191,8 @@ export const StopsManagementStep: React.FC<StopsManagementStepProps> = ({
 					))}
 				</MapViewComponent>
 
-				{/* Loading route overlay */}
-				{isLoadingRoute && (
-					<View style={styles.loadingOverlay} pointerEvents="none">
-						<View style={styles.loadingContainer}>
-							<ActivityIndicator size="large" color={COLORS.primary} />
-							<Text style={styles.loadingText}>Calculating route...</Text>
-						</View>
-					</View>
-				)}
-
 				{/* Adding stop hint overlay */}
-				{isAddingStop && !isLoadingRoute && (
+				{isAddingStop && (
 					<View style={styles.addingStopOverlay} pointerEvents="none">
 						<View style={styles.addingStopHint}>
 							<Text style={styles.addingStopText}>
@@ -254,14 +236,6 @@ export const StopsManagementStep: React.FC<StopsManagementStepProps> = ({
 					style={styles.bottomPanelContent}
 					showsVerticalScrollIndicator={false}
 				>
-					{/* Route error */}
-					{routeError && (
-						<View style={styles.errorBanner}>
-							<Ionicons name="warning" size={16} color={COLORS.warning} />
-							<Text style={styles.errorText}>{routeError}</Text>
-						</View>
-					)}
-
 					{/* Journey title */}
 					<View style={styles.inputSection}>
 						<Text style={styles.inputLabel}>Journey Title (optional)</Text>
@@ -458,21 +432,6 @@ const styles = StyleSheet.create({
 		color: COLORS.textSecondary,
 		marginTop: 2,
 	},
-	loadingOverlay: {
-		...StyleSheet.absoluteFillObject,
-		justifyContent: 'center',
-		alignItems: 'center',
-		backgroundColor: 'rgba(255, 255, 255, 0.8)',
-	},
-	loadingContainer: {
-		alignItems: 'center',
-		gap: SPACING.sm,
-	},
-	loadingText: {
-		color: COLORS.text,
-		fontSize: SIZES.fontMd,
-		fontWeight: '500',
-	},
 	addingStopOverlay: {
 		...StyleSheet.absoluteFillObject,
 		justifyContent: 'center',
@@ -488,20 +447,6 @@ const styles = StyleSheet.create({
 		color: COLORS.textLight,
 		fontSize: SIZES.fontMd,
 		fontWeight: '500',
-	},
-	errorBanner: {
-		flexDirection: 'row',
-		alignItems: 'center',
-		backgroundColor: 'rgba(255, 152, 0, 0.1)',
-		padding: SPACING.sm,
-		borderRadius: SIZES.radiusMedium,
-		marginBottom: SPACING.md,
-		gap: SPACING.xs,
-	},
-	errorText: {
-		flex: 1,
-		color: COLORS.warning,
-		fontSize: SIZES.fontSm,
 	},
 	bottomPanel: {
 		backgroundColor: COLORS.background,

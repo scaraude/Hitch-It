@@ -2,13 +2,15 @@ import { Ionicons } from '@expo/vector-icons';
 import type { RouteProp } from '@react-navigation/native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
 	ActivityIndicator,
+	Alert,
 	Pressable,
 	ScrollView,
 	StyleSheet,
 	Text,
+	TextInput,
 	View,
 } from 'react-native';
 import MapView, { Marker, Polyline, PROVIDER_DEFAULT } from 'react-native-maps';
@@ -22,6 +24,7 @@ import type { RootStackParamList } from '../navigation/types';
 
 type JourneyDetailRouteProp = RouteProp<RootStackParamList, 'JourneyDetail'>;
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+const JOURNEY_FALLBACK_TITLE = 'Journey';
 
 function formatDuration(startedAt: Date, endedAt?: Date): string {
 	if (!endedAt) return '—';
@@ -51,6 +54,9 @@ export default function JourneyDetailScreen() {
 	const [journey, setJourney] = useState<Journey | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<Error | null>(null);
+	const [editableTitle, setEditableTitle] = useState('');
+	const [isSavingTitle, setIsSavingTitle] = useState(false);
+	const [isDeletingJourney, setIsDeletingJourney] = useState(false);
 
 	useEffect(() => {
 		let isMounted = true;
@@ -61,6 +67,7 @@ export default function JourneyDetailScreen() {
 				const journeyData = await journeyRepository.getJourneyById(journeyId);
 				if (isMounted) {
 					setJourney(journeyData);
+					setEditableTitle(journeyData?.title ?? '');
 					setIsLoading(false);
 				}
 			} catch (err) {
@@ -79,6 +86,53 @@ export default function JourneyDetailScreen() {
 			isMounted = false;
 		};
 	}, [journeyId]);
+
+	const handleSaveTitle = useCallback(async () => {
+		if (!journey) return;
+
+		const normalizedTitle = editableTitle.trim() || undefined;
+		setIsSavingTitle(true);
+
+		try {
+			await journeyRepository.updateJourneyTitle(journey.id, normalizedTitle);
+			setJourney({
+				...journey,
+				title: normalizedTitle,
+			});
+			setEditableTitle(normalizedTitle ?? '');
+		} catch {
+			Alert.alert('Error', 'Failed to update title. Please try again.');
+		} finally {
+			setIsSavingTitle(false);
+		}
+	}, [journey, editableTitle]);
+
+	const executeDeleteJourney = useCallback(async () => {
+		if (!journey) return;
+
+		setIsDeletingJourney(true);
+		try {
+			await journeyRepository.deleteJourney(journey.id);
+			navigation.goBack();
+		} catch {
+			Alert.alert('Error', 'Failed to delete journey. Please try again.');
+		} finally {
+			setIsDeletingJourney(false);
+		}
+	}, [journey, navigation]);
+
+	const handleDeleteJourney = useCallback(() => {
+		Alert.alert('Delete journey?', 'This action cannot be undone.', [
+			{ text: 'Cancel', style: 'cancel' },
+			{
+				text: 'Delete',
+				style: 'destructive',
+				onPress: () => {
+					void executeDeleteJourney();
+				},
+			},
+		]);
+	}, [executeDeleteJourney]);
 
 	if (isLoading) {
 		return (
@@ -135,20 +189,31 @@ export default function JourneyDetailScreen() {
 		);
 	}
 
-	const title = journey.title || 'Journey';
+	const title = journey.title || JOURNEY_FALLBACK_TITLE;
 	const distance = formatDistance(journey.totalDistanceKm);
 	const duration = formatDuration(journey.startedAt, journey.endedAt);
 	const stopPoints = journey.points.filter(
 		p => p.type === JourneyPointType.Stop
 	);
+	const routePolylinePoints = journey.routePolyline ?? [];
+	const routePoints = journey.points.filter(
+		p => p.type === JourneyPointType.Location
+	);
+	const mapPoints =
+		routePolylinePoints.length > 1
+			? routePolylinePoints
+			: routePoints.length > 1
+				? routePoints
+				: journey.points;
 	const carCount = stopPoints.length;
+	const titleChanged = (journey.title ?? '') !== editableTitle.trim();
 
 	// Calculate map region to fit all points
 	const mapRegion =
-		journey.points.length > 0
+		mapPoints.length > 0
 			? (() => {
-					const lats = journey.points.map(p => p.latitude);
-					const lngs = journey.points.map(p => p.longitude);
+					const lats = mapPoints.map(p => p.latitude);
+					const lngs = mapPoints.map(p => p.longitude);
 					const minLat = Math.min(...lats);
 					const maxLat = Math.max(...lats);
 					const minLng = Math.min(...lngs);
@@ -165,13 +230,16 @@ export default function JourneyDetailScreen() {
 				})()
 			: undefined;
 
-	const startPoint = journey.points.length > 0 ? journey.points[0] : null;
+	const startPoint =
+		stopPoints.length > 0 ? stopPoints[0] : (mapPoints[0] ?? null);
 	const endPoint =
-		journey.points.length > 0
-			? journey.points[journey.points.length - 1]
-			: null;
+		stopPoints.length > 0
+			? stopPoints[stopPoints.length - 1]
+			: mapPoints.length > 0
+				? mapPoints[mapPoints.length - 1]
+				: null;
 
-	const polylineCoordinates = journey.points.map(p => ({
+	const polylineCoordinates = mapPoints.map(p => ({
 		latitude: p.latitude,
 		longitude: p.longitude,
 	}));
@@ -239,6 +307,45 @@ export default function JourneyDetailScreen() {
 				)}
 
 				<View style={styles.infoPanel}>
+					<View style={styles.titleSection}>
+						<Text style={styles.titleSectionLabel}>Title</Text>
+						<TextInput
+							style={styles.titleInput}
+							placeholder="Enter journey title"
+							value={editableTitle}
+							onChangeText={setEditableTitle}
+							placeholderTextColor={COLORS.textSecondary}
+						/>
+						<View style={styles.titleActions}>
+							<Pressable
+								style={[
+									styles.titleActionButton,
+									styles.primaryActionButton,
+									(!titleChanged || isSavingTitle) &&
+										styles.titleActionButtonDisabled,
+								]}
+								onPress={handleSaveTitle}
+								disabled={!titleChanged || isSavingTitle}
+							>
+								<Text style={styles.primaryActionText}>
+									{isSavingTitle ? 'Saving...' : 'Save title'}
+								</Text>
+							</Pressable>
+							<Pressable
+								style={[
+									styles.titleActionButton,
+									styles.secondaryActionButton,
+									editableTitle.length === 0 &&
+										styles.titleActionButtonDisabled,
+								]}
+								onPress={() => setEditableTitle('')}
+								disabled={editableTitle.length === 0}
+							>
+								<Text style={styles.secondaryActionText}>Clear</Text>
+							</Pressable>
+						</View>
+					</View>
+
 					<View style={styles.statsRow}>
 						<View style={styles.statBox}>
 							<Ionicons
@@ -295,6 +402,19 @@ export default function JourneyDetailScreen() {
 							<Text style={styles.notesText}>{journey.notes}</Text>
 						</View>
 					)}
+
+					<Pressable
+						style={[
+							styles.deleteJourneyButton,
+							isDeletingJourney && styles.deleteJourneyButtonDisabled,
+						]}
+						onPress={handleDeleteJourney}
+						disabled={isDeletingJourney}
+					>
+						<Text style={styles.deleteJourneyButtonText}>
+							{isDeletingJourney ? 'Deleting...' : 'Delete journey'}
+						</Text>
+					</Pressable>
 				</View>
 			</ScrollView>
 		</SafeAreaView>
@@ -360,6 +480,58 @@ const styles = StyleSheet.create({
 	},
 	infoPanel: {
 		padding: SPACING.lg,
+	},
+	titleSection: {
+		marginBottom: SPACING.lg,
+	},
+	titleSectionLabel: {
+		fontSize: SIZES.fontSm,
+		fontWeight: '600',
+		color: COLORS.text,
+		marginBottom: SPACING.xs,
+	},
+	titleInput: {
+		backgroundColor: COLORS.surface,
+		borderWidth: 1,
+		borderColor: COLORS.border,
+		borderRadius: SIZES.radiusMedium,
+		paddingHorizontal: SPACING.md,
+		paddingVertical: SPACING.sm,
+		fontSize: SIZES.fontMd,
+		color: COLORS.text,
+	},
+	titleActions: {
+		flexDirection: 'row',
+		gap: SPACING.sm,
+		marginTop: SPACING.sm,
+	},
+	titleActionButton: {
+		flex: 1,
+		alignItems: 'center',
+		paddingVertical: SPACING.sm,
+		borderRadius: SIZES.radiusMedium,
+		borderWidth: 1,
+	},
+	primaryActionButton: {
+		backgroundColor: COLORS.primary,
+		borderColor: COLORS.primary,
+	},
+	secondaryActionButton: {
+		backgroundColor: COLORS.background,
+		borderColor: COLORS.border,
+	},
+	titleActionButtonDisabled: {
+		opacity: 0.5,
+	},
+	primaryActionText: {
+		color: COLORS.textLight,
+		fontSize: SIZES.fontSm,
+		fontWeight: '600',
+	},
+	secondaryActionText: {
+		color: COLORS.text,
+		fontSize: SIZES.fontSm,
+		fontWeight: '600',
 	},
 	statsRow: {
 		flexDirection: 'row',
@@ -440,5 +612,22 @@ const styles = StyleSheet.create({
 		fontSize: SIZES.fontSm,
 		color: COLORS.text,
 		lineHeight: 20,
+	},
+	deleteJourneyButton: {
+		marginTop: SPACING.xl,
+		borderWidth: 1,
+		borderColor: COLORS.error,
+		borderRadius: SIZES.radiusMedium,
+		paddingVertical: SPACING.md,
+		alignItems: 'center',
+		backgroundColor: COLORS.background,
+	},
+	deleteJourneyButtonDisabled: {
+		opacity: 0.5,
+	},
+	deleteJourneyButtonText: {
+		color: COLORS.error,
+		fontSize: SIZES.fontMd,
+		fontWeight: '600',
 	},
 });

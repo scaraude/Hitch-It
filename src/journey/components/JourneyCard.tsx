@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import MapView, { Marker, Polyline, PROVIDER_DEFAULT } from 'react-native-maps';
 import { COLORS, SIZES, SPACING } from '../../constants';
 import type { Journey } from '../types';
+import { JourneyPointType } from '../types';
 
 interface JourneyCardProps {
 	journey: Journey;
@@ -30,7 +31,7 @@ function formatDistance(km?: number): string {
 }
 
 function getStopCount(journey: Journey): number {
-	return journey.points.filter(p => p.type === 'Stop').length;
+	return journey.points.filter(p => p.type === JourneyPointType.Stop).length;
 }
 
 export function JourneyCard({ journey, onPress }: JourneyCardProps) {
@@ -38,23 +39,39 @@ export function JourneyCard({ journey, onPress }: JourneyCardProps) {
 	const distance = formatDistance(journey.totalDistanceKm);
 	const duration = formatDuration(journey.startedAt, journey.endedAt);
 	const stopCount = getStopCount(journey);
+	const routePolylinePoints = journey.routePolyline ?? [];
+	const routePoints = journey.points.filter(
+		point => point.type === JourneyPointType.Location
+	);
+	const stopPoints = journey.points.filter(
+		point => point.type === JourneyPointType.Stop
+	);
+	const mapPoints =
+		routePolylinePoints.length > 1
+			? routePolylinePoints
+			: routePoints.length > 1
+				? routePoints
+				: journey.points;
 
 	// Extract map region from points (if available)
-	const hasPoints = journey.points.length > 0;
+	const hasPoints = mapPoints.length > 0;
 	const mapRegion = hasPoints
 		? {
-				latitude: journey.points[0].latitude,
-				longitude: journey.points[0].longitude,
+				latitude: mapPoints[0].latitude,
+				longitude: mapPoints[0].longitude,
 				latitudeDelta: 0.05,
 				longitudeDelta: 0.05,
 			}
 		: undefined;
 
-	const startPoint = journey.points.length > 0 ? journey.points[0] : null;
+	const startPoint =
+		stopPoints.length > 0 ? stopPoints[0] : (mapPoints[0] ?? null);
 	const endPoint =
-		journey.points.length > 0
-			? journey.points[journey.points.length - 1]
-			: null;
+		stopPoints.length > 0
+			? stopPoints[stopPoints.length - 1]
+			: mapPoints.length > 0
+				? mapPoints[mapPoints.length - 1]
+				: null;
 
 	return (
 		<Pressable
@@ -91,9 +108,9 @@ export function JourneyCard({ journey, onPress }: JourneyCardProps) {
 								pinColor={COLORS.error}
 							/>
 						)}
-						{journey.points.length > 1 && (
+						{mapPoints.length > 1 && (
 							<Polyline
-								coordinates={journey.points.map(p => ({
+								coordinates={mapPoints.map(p => ({
 									latitude: p.latitude,
 									longitude: p.longitude,
 								}))}

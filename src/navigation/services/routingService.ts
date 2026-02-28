@@ -1,4 +1,5 @@
 import { logger } from '../../utils/logger';
+import { decodePolyline } from '../../utils/polylineCodec';
 import type { NavigationRoute, RouteId, RoutePoint } from '../types';
 
 const ORS_API_URL =
@@ -13,51 +14,6 @@ interface ORSResponse {
 		};
 		geometry: string; // encoded polyline
 	}>;
-}
-
-/**
- * Decode Google Polyline encoding to array of coordinates
- * OpenRouteService returns polyline in Google's encoding format
- */
-function decodePolyline(encoded: string): RoutePoint[] {
-	const points: RoutePoint[] = [];
-	let index = 0;
-	let lat = 0;
-	let lng = 0;
-
-	while (index < encoded.length) {
-		let shift = 0;
-		let result = 0;
-		let byte: number;
-
-		do {
-			byte = encoded.charCodeAt(index++) - 63;
-			result |= (byte & 0x1f) << shift;
-			shift += 5;
-		} while (byte >= 0x20);
-
-		const dlat = result & 1 ? ~(result >> 1) : result >> 1;
-		lat += dlat;
-
-		shift = 0;
-		result = 0;
-
-		do {
-			byte = encoded.charCodeAt(index++) - 63;
-			result |= (byte & 0x1f) << shift;
-			shift += 5;
-		} while (byte >= 0x20);
-
-		const dlng = result & 1 ? ~(result >> 1) : result >> 1;
-		lng += dlng;
-
-		points.push({
-			latitude: lat / 1e5,
-			longitude: lng / 1e5,
-		});
-	}
-
-	return points;
 }
 
 /**
@@ -84,6 +40,11 @@ export interface RoutingFailure {
 	message: string;
 }
 
+const MIN_ROUTE_WAYPOINTS = 2;
+
+const hasValidCoordinates = (point: RoutePoint): boolean =>
+	Number.isFinite(point.latitude) && Number.isFinite(point.longitude);
+
 /**
  * Calculate route between two points using OpenRouteService
  */
@@ -92,6 +53,30 @@ export async function calculateRoute(
 	destination: RoutePoint,
 	destinationName: string
 ): Promise<RoutingResult | RoutingFailure> {
+	return calculateRouteWithWaypoints([origin, destination], destinationName);
+}
+
+/**
+ * Calculate route through multiple waypoints using OpenRouteService.
+ * First point is origin, last point is destination, intermediates are stops.
+ */
+export async function calculateRouteWithWaypoints(
+	waypoints: RoutePoint[],
+	destinationName: string
+): Promise<RoutingResult | RoutingFailure> {
+	if (
+		waypoints.length < MIN_ROUTE_WAYPOINTS ||
+		waypoints.some(point => !hasValidCoordinates(point))
+	) {
+		return {
+			success: false,
+			error: 'invalid_coordinates',
+			message: 'Coordonnées invalides',
+		};
+	}
+	const origin = waypoints[0];
+	const destination = waypoints[waypoints.length - 1];
+
 	if (!ORS_API_KEY) {
 		logger.navigation.error('OpenRouteService API key not configured');
 		return {
@@ -109,10 +94,7 @@ export async function calculateRoute(
 				Authorization: ORS_API_KEY,
 			},
 			body: JSON.stringify({
-				coordinates: [
-					[origin.longitude, origin.latitude],
-					[destination.longitude, destination.latitude],
-				],
+				coordinates: waypoints.map(point => [point.longitude, point.latitude]),
 			}),
 		});
 
@@ -166,6 +148,7 @@ export async function calculateRoute(
 			distanceKm: route.distanceKm,
 			durationMinutes: route.durationMinutes,
 			polylinePoints: polyline.length,
+			waypointCount: waypoints.length,
 		});
 
 		return { success: true, route };
