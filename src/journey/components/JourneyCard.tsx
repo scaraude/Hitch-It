@@ -1,0 +1,169 @@
+import { Ionicons } from '@expo/vector-icons';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import MapView, { Marker, Polyline, PROVIDER_DEFAULT } from 'react-native-maps';
+import { COLORS, SIZES, SPACING } from '../../constants';
+import type { Journey } from '../types';
+
+interface JourneyCardProps {
+	journey: Journey;
+	onPress: () => void;
+}
+
+function formatDuration(startedAt: Date, endedAt?: Date): string {
+	if (!endedAt) return '—';
+
+	const durationMs = endedAt.getTime() - startedAt.getTime();
+	const minutes = Math.floor(durationMs / (1000 * 60));
+
+	if (minutes < 60) {
+		return `${minutes}min`;
+	}
+
+	const hours = Math.floor(minutes / 60);
+	const remainingMinutes = minutes % 60;
+	return `${hours}h${remainingMinutes.toString().padStart(2, '0')}`;
+}
+
+function formatDistance(km?: number): string {
+	if (!km) return '—';
+	return `${Math.round(km)} km`;
+}
+
+function getStopCount(journey: Journey): number {
+	return journey.points.filter(p => p.type === 'Stop').length;
+}
+
+export function JourneyCard({ journey, onPress }: JourneyCardProps) {
+	const title = journey.title || 'Journey';
+	const distance = formatDistance(journey.totalDistanceKm);
+	const duration = formatDuration(journey.startedAt, journey.endedAt);
+	const stopCount = getStopCount(journey);
+
+	// Extract map region from points (if available)
+	const hasPoints = journey.points.length > 0;
+	const mapRegion = hasPoints
+		? {
+				latitude: journey.points[0].latitude,
+				longitude: journey.points[0].longitude,
+				latitudeDelta: 0.05,
+				longitudeDelta: 0.05,
+			}
+		: undefined;
+
+	const startPoint = journey.points.length > 0 ? journey.points[0] : null;
+	const endPoint =
+		journey.points.length > 0
+			? journey.points[journey.points.length - 1]
+			: null;
+
+	return (
+		<Pressable
+			style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
+			onPress={onPress}
+		>
+			<View style={styles.mapContainer}>
+				{mapRegion && (
+					<MapView
+						style={styles.map}
+						provider={PROVIDER_DEFAULT}
+						region={mapRegion}
+						scrollEnabled={false}
+						zoomEnabled={false}
+						rotateEnabled={false}
+						pitchEnabled={false}
+						pointerEvents="none"
+					>
+						{startPoint && (
+							<Marker
+								coordinate={{
+									latitude: startPoint.latitude,
+									longitude: startPoint.longitude,
+								}}
+								pinColor={COLORS.secondary}
+							/>
+						)}
+						{endPoint && (
+							<Marker
+								coordinate={{
+									latitude: endPoint.latitude,
+									longitude: endPoint.longitude,
+								}}
+								pinColor={COLORS.error}
+							/>
+						)}
+						{journey.points.length > 1 && (
+							<Polyline
+								coordinates={journey.points.map(p => ({
+									latitude: p.latitude,
+									longitude: p.longitude,
+								}))}
+								strokeColor={COLORS.primary}
+								strokeWidth={3}
+							/>
+						)}
+					</MapView>
+				)}
+				{!hasPoints && (
+					<View style={styles.noMapPlaceholder}>
+						<Ionicons
+							name="map-outline"
+							size={32}
+							color={COLORS.textSecondary}
+						/>
+					</View>
+				)}
+			</View>
+
+			<View style={styles.info}>
+				<Text style={styles.title} numberOfLines={1}>
+					{title}
+				</Text>
+				<Text style={styles.details}>
+					{distance} - {stopCount} car{stopCount > 1 ? 's' : ''} - {duration}
+				</Text>
+			</View>
+		</Pressable>
+	);
+}
+
+const styles = StyleSheet.create({
+	card: {
+		backgroundColor: COLORS.background,
+		borderRadius: SIZES.radiusMedium,
+		overflow: 'hidden',
+		elevation: 2,
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.1,
+		shadowRadius: 4,
+	},
+	cardPressed: {
+		opacity: 0.8,
+	},
+	mapContainer: {
+		height: 140,
+		backgroundColor: COLORS.surface,
+	},
+	map: {
+		flex: 1,
+	},
+	noMapPlaceholder: {
+		flex: 1,
+		justifyContent: 'center',
+		alignItems: 'center',
+	},
+	info: {
+		padding: SPACING.md,
+		backgroundColor: COLORS.background,
+	},
+	title: {
+		fontSize: SIZES.fontMd,
+		fontWeight: '600',
+		color: COLORS.text,
+		marginBottom: SPACING.xs,
+	},
+	details: {
+		fontSize: SIZES.fontSm,
+		color: COLORS.textSecondary,
+	},
+});

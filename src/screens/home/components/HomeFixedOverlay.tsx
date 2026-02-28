@@ -88,7 +88,13 @@ export const HomeFixedOverlay: React.FC = () => {
 		(tabId: HomeTabId) => {
 			if (tabId === 'add') spot.startPlacingSpot();
 			else if (tabId === 'search') search.handleSearchToggle();
-			else if (tabId === 'profile') {
+			else if (tabId === 'history') {
+				if (isAuthenticated) {
+					rootNavigation.navigate('JourneyHistory');
+				} else {
+					rootNavigation.navigate('Login');
+				}
+			} else if (tabId === 'profile') {
 				if (isAuthenticated) {
 					rootNavigation.navigate('Profile');
 				} else {

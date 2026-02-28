@@ -4,7 +4,10 @@ import type React from 'react';
 import {
 	ForgotPasswordScreen,
 	HomeScreen,
+	JourneyDetailScreen,
+	JourneyHistoryScreen,
 	LoginScreen,
+	ManualJourneyEntryScreen,
 	ProfileScreen,
 	SignUpScreen,
 } from '../screens';
@@ -28,6 +31,12 @@ export const RootNavigator: React.FC = () => (
 			<Stack.Screen name="SignUp" component={SignUpScreen} />
 			<Stack.Screen name="Profile" component={ProfileScreen} />
 			<Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+			<Stack.Screen name="JourneyHistory" component={JourneyHistoryScreen} />
+			<Stack.Screen name="JourneyDetail" component={JourneyDetailScreen} />
+			<Stack.Screen
+				name="ManualJourneyEntry"
+				component={ManualJourneyEntryScreen}
+			/>
 		</Stack.Navigator>
 	</NavigationContainer>
 );
