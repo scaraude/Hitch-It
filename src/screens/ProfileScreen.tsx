@@ -2,11 +2,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useEffect, useRef, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../auth';
+import { LanguageSelector } from '../components/ui/LanguageSelector';
 import { COLORS, SPACING } from '../constants';
 import { SIZES } from '../constants/sizes';
+import { useTranslation } from '../i18n';
 import type { RootStackParamList } from '../navigation/types';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -14,6 +16,7 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 export default function ProfileScreen() {
 	const navigation = useNavigation<NavigationProp>();
 	const { user, logout, sendPasswordResetEmail } = useAuth();
+	const { t } = useTranslation();
 	const [isLoggingOut, setIsLoggingOut] = useState(false);
 	const [isResettingPassword, setIsResettingPassword] = useState(false);
 	const [resetEmailSent, setResetEmailSent] = useState(false);
@@ -73,11 +76,14 @@ export default function ProfileScreen() {
 				>
 					<Ionicons name="arrow-back" size={SIZES.iconMd} color={COLORS.text} />
 				</Pressable>
-				<Text style={styles.headerTitle}>Profile</Text>
+				<Text style={styles.headerTitle}>{t('profile.title')}</Text>
 				<View style={styles.headerSpacer} />
 			</View>
 
-			<View style={styles.content}>
+			<ScrollView
+				style={styles.content}
+				contentContainerStyle={styles.contentContainer}
+			>
 				<View style={styles.avatarContainer}>
 					<View style={styles.avatar}>
 						<Ionicons name="person" size={48} color={COLORS.textLight} />
@@ -87,6 +93,10 @@ export default function ProfileScreen() {
 				<View style={styles.infoSection}>
 					<Text style={styles.username}>{user?.username}</Text>
 					<Text style={styles.email}>{user?.email}</Text>
+				</View>
+
+				<View style={styles.settingsSection}>
+					<LanguageSelector />
 				</View>
 
 				<View style={styles.actions}>
@@ -106,12 +116,14 @@ export default function ProfileScreen() {
 						/>
 						<Text style={styles.resetPasswordText}>
 							{isResettingPassword
-								? 'Sending...'
+								? t('auth.sendingResetEmail')
 								: resetEmailSent && resetCooldown > 0
-									? `Email sent (${resetCooldown}s)`
+									? t('auth.resetEmailSent', {
+											seconds: resetCooldown.toString(),
+										})
 									: resetEmailSent
-										? 'Resend reset email'
-										: 'Reset Password'}
+										? t('auth.resendResetEmail')
+										: t('auth.resetPassword')}
 						</Text>
 					</Pressable>
 
@@ -126,11 +138,11 @@ export default function ProfileScreen() {
 							color={COLORS.error}
 						/>
 						<Text style={styles.logoutText}>
-							{isLoggingOut ? 'Logging out...' : 'Log Out'}
+							{isLoggingOut ? t('auth.loggingOut') : t('auth.logout')}
 						</Text>
 					</Pressable>
 				</View>
-			</View>
+			</ScrollView>
 		</SafeAreaView>
 	);
 }
@@ -166,7 +178,10 @@ const styles = StyleSheet.create({
 	},
 	content: {
 		flex: 1,
+	},
+	contentContainer: {
 		padding: SPACING.lg,
+		flexGrow: 1,
 	},
 	avatarContainer: {
 		alignItems: 'center',
@@ -193,6 +208,9 @@ const styles = StyleSheet.create({
 	email: {
 		fontSize: SIZES.fontMd,
 		color: COLORS.textSecondary,
+	},
+	settingsSection: {
+		marginBottom: SPACING.xl,
 	},
 	actions: {
 		marginTop: 'auto',
