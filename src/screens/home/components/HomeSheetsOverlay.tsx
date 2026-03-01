@@ -141,7 +141,7 @@ export const HomeSheetsOverlay: React.FC = () => {
 						accessibilityRole="button"
 						testID="spot-embarquer-button"
 					>
-						<Text style={styles.spotHitchButtonText}>{t('spots.hitchIt')}</Text>
+						<Text style={styles.spotHitchButtonText}>{t('navigation.hitchIt')}</Text>
 					</Pressable>
 				</View>
 			)}

@@ -195,7 +195,6 @@ export default {
 		commentsLabel: 'Commentaires',
 		destinationPlaceholder: 'Ex: Paris, Lyon...',
 		hitchFromSpot: 'Faire du stop depuis ce spot',
-		hitchIt: 'Hitch it',
 		createSpot: 'Créer le spot',
 		ratingLabel: 'Appréciation *',
 		commentLabel: 'Commentaire *',
@@ -261,6 +260,7 @@ export default {
 
 	// Languages
 	languages: {
+		en: 'Anglais',
 		fr: 'Français',
 	},
 } as const;
