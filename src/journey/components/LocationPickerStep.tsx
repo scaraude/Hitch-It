@@ -8,6 +8,7 @@ import { AddressInput } from '../../components/AddressInput';
 import MapViewComponent, { type MapViewRef } from '../../components/MapView';
 import { COLORS, MAP_CONFIG, SPACING } from '../../constants';
 import { SIZES } from '../../constants/sizes';
+import { useTranslation } from '../../i18n';
 import type { Location, MapRegion } from '../../types';
 import { CenterMapMarker } from './CenterMapMarker';
 
@@ -36,6 +37,7 @@ export const LocationPickerStep: React.FC<LocationPickerStepProps> = ({
 }) => {
 	const insets = useSafeAreaInsets();
 	const mapRef = useRef<MapViewRef>(null);
+	const { t } = useTranslation();
 
 	const [searchText, setSearchText] = useState('');
 	const [isSearchExpanded, setIsSearchExpanded] = useState(false);
@@ -97,7 +99,7 @@ export const LocationPickerStep: React.FC<LocationPickerStepProps> = ({
 				<Pressable
 					style={styles.backButton}
 					onPress={onBack}
-					accessibilityLabel="Go back"
+					accessibilityLabel={t('common.goBack')}
 					accessibilityRole="button"
 				>
 					<Ionicons name="arrow-back" size={SIZES.iconMd} color={COLORS.text} />
@@ -117,21 +119,20 @@ export const LocationPickerStep: React.FC<LocationPickerStepProps> = ({
 						<Pressable
 							style={styles.searchBackButton}
 							onPress={toggleSearch}
-							accessibilityLabel="Close search"
+							accessibilityLabel={t('common.closeSearch')}
 							accessibilityRole="button"
 						>
 							<Ionicons name="arrow-back" size={22} color="#484C52" />
 						</Pressable>
 						<View style={styles.inputWrapper}>
 							<AddressInput
-								placeholder="Search for a location"
+								placeholder={t('map.searchLocationPlaceholder')}
 								value={searchText}
 								onChangeText={setSearchText}
 								onLocationSelected={handleLocationSelected}
 								autoFocus
 								showEmptyState
 								hapticFeedback
-								showTopSuggestionLabel
 								suggestionsPlacement="below"
 								suggestionsStyle="dropdown"
 								containerStyle={styles.addressInputContainer}
@@ -145,7 +146,7 @@ export const LocationPickerStep: React.FC<LocationPickerStepProps> = ({
 				<Pressable
 					style={[styles.collapsedSearchBar, { top: insets.top + 70 }]}
 					onPress={toggleSearch}
-					accessibilityLabel="Search for a location"
+					accessibilityLabel={t('map.searchLocationPlaceholder')}
 					accessibilityRole="button"
 				>
 					<Ionicons
@@ -153,7 +154,9 @@ export const LocationPickerStep: React.FC<LocationPickerStepProps> = ({
 						size={SIZES.iconMd}
 						color={COLORS.textSecondary}
 					/>
-					<Text style={styles.searchPlaceholder}>Search for a location</Text>
+					<Text style={styles.searchPlaceholder}>
+						{t('map.searchLocationPlaceholder')}
+					</Text>
 				</Pressable>
 			)}
 

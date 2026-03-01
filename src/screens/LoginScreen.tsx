@@ -15,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../auth';
 import { COLORS, SPACING } from '../constants';
 import { SIZES } from '../constants/sizes';
+import { useTranslation } from '../i18n';
 import type { RootStackParamList } from '../navigation/types';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -24,6 +25,7 @@ const RESEND_COOLDOWN_SECONDS = 30;
 export default function LoginScreen() {
 	const navigation = useNavigation<NavigationProp>();
 	const { login, resendConfirmationEmail } = useAuth();
+	const { t } = useTranslation();
 
 	const [identifier, setIdentifier] = useState('');
 	const [password, setPassword] = useState('');
@@ -61,7 +63,7 @@ export default function LoginScreen() {
 	const handleResendEmail = async () => {
 		const email = identifier.includes('@') ? identifier.trim() : '';
 		if (!email) {
-			setError('Please enter your email address to resend the confirmation.');
+			setError(t('auth.resendEmailRequired'));
 			return;
 		}
 
@@ -79,7 +81,7 @@ export default function LoginScreen() {
 
 	const handleLogin = async () => {
 		if (!identifier.trim() || !password) {
-			setError('Please fill in all fields');
+			setError(t('auth.fillAllFields'));
 			return;
 		}
 
@@ -119,8 +121,8 @@ export default function LoginScreen() {
 				</Pressable>
 
 				<View style={styles.header}>
-					<Text style={styles.title}>Welcome back</Text>
-					<Text style={styles.subtitle}>Sign in to your account</Text>
+					<Text style={styles.title}>{t('auth.welcomeBack')}</Text>
+					<Text style={styles.subtitle}>{t('auth.signInSubtitle')}</Text>
 				</View>
 
 				<View style={styles.form}>
@@ -135,7 +137,7 @@ export default function LoginScreen() {
 								style={styles.confirmationIcon}
 							/>
 							<Text style={styles.confirmationText}>
-								Check your inbox and spam folder for the confirmation link.
+								{t('auth.emailConfirmationHint')}
 							</Text>
 							<Pressable
 								style={[
@@ -148,10 +150,10 @@ export default function LoginScreen() {
 							>
 								<Text style={styles.resendButtonText}>
 									{isResending
-										? 'Sending...'
+										? t('auth.sending')
 										: resendCooldown > 0
-											? `Resend in ${resendCooldown}s`
-											: 'Resend confirmation email'}
+											? t('auth.resendIn', { seconds: resendCooldown })
+											: t('auth.resendConfirmationEmail')}
 								</Text>
 							</Pressable>
 						</View>
@@ -166,7 +168,7 @@ export default function LoginScreen() {
 						/>
 						<TextInput
 							style={styles.input}
-							placeholder="Username or email"
+							placeholder={t('auth.usernameOrEmailPlaceholder')}
 							placeholderTextColor={COLORS.textSecondary}
 							value={identifier}
 							onChangeText={setIdentifier}
@@ -185,7 +187,7 @@ export default function LoginScreen() {
 						/>
 						<TextInput
 							style={styles.input}
-							placeholder="Password"
+							placeholder={t('auth.passwordPlaceholder')}
 							placeholderTextColor={COLORS.textSecondary}
 							value={password}
 							onChangeText={setPassword}
@@ -198,7 +200,9 @@ export default function LoginScreen() {
 						style={styles.forgotPasswordLink}
 						onPress={() => navigation.navigate('ForgotPassword')}
 					>
-						<Text style={styles.forgotPasswordText}>Forgot password?</Text>
+						<Text style={styles.forgotPasswordText}>
+							{t('auth.forgotPassword')}
+						</Text>
 					</Pressable>
 
 					<Pressable
@@ -207,15 +211,15 @@ export default function LoginScreen() {
 						disabled={isLoading}
 					>
 						<Text style={styles.buttonText}>
-							{isLoading ? 'Signing in...' : 'Sign In'}
+							{isLoading ? t('auth.signingIn') : t('auth.signIn')}
 						</Text>
 					</Pressable>
 				</View>
 
 				<View style={styles.footer}>
-					<Text style={styles.footerText}>Don't have an account? </Text>
+					<Text style={styles.footerText}>{t('auth.noAccount')}</Text>
 					<Pressable onPress={goToSignUp}>
-						<Text style={styles.linkText}>Sign Up</Text>
+						<Text style={styles.linkText}>{t('auth.signUp')}</Text>
 					</Pressable>
 				</View>
 			</KeyboardAvoidingView>

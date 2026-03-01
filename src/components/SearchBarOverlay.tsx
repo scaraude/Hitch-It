@@ -3,6 +3,7 @@ import type React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS, SIZES, SPACING } from '../constants';
+import { useTranslation } from '../i18n';
 import type { Location } from '../types';
 import { AddressInput } from './AddressInput';
 
@@ -22,6 +23,7 @@ export const SearchBarOverlay: React.FC<SearchBarOverlayProps> = ({
 	onToggle,
 }) => {
 	const insets = useSafeAreaInsets();
+	const { t } = useTranslation();
 
 	if (isExpanded) {
 		return (
@@ -32,21 +34,20 @@ export const SearchBarOverlay: React.FC<SearchBarOverlayProps> = ({
 					<Pressable
 						style={styles.backButton}
 						onPress={onToggle}
-						accessibilityLabel="Fermer la recherche"
+						accessibilityLabel={t('common.closeSearch')}
 						accessibilityRole="button"
 					>
 						<Ionicons name="arrow-back" size={22} style={styles.backIcon} />
 					</Pressable>
 					<View style={styles.inputWrapper}>
 						<AddressInput
-							placeholder="Search"
+							placeholder={t('map.searchPlaceholder')}
 							value={searchText}
 							onChangeText={onSearchTextChange}
 							onLocationSelected={onLocationSelected}
 							autoFocus
 							showEmptyState
 							hapticFeedback
-							showTopSuggestionLabel
 							suggestionsPlacement="below"
 							suggestionsStyle="dropdown"
 							containerStyle={styles.addressInputContainer}
@@ -63,7 +64,7 @@ export const SearchBarOverlay: React.FC<SearchBarOverlayProps> = ({
 		<Pressable
 			style={[styles.collapsedContainer, { top: insets.top + SPACING.lg }]}
 			onPress={onToggle}
-			accessibilityLabel="Rechercher"
+			accessibilityLabel={t('common.search')}
 			accessibilityRole="button"
 			testID="search-bar-collapsed"
 		>

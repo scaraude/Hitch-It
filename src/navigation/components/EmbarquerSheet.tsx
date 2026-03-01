@@ -11,15 +11,13 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MapControlButton } from '../../components';
 import { COLORS, SIZES } from '../../constants';
+import { useTranslation } from '../../i18n';
 import { useEmbarquerSheetState } from '../hooks';
 import { EmbarquerAddressField } from './EmbarquerAddressField';
 import { embarquerSheetStyles as styles } from './embarquerSheetStyles';
 import type { EmbarquerSheetProps } from './embarquerSheetTypes';
 
-const GO_LABEL = 'go';
 const SHEET_TOP_MARGIN = 6;
-const SWAP_LOCATIONS_ACCESSIBILITY_LABEL =
-	'Echanger le point de depart et la destination';
 
 export const EmbarquerSheet: React.FC<EmbarquerSheetProps> = ({
 	initialStart,
@@ -29,6 +27,7 @@ export const EmbarquerSheet: React.FC<EmbarquerSheetProps> = ({
 	onClose,
 }) => {
 	const insets = useSafeAreaInsets();
+	const { t } = useTranslation();
 	const {
 		startText,
 		startLocation,
@@ -78,7 +77,7 @@ export const EmbarquerSheet: React.FC<EmbarquerSheetProps> = ({
 				<Pressable
 					onPress={onClose}
 					style={styles.closeButton}
-					accessibilityLabel="Fermer"
+					accessibilityLabel={t('common.close')}
 					accessibilityRole="button"
 					testID="embarquer-sheet-close"
 				>
@@ -87,8 +86,8 @@ export const EmbarquerSheet: React.FC<EmbarquerSheetProps> = ({
 
 				<View style={styles.form}>
 					<EmbarquerAddressField
-						label="Point de départ"
-						placeholder="D'où partez-vous ?"
+						label={t('navigation.startPointLabel')}
+						placeholder={t('navigation.startPointPlaceholder')}
 						value={startText}
 						onChangeText={onStartTextChange}
 						onLocationSelected={onStartLocationSelected}
@@ -96,7 +95,7 @@ export const EmbarquerSheet: React.FC<EmbarquerSheetProps> = ({
 						disableSuggestions={isStartFromCurrentPosition}
 						hasCurrentPosition={hasCurrentPosition}
 						onUseCurrentPosition={onUseCurrentPositionForStart}
-						positionButtonAccessibilityLabel="Utiliser ma position pour le départ"
+						positionButtonAccessibilityLabel={t('navigation.startPointLabel')}
 						inputTestID="embarquer-start-input"
 						positionButtonTestID="embarquer-start-from-position"
 						inputLayerStyle={styles.startInputLayer}
@@ -112,15 +111,15 @@ export const EmbarquerSheet: React.FC<EmbarquerSheetProps> = ({
 								/>
 							}
 							onPress={onSwapLocations}
-							accessibilityLabel={SWAP_LOCATIONS_ACCESSIBILITY_LABEL}
+							accessibilityLabel={t('navigation.swapLocations')}
 							size="small"
 							testID="embarquer-swap-locations"
 						/>
 					</View>
 
 					<EmbarquerAddressField
-						label="Destination"
-						placeholder="Où allez-vous ?"
+						label={t('navigation.destinationLabel')}
+						placeholder={t('navigation.destinationPlaceholder')}
 						value={destinationText}
 						onChangeText={onDestinationTextChange}
 						onLocationSelected={onDestinationSelected}
@@ -128,7 +127,7 @@ export const EmbarquerSheet: React.FC<EmbarquerSheetProps> = ({
 						disableSuggestions={isDestinationFromCurrentPosition}
 						hasCurrentPosition={hasCurrentPosition}
 						onUseCurrentPosition={onUseCurrentPositionForDestination}
-						positionButtonAccessibilityLabel="Utiliser ma position pour la destination"
+						positionButtonAccessibilityLabel={t('navigation.destinationLabel')}
 						inputTestID="embarquer-destination-input"
 						positionButtonTestID="embarquer-destination-from-position"
 						inputLayerStyle={styles.destinationInputLayer}
@@ -151,7 +150,7 @@ export const EmbarquerSheet: React.FC<EmbarquerSheetProps> = ({
 							!canStart && styles.goButtonTextDisabled,
 						]}
 					>
-						{GO_LABEL}
+						{t('navigation.go')}
 					</Text>
 				</Pressable>
 			</Animated.View>

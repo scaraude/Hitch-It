@@ -1,25 +1,28 @@
 import { COLORS } from '../../constants';
+import type { TranslateFunction } from '../../i18n/types';
 import { CommentAppreciation } from '../types';
 
-export const COMMENT_APPRECIATION_CONFIG: Record<
+export const getCommentAppreciationConfig = (
+	t: TranslateFunction
+): Record<
 	CommentAppreciation,
 	{ label: string; color: string; emoji: string }
-> = {
+> => ({
 	[CommentAppreciation.Perfect]: {
-		label: 'Parfait',
+		label: t('comment.appreciationExcellent'),
 		color: COLORS.success,
 		emoji: '🎯',
 	},
 	[CommentAppreciation.Good]: {
-		label: 'Bon',
+		label: t('comment.appreciationGood'),
 		color: COLORS.primary,
 		emoji: '👍',
 	},
 	[CommentAppreciation.Bad]: {
-		label: 'Mauvais',
+		label: t('comment.appreciationBad'),
 		color: COLORS.error,
 		emoji: '👎',
 	},
-};
+});
 
 export const COMMENT_APPRECIATIONS = Object.values(CommentAppreciation);

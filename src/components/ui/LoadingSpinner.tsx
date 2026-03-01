@@ -1,6 +1,7 @@
 import type React from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { COLORS, SPACING } from '../../constants';
+import { useTranslation } from '../../i18n/useTranslation';
 
 interface LoadingSpinnerProps {
 	message?: string;
@@ -9,14 +10,17 @@ interface LoadingSpinnerProps {
 }
 
 export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
-	message = 'Loading...',
+	message,
 	size = 'large',
 	color = COLORS.primary,
 }) => {
+	const { t } = useTranslation();
+	const displayMessage = message ?? t('common.loading');
+
 	return (
 		<View style={styles.container}>
 			<ActivityIndicator size={size} color={color} />
-			{message && <Text style={styles.message}>{message}</Text>}
+			{displayMessage && <Text style={styles.message}>{displayMessage}</Text>}
 		</View>
 	);
 };

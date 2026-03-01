@@ -12,6 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import { ActionButtons } from '../../../components';
 import { COLORS, SIZES, SPACING } from '../../../constants';
+import { useTranslation } from '../../../i18n';
 import {
 	DriverDirectionSheet,
 	EmbarquerSheet,
@@ -35,6 +36,7 @@ export const HomeSheetsOverlay: React.FC = () => {
 	const spot = useHomeSpot();
 	const session = useHomeSession();
 	const map = useHomeMap();
+	const { t } = useTranslation();
 
 	const insets = useSafeAreaInsets();
 
@@ -135,11 +137,11 @@ export const HomeSheetsOverlay: React.FC = () => {
 							pressed && styles.spotHitchButtonPressed,
 						]}
 						onPress={() => session.handleSpotEmbarquer(selectedSpot)}
-						accessibilityLabel="Hitch from this spot"
+						accessibilityLabel={t('spots.hitchFromSpot')}
 						accessibilityRole="button"
 						testID="spot-embarquer-button"
 					>
-						<Text style={styles.spotHitchButtonText}>Hitch it</Text>
+						<Text style={styles.spotHitchButtonText}>{t('spots.hitchIt')}</Text>
 					</Pressable>
 				</View>
 			)}

@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import MapViewComponent, { type MapViewRef } from '../../components/MapView';
 import { COLORS, SPACING } from '../../constants';
 import { SIZES } from '../../constants/sizes';
+import { useTranslation } from '../../i18n';
 import type { Location, MapRegion } from '../../types';
 import type { ManualStop } from '../hooks/useManualJourneyFlow';
 
@@ -66,6 +67,7 @@ export const StopsManagementStep: React.FC<StopsManagementStepProps> = ({
 	const insets = useSafeAreaInsets();
 	const mapRef = useRef<MapViewRef>(null);
 	const [isAddingStop, setIsAddingStop] = useState(false);
+	const { t } = useTranslation();
 
 	// Calculate region to fit all points
 	const initialRegion = useMemo((): MapRegion => {
@@ -168,14 +170,14 @@ export const StopsManagementStep: React.FC<StopsManagementStepProps> = ({
 					{/* Start marker (blue) */}
 					<Marker
 						coordinate={startLocation}
-						title={startName || 'Start'}
+						title={startName || t('journey.startMarker')}
 						pinColor={COLORS.secondary}
 					/>
 
 					{/* End marker (red) */}
 					<Marker
 						coordinate={endLocation}
-						title={endName || 'End'}
+						title={endName || t('journey.endMarker')}
 						pinColor={COLORS.error}
 					/>
 
@@ -184,7 +186,7 @@ export const StopsManagementStep: React.FC<StopsManagementStepProps> = ({
 						<Marker
 							key={stop.id}
 							coordinate={stop.location}
-							title={`Stop ${index + 1}`}
+							title={t('journey.stopMarkerTitle', { number: index + 1 })}
 							pinColor={stop.id === selectedStopId ? COLORS.primary : '#333333'}
 							onPress={() => handleStopMarkerPress(stop.id)}
 						/>
@@ -196,7 +198,7 @@ export const StopsManagementStep: React.FC<StopsManagementStepProps> = ({
 					<View style={styles.addingStopOverlay} pointerEvents="none">
 						<View style={styles.addingStopHint}>
 							<Text style={styles.addingStopText}>
-								Tap on the map to add a stop
+								{t('journey.tapToAddStop')}
 							</Text>
 						</View>
 					</View>
@@ -208,15 +210,15 @@ export const StopsManagementStep: React.FC<StopsManagementStepProps> = ({
 				<Pressable
 					style={styles.backButton}
 					onPress={onBack}
-					accessibilityLabel="Go back"
+					accessibilityLabel={t('common.goBack')}
 					accessibilityRole="button"
 				>
 					<Ionicons name="arrow-back" size={SIZES.iconMd} color={COLORS.text} />
 				</Pressable>
 				<View style={styles.headerTextContainer}>
-					<Text style={styles.headerTitle}>Add Stops</Text>
+					<Text style={styles.headerTitle}>{t('journey.addStops')}</Text>
 					<Text style={styles.headerSubtitle}>
-						Long press on map to add stops
+						{t('journey.longPressHint')}
 					</Text>
 				</View>
 			</View>
@@ -238,10 +240,12 @@ export const StopsManagementStep: React.FC<StopsManagementStepProps> = ({
 				>
 					{/* Journey title */}
 					<View style={styles.inputSection}>
-						<Text style={styles.inputLabel}>Journey Title (optional)</Text>
+						<Text style={styles.inputLabel}>
+							{t('journey.titleLabelOptional')}
+						</Text>
 						<TextInput
 							style={styles.input}
-							placeholder="e.g., Paris to Lyon"
+							placeholder={t('journey.titlePlaceholder')}
 							value={title}
 							onChangeText={onTitleChange}
 							placeholderTextColor={COLORS.textSecondary}
@@ -251,7 +255,9 @@ export const StopsManagementStep: React.FC<StopsManagementStepProps> = ({
 					{/* Add stop button or stop list */}
 					<View style={styles.stopsSection}>
 						<View style={styles.stopsSectionHeader}>
-							<Text style={styles.inputLabel}>Stops ({stops.length})</Text>
+							<Text style={styles.inputLabel}>
+								{t('journey.stopsCount', { count: stops.length })}
+							</Text>
 							<Pressable
 								style={[
 									styles.addStopButton,
@@ -270,7 +276,7 @@ export const StopsManagementStep: React.FC<StopsManagementStepProps> = ({
 										isAddingStop && styles.addStopButtonTextActive,
 									]}
 								>
-									{isAddingStop ? 'Cancel' : 'Add Stop'}
+									{isAddingStop ? t('common.cancel') : t('journey.addStop')}
 								</Text>
 							</Pressable>
 						</View>
@@ -280,11 +286,14 @@ export const StopsManagementStep: React.FC<StopsManagementStepProps> = ({
 							<View style={styles.stopEditor}>
 								<View style={styles.stopEditorHeader}>
 									<Text style={styles.stopEditorTitle}>
-										Stop {stops.findIndex(s => s.id === selectedStop.id) + 1}
+										{t('journey.stopLabel', {
+											number:
+												stops.findIndex(s => s.id === selectedStop.id) + 1,
+										})}
 									</Text>
 									<Pressable
 										onPress={() => onRemoveStop(selectedStop.id)}
-										accessibilityLabel="Remove stop"
+										accessibilityLabel={t('journey.removeStop')}
 									>
 										<Ionicons
 											name="trash-outline"
@@ -296,7 +305,7 @@ export const StopsManagementStep: React.FC<StopsManagementStepProps> = ({
 
 								<TextInput
 									style={styles.stopInput}
-									placeholder="Wait time (minutes)"
+									placeholder={t('journey.waitTimePlaceholder')}
 									value={selectedStop.waitTimeMinutes?.toString() || ''}
 									onChangeText={text => {
 										const minutes = Number.parseInt(text, 10);
@@ -312,7 +321,7 @@ export const StopsManagementStep: React.FC<StopsManagementStepProps> = ({
 
 								<TextInput
 									style={[styles.stopInput, styles.stopNotesInput]}
-									placeholder="Notes (optional)"
+									placeholder={t('common.notesLabelOptional')}
 									value={selectedStop.notes || ''}
 									onChangeText={text =>
 										onUpdateStop(selectedStop.id, { notes: text || undefined })
@@ -326,7 +335,7 @@ export const StopsManagementStep: React.FC<StopsManagementStepProps> = ({
 									style={styles.doneEditingButton}
 									onPress={() => onSelectStop(null)}
 								>
-									<Text style={styles.doneEditingText}>Done</Text>
+									<Text style={styles.doneEditingText}>{t('common.done')}</Text>
 								</Pressable>
 							</View>
 						)}
@@ -342,10 +351,14 @@ export const StopsManagementStep: React.FC<StopsManagementStepProps> = ({
 									>
 										<View style={styles.stopItemDot} />
 										<View style={styles.stopItemContent}>
-											<Text style={styles.stopItemTitle}>Stop {index + 1}</Text>
+											<Text style={styles.stopItemTitle}>
+												{t('journey.stopLabel', { number: index + 1 })}
+											</Text>
 											{stop.waitTimeMinutes && (
 												<Text style={styles.stopItemDetail}>
-													{stop.waitTimeMinutes} min wait
+													{t('journey.minuteWait', {
+														minutes: stop.waitTimeMinutes,
+													})}
 												</Text>
 											)}
 										</View>
@@ -362,10 +375,12 @@ export const StopsManagementStep: React.FC<StopsManagementStepProps> = ({
 
 					{/* Journey notes */}
 					<View style={styles.inputSection}>
-						<Text style={styles.inputLabel}>Notes (optional)</Text>
+						<Text style={styles.inputLabel}>
+							{t('common.notesLabelOptional')}
+						</Text>
 						<TextInput
 							style={[styles.input, styles.notesInput]}
-							placeholder="Any additional notes about this journey..."
+							placeholder={t('journey.notesPlaceholder')}
 							value={notes}
 							onChangeText={onNotesChange}
 							multiline
@@ -385,7 +400,7 @@ export const StopsManagementStep: React.FC<StopsManagementStepProps> = ({
 					disabled={!canSave || isSaving}
 				>
 					<Text style={styles.saveButtonText}>
-						{isSaving ? 'Saving...' : 'Save Journey'}
+						{isSaving ? t('common.saving') : t('journey.saveJourney')}
 					</Text>
 				</Pressable>
 			</View>

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { toastUtils } from '../../components/ui';
+import { useTranslation } from '../../i18n/useTranslation';
 import type { SpotId } from '../../spot/types';
 import { logger } from '../../utils';
 import { createComment, getCommentsBySpotId } from '../services';
@@ -23,6 +24,7 @@ interface UseSpotCommentsReturn {
 const DEFAULT_CREATED_BY = 'CurrentUser';
 
 export const useSpotComments = (spotId: SpotId): UseSpotCommentsReturn => {
+	const { t } = useTranslation();
 	const [comments, setComments] = useState<Comment[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [isSubmitting, setIsSubmitting] = useState(false);
@@ -37,21 +39,21 @@ export const useSpotComments = (spotId: SpotId): UseSpotCommentsReturn => {
 				spotId,
 			});
 			toastUtils.error(
-				'Chargement échoué',
-				'Impossible de charger les commentaires de ce spot.'
+				t('comment.loadError'),
+				t('comment.loadErrorMessage')
 			);
 		} finally {
 			setIsLoading(false);
 		}
-	}, [spotId]);
+	}, [spotId, t]);
 
 	const submitComment = useCallback(
 		async ({ appreciation, comment, createdBy }: CreateCommentInput) => {
 			const trimmedComment = comment.trim();
 			if (!trimmedComment) {
 				toastUtils.error(
-					'Commentaire requis',
-					'Ajoute un commentaire avant de valider.'
+					t('comment.commentRequired'),
+					t('comment.commentRequiredMessage')
 				);
 				return false;
 			}
@@ -71,22 +73,22 @@ export const useSpotComments = (spotId: SpotId): UseSpotCommentsReturn => {
 			try {
 				await createComment(newComment);
 				setComments(previous => [newComment, ...previous]);
-				toastUtils.success('Commentaire ajouté');
+				toastUtils.success(t('comment.commentAdded'));
 				return true;
 			} catch (error) {
 				logger.repository.error('Unable to create comment', error, {
 					spotId,
 				});
 				toastUtils.error(
-					'Ajout impossible',
-					"Le commentaire n'a pas pu être enregistré."
+					t('comment.addError'),
+					t('comment.addErrorMessage')
 				);
 				return false;
 			} finally {
 				setIsSubmitting(false);
 			}
 		},
-		[spotId]
+		[spotId, t]
 	);
 
 	useEffect(() => {

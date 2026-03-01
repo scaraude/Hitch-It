@@ -2,6 +2,7 @@ import * as Location from 'expo-location';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert } from 'react-native';
 import { MAP_CONFIG } from '../constants';
+import { useTranslation } from '../i18n/useTranslation';
 import type { Location as LocationType, MapRegion } from '../types';
 import { logger } from '../utils';
 
@@ -16,6 +17,7 @@ const LOCATION_WATCH_TIME_INTERVAL_MS = 5000;
 const LOCATION_WATCH_DISTANCE_INTERVAL_METERS = 25;
 
 export const useLocation = (): UseLocationReturn => {
+	const { t } = useTranslation();
 	const [userLocation, setUserLocation] = useState<LocationType | null>(null);
 	const [currentRegion, setCurrentRegion] = useState<MapRegion>(
 		MAP_CONFIG.defaultRegion
@@ -68,9 +70,9 @@ export const useLocation = (): UseLocationReturn => {
 			if (status !== 'granted') {
 				logger.location.warn('Location permission denied by user', { status });
 				Alert.alert(
-					'Permission Denied',
-					'Location permission is required to show your current location on the map.',
-					[{ text: 'OK', onPress: () => setLocationLoading(false) }]
+					t('map.permissionDenied'),
+					t('map.permissionDeniedMessage'),
+					[{ text: t('common.ok'), onPress: () => setLocationLoading(false) }]
 				);
 				return;
 			}
@@ -96,14 +98,14 @@ export const useLocation = (): UseLocationReturn => {
 				error
 			);
 			Alert.alert(
-				'Location Error',
-				'Unable to get your current location. Using default location.',
-				[{ text: 'OK', onPress: () => setLocationLoading(false) }]
+				t('map.locationError'),
+				t('map.locationErrorMessage'),
+				[{ text: t('common.ok'), onPress: () => setLocationLoading(false) }]
 			);
 		} finally {
 			setLocationLoading(false);
 		}
-	}, [applyLocationUpdate, stopLocationWatch]);
+	}, [applyLocationUpdate, stopLocationWatch, t]);
 
 	useEffect(() => {
 		void getCurrentLocation();

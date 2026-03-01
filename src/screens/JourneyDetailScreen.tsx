@@ -17,6 +17,7 @@ import MapView, { Marker, Polyline, PROVIDER_DEFAULT } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, SPACING } from '../constants';
 import { SIZES } from '../constants/sizes';
+import { useTranslation } from '../i18n';
 import * as journeyRepository from '../journey/services/journeyRepository';
 import type { Journey } from '../journey/types';
 import { JourneyPointType } from '../journey/types';
@@ -50,6 +51,7 @@ export default function JourneyDetailScreen() {
 	const navigation = useNavigation<NavigationProp>();
 	const route = useRoute<JourneyDetailRouteProp>();
 	const { journeyId } = route.params;
+	const { t } = useTranslation();
 
 	const [journey, setJourney] = useState<Journey | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
@@ -101,11 +103,11 @@ export default function JourneyDetailScreen() {
 			});
 			setEditableTitle(normalizedTitle ?? '');
 		} catch {
-			Alert.alert('Error', 'Failed to update title. Please try again.');
+			Alert.alert(t('common.error'), t('errors.updateTitleFailed'));
 		} finally {
 			setIsSavingTitle(false);
 		}
-	}, [journey, editableTitle]);
+	}, [journey, editableTitle, t]);
 
 	const executeDeleteJourney = useCallback(async () => {
 		if (!journey) return;
@@ -115,24 +117,24 @@ export default function JourneyDetailScreen() {
 			await journeyRepository.deleteJourney(journey.id);
 			navigation.goBack();
 		} catch {
-			Alert.alert('Error', 'Failed to delete journey. Please try again.');
+			Alert.alert(t('common.error'), t('errors.deleteFailed'));
 		} finally {
 			setIsDeletingJourney(false);
 		}
-	}, [journey, navigation]);
+	}, [journey, navigation, t]);
 
 	const handleDeleteJourney = useCallback(() => {
-		Alert.alert('Delete journey?', 'This action cannot be undone.', [
-			{ text: 'Cancel', style: 'cancel' },
+		Alert.alert(t('journey.confirmDelete'), t('common.cannotUndo'), [
+			{ text: t('common.cancel'), style: 'cancel' },
 			{
-				text: 'Delete',
+				text: t('common.delete'),
 				style: 'destructive',
 				onPress: () => {
 					void executeDeleteJourney();
 				},
 			},
 		]);
-	}, [executeDeleteJourney]);
+	}, [executeDeleteJourney, t]);
 
 	if (isLoading) {
 		return (
@@ -148,7 +150,7 @@ export default function JourneyDetailScreen() {
 							color={COLORS.text}
 						/>
 					</Pressable>
-					<Text style={styles.headerTitle}>Journey Details</Text>
+					<Text style={styles.headerTitle}>{t('journey.details')}</Text>
 					<View style={styles.headerSpacer} />
 				</View>
 				<View style={styles.loadingContainer}>
@@ -172,7 +174,7 @@ export default function JourneyDetailScreen() {
 							color={COLORS.text}
 						/>
 					</Pressable>
-					<Text style={styles.headerTitle}>Journey Details</Text>
+					<Text style={styles.headerTitle}>{t('journey.details')}</Text>
 					<View style={styles.headerSpacer} />
 				</View>
 				<View style={styles.errorContainer}>
@@ -182,7 +184,7 @@ export default function JourneyDetailScreen() {
 						color={COLORS.error}
 					/>
 					<Text style={styles.errorText}>
-						{error?.message ?? 'Journey not found'}
+						{error?.message ?? t('journey.notFound')}
 					</Text>
 				</View>
 			</SafeAreaView>
@@ -272,7 +274,7 @@ export default function JourneyDetailScreen() {
 										longitude: startPoint.longitude,
 									}}
 									pinColor={COLORS.secondary}
-									title="Start"
+									title={t('journey.startMarker')}
 								/>
 							)}
 							{endPoint && startPoint !== endPoint && (
@@ -282,7 +284,7 @@ export default function JourneyDetailScreen() {
 										longitude: endPoint.longitude,
 									}}
 									pinColor={COLORS.error}
-									title="End"
+									title={t('journey.endMarker')}
 								/>
 							)}
 							{stopPoints.map(point => (
@@ -308,10 +310,12 @@ export default function JourneyDetailScreen() {
 
 				<View style={styles.infoPanel}>
 					<View style={styles.titleSection}>
-						<Text style={styles.titleSectionLabel}>Title</Text>
+						<Text style={styles.titleSectionLabel}>
+							{t('journey.titleLabel')}
+						</Text>
 						<TextInput
 							style={styles.titleInput}
-							placeholder="Enter journey title"
+							placeholder={t('journey.titlePlaceholder')}
 							value={editableTitle}
 							onChangeText={setEditableTitle}
 							placeholderTextColor={COLORS.textSecondary}
@@ -328,7 +332,7 @@ export default function JourneyDetailScreen() {
 								disabled={!titleChanged || isSavingTitle}
 							>
 								<Text style={styles.primaryActionText}>
-									{isSavingTitle ? 'Saving...' : 'Save title'}
+									{isSavingTitle ? t('common.saving') : t('journey.saveTitle')}
 								</Text>
 							</Pressable>
 							<Pressable
@@ -341,7 +345,9 @@ export default function JourneyDetailScreen() {
 								onPress={() => setEditableTitle('')}
 								disabled={editableTitle.length === 0}
 							>
-								<Text style={styles.secondaryActionText}>Clear</Text>
+								<Text style={styles.secondaryActionText}>
+									{t('common.clear')}
+								</Text>
 							</Pressable>
 						</View>
 					</View>
@@ -358,7 +364,7 @@ export default function JourneyDetailScreen() {
 						<View style={styles.statBox}>
 							<Ionicons name="car-outline" size={24} color={COLORS.primary} />
 							<Text style={styles.statValue}>
-								{carCount} car{carCount > 1 ? 's' : ''}
+								{carCount} {t('journey.carLabel')}
 							</Text>
 						</View>
 						<View style={styles.statBox}>
@@ -369,7 +375,7 @@ export default function JourneyDetailScreen() {
 
 					{stopPoints.length > 0 && (
 						<View style={styles.stopsSection}>
-							<Text style={styles.stopsTitle}>Stops</Text>
+							<Text style={styles.stopsTitle}>{t('journey.stopsLabel')}</Text>
 							{stopPoints.map((point, index) => (
 								<View key={point.id} style={styles.stopItem}>
 									<View style={styles.stopNumber}>
@@ -384,7 +390,9 @@ export default function JourneyDetailScreen() {
 										</Text>
 										{point.waitTimeMinutes !== undefined && (
 											<Text style={styles.stopWaitTime}>
-												Wait: {point.waitTimeMinutes} min
+												{t('journey.waitTime', {
+													minutes: point.waitTimeMinutes,
+												})}
 											</Text>
 										)}
 										{point.notes && (
@@ -398,7 +406,7 @@ export default function JourneyDetailScreen() {
 
 					{journey.notes && (
 						<View style={styles.notesSection}>
-							<Text style={styles.notesTitle}>Notes</Text>
+							<Text style={styles.notesTitle}>{t('common.notesLabel')}</Text>
 							<Text style={styles.notesText}>{journey.notes}</Text>
 						</View>
 					)}
@@ -412,7 +420,9 @@ export default function JourneyDetailScreen() {
 						disabled={isDeletingJourney}
 					>
 						<Text style={styles.deleteJourneyButtonText}>
-							{isDeletingJourney ? 'Deleting...' : 'Delete journey'}
+							{isDeletingJourney
+								? t('common.deleting')
+								: t('journey.deleteJourney')}
 						</Text>
 					</Pressable>
 				</View>

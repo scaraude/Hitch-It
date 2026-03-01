@@ -18,7 +18,6 @@ export const CenterMapMarker: React.FC<CenterMapMarkerProps> = ({
 		<View style={styles.container} pointerEvents="none">
 			<View style={styles.markerContainer}>
 				<Ionicons name="location" size={40} color={color} />
-				{/* Shadow/ground indicator */}
 				<View style={[styles.groundShadow, { backgroundColor: color }]} />
 			</View>
 		</View>

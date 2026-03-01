@@ -1,7 +1,7 @@
 import * as SecureStore from 'expo-secure-store';
 import { useCallback, useState } from 'react';
 import i18n from './i18n';
-import type { Language } from './types';
+import type { Language, TranslateFunction } from './types';
 
 const LANGUAGE_KEY = 'app_language';
 
@@ -9,7 +9,7 @@ export function useTranslation() {
 	const [locale, setLocaleState] = useState(i18n.locale);
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: locale is needed to trigger re-renders when language changes
-	const t = useCallback(
+	const t: TranslateFunction = useCallback(
 		(key: string, options?: Record<string, string | number>) => {
 			return i18n.t(key, options);
 		},

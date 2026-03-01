@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import MapView, { Marker, Polyline, PROVIDER_DEFAULT } from 'react-native-maps';
 import { COLORS, SIZES, SPACING } from '../../constants';
+import { useTranslation } from '../../i18n/useTranslation';
 import type { Journey } from '../types';
 import { JourneyPointType } from '../types';
 
@@ -35,10 +36,15 @@ function getStopCount(journey: Journey): number {
 }
 
 export function JourneyCard({ journey, onPress }: JourneyCardProps) {
-	const title = journey.title || 'Journey';
+	const { t } = useTranslation();
+	const title = journey.title || t('journey.defaultTitle');
 	const distance = formatDistance(journey.totalDistanceKm);
 	const duration = formatDuration(journey.startedAt, journey.endedAt);
 	const stopCount = getStopCount(journey);
+	const stopCountLabel =
+		stopCount > 1
+			? t('journey.stopCountLabelPlural', { count: stopCount })
+			: t('journey.stopCountLabel', { count: stopCount });
 	const routePolylinePoints = journey.routePolyline ?? [];
 	const routePoints = journey.points.filter(
 		point => point.type === JourneyPointType.Location
@@ -136,7 +142,7 @@ export function JourneyCard({ journey, onPress }: JourneyCardProps) {
 					{title}
 				</Text>
 				<Text style={styles.details}>
-					{distance} - {stopCount} car{stopCount > 1 ? 's' : ''} - {duration}
+					{distance} - {stopCountLabel} - {duration}
 				</Text>
 			</View>
 		</Pressable>

@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../auth';
 import { COLORS, SPACING } from '../constants';
 import { SIZES } from '../constants/sizes';
+import { useTranslation } from '../i18n';
 import { JourneyCard } from '../journey/components/JourneyCard';
 import { useJourneyStats } from '../journey/hooks/useJourneyStats';
 import * as journeyRepository from '../journey/services/journeyRepository';
@@ -28,6 +29,7 @@ const PROFILE_BACKGROUND_COLOR = '#C9A961';
 export default function JourneyHistoryScreen() {
 	const navigation = useNavigation<NavigationProp>();
 	const { user } = useAuth();
+	const { t } = useTranslation();
 
 	const [journeys, setJourneys] = useState<Journey[]>([]);
 	const [isLoadingJourneys, setIsLoadingJourneys] = useState(true);
@@ -93,29 +95,29 @@ export default function JourneyHistoryScreen() {
 				<View style={styles.statsContainer}>
 					<View style={styles.statItem}>
 						<Text style={styles.statValue}>{stats.totalJourneys}</Text>
-						<Text style={styles.statLabel}>journeys</Text>
+						<Text style={styles.statLabel}>{t('journey.journeysLabel')}</Text>
 					</View>
 					<View style={styles.statItem}>
 						<Text style={styles.statValue}>{stats.totalDistanceKm}</Text>
-						<Text style={styles.statLabel}>km</Text>
+						<Text style={styles.statLabel}>{t('common.kmLabel')}</Text>
 					</View>
 					<View style={styles.statItem}>
 						<Text style={styles.statValue}>{stats.totalVehicles}</Text>
-						<Text style={styles.statLabel}>vehicles</Text>
+						<Text style={styles.statLabel}>{t('journey.vehiclesLabel')}</Text>
 					</View>
 					<View style={styles.statItem}>
 						<Text style={styles.statValue}>{stats.totalCountries}</Text>
-						<Text style={styles.statLabel}>countries</Text>
+						<Text style={styles.statLabel}>{t('journey.countriesLabel')}</Text>
 					</View>
 				</View>
 			</View>
 
 			<View style={styles.sectionHeader}>
-				<Text style={styles.sectionTitle}>Past Journeys</Text>
+				<Text style={styles.sectionTitle}>{t('journey.pastJourneys')}</Text>
 				<Pressable
 					style={styles.addButton}
 					onPress={handleAddJourney}
-					accessibilityLabel="Add journey"
+					accessibilityLabel={t('journey.addJourney')}
 				>
 					<Ionicons name="add" size={SIZES.iconMd} color={COLORS.primary} />
 				</Pressable>
@@ -126,9 +128,11 @@ export default function JourneyHistoryScreen() {
 	const renderEmptyState = () => (
 		<View style={styles.emptyState}>
 			<Ionicons name="map-outline" size={64} color={COLORS.textSecondary} />
-			<Text style={styles.emptyStateText}>No journeys yet</Text>
+			<Text style={styles.emptyStateText}>{t('journey.noJourneys')}</Text>
 			<Pressable style={styles.emptyStateButton} onPress={handleAddJourney}>
-				<Text style={styles.emptyStateButtonText}>Add your first journey</Text>
+				<Text style={styles.emptyStateButtonText}>
+					{t('journey.addFirstJourney')}
+				</Text>
 			</Pressable>
 		</View>
 	);
@@ -147,7 +151,7 @@ export default function JourneyHistoryScreen() {
 							color={COLORS.text}
 						/>
 					</Pressable>
-					<Text style={styles.headerTitle}>Journey History</Text>
+					<Text style={styles.headerTitle}>{t('journey.history')}</Text>
 					<View style={styles.headerSpacer} />
 				</View>
 				<View style={styles.loadingContainer}>
@@ -166,7 +170,7 @@ export default function JourneyHistoryScreen() {
 				>
 					<Ionicons name="arrow-back" size={SIZES.iconMd} color={COLORS.text} />
 				</Pressable>
-				<Text style={styles.headerTitle}>Journey History</Text>
+				<Text style={styles.headerTitle}>{t('journey.history')}</Text>
 				<View style={styles.headerSpacer} />
 			</View>
 

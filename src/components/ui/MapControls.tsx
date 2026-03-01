@@ -2,6 +2,7 @@ import type React from 'react';
 import { StyleSheet, View } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 import { COLORS, SPACING } from '../../constants';
+import { useTranslation } from '../../i18n';
 import { CompassIcon } from './CompassIcon';
 import { MapControlButton } from './MapControlButton';
 
@@ -55,6 +56,7 @@ export const MapControls: React.FC<MapControlsProps> = ({
 	onLocateUser,
 	bottomOffset = 120,
 }) => {
+	const { t } = useTranslation();
 	// Only show compass when map is rotated (not facing north)
 	const isRotated = Math.abs(mapHeading) > 5;
 
@@ -65,7 +67,7 @@ export const MapControls: React.FC<MapControlsProps> = ({
 				<MapControlButton
 					icon={<CompassIcon heading={mapHeading} animated />}
 					onPress={onResetHeading}
-					accessibilityLabel="Réorienter la carte vers le nord"
+					accessibilityLabel={t('map.resetHeading')}
 					size="medium"
 					testID="map-control-compass"
 					style={styles.compassButton}
@@ -76,7 +78,7 @@ export const MapControls: React.FC<MapControlsProps> = ({
 			<MapControlButton
 				icon={<LocateIcon active={isFollowingUser} />}
 				onPress={onLocateUser}
-				accessibilityLabel="Centrer sur ma position"
+				accessibilityLabel={t('map.locateUser')}
 				size="medium"
 				active={isFollowingUser}
 				testID="map-control-locate"

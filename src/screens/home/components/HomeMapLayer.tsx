@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import { Marker } from 'react-native-maps';
 import { LoadingSpinner, MapViewComponent } from '../../../components';
 import { COLORS } from '../../../constants';
+import { useTranslation } from '../../../i18n';
 import {
 	DestinationMarker,
 	RoutePolyline,
@@ -26,11 +27,12 @@ export const HomeMapLayer: React.FC = () => {
 	const search = useHomeSearch();
 	const session = useHomeSession();
 	const spot = useHomeSpot();
+	const { t } = useTranslation();
 
 	return (
 		<View style={styles.mapContainer}>
 			{locationLoading ? (
-				<LoadingSpinner message="Getting your location..." />
+				<LoadingSpinner message={t('map.gettingLocation')} />
 			) : (
 				<>
 					<MapViewComponent

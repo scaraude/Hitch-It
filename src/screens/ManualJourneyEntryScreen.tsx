@@ -5,6 +5,7 @@ import { useCallback } from 'react';
 import { Alert, StyleSheet, View } from 'react-native';
 import { useAuth } from '../auth';
 import { COLORS } from '../constants';
+import { useTranslation } from '../i18n';
 import { LocationPickerStep, StopsManagementStep } from '../journey/components';
 import { ManualJourneyStep, useManualJourneyFlow } from '../journey/hooks';
 import * as journeyRepository from '../journey/services/journeyRepository';
@@ -74,6 +75,7 @@ export default function ManualJourneyEntryScreen() {
 	const navigation = useNavigation<NavigationProp>();
 	const { user } = useAuth();
 	const flow = useManualJourneyFlow();
+	const { t } = useTranslation();
 
 	const handleBack = useCallback(() => {
 		if (flow.currentStep === ManualJourneyStep.SelectStart) {
@@ -194,27 +196,27 @@ export default function ManualJourneyEntryScreen() {
 
 			logger.app.info('Manual journey saved', { journeyId });
 
-			Alert.alert('Success', 'Journey saved successfully', [
+			Alert.alert(t('common.success'), t('journey.savedSuccess'), [
 				{
-					text: 'OK',
+					text: t('common.ok'),
 					onPress: () => navigation.goBack(),
 				},
 			]);
 		} catch (error) {
 			logger.app.error('Failed to save manual journey', error);
-			Alert.alert('Error', 'Failed to save journey. Please try again.');
+			Alert.alert(t('common.error'), t('errors.saveFailed'));
 		} finally {
 			flow.setSaving(false);
 		}
-	}, [user, flow, navigation]);
+	}, [user, flow, navigation, t]);
 
 	return (
 		<View style={styles.container}>
 			{flow.currentStep === ManualJourneyStep.SelectStart && (
 				<LocationPickerStep
-					title="Select Starting Point"
-					subtitle="Search or position the marker"
-					ctaLabel="Confirm Start"
+					title={t('journey.selectStartPoint')}
+					subtitle={t('journey.searchOrPositionMarker')}
+					ctaLabel={t('journey.confirmStart')}
 					markerColor={COLORS.error}
 					onConfirm={handleConfirmStart}
 					onBack={handleBack}
@@ -223,9 +225,9 @@ export default function ManualJourneyEntryScreen() {
 
 			{flow.currentStep === ManualJourneyStep.SelectEnd && (
 				<LocationPickerStep
-					title="Select Endpoint"
-					subtitle="Search or position the marker"
-					ctaLabel="Confirm End"
+					title={t('journey.selectEndpoint')}
+					subtitle={t('journey.searchOrPositionMarker')}
+					ctaLabel={t('journey.confirmEnd')}
 					markerColor={COLORS.error}
 					onConfirm={handleConfirmEnd}
 					onBack={handleBack}

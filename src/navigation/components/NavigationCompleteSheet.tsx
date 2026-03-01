@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { BottomSheetHeader, bottomSheetStyles } from '../../components/ui';
 import { COLORS, SIZES, SPACING } from '../../constants';
+import { useTranslation } from '../../i18n';
 import type { NavigationRoute, SpotOnRoute } from '../types';
 
 interface NavigationCompleteSheetProps {
@@ -30,28 +31,35 @@ export function NavigationCompleteSheet({
 	onSave,
 	onDiscard,
 }: NavigationCompleteSheetProps) {
+	const { t } = useTranslation();
+
 	return (
 		<View style={[bottomSheetStyles.container, styles.container]}>
 			<BottomSheetHeader style={styles.header} />
 
 			<View style={styles.content}>
-				<Text style={styles.title}>Navigation terminée !</Text>
+				<Text style={styles.title}>{t('navigation.complete')}</Text>
 
 				<View style={styles.stats}>
 					<Text style={styles.route}>{route.destinationName}</Text>
 					<Text style={styles.details}>
-						{formatDuration(durationMinutes)} | {route.distanceKm} km
+						{formatDuration(durationMinutes)} | {route.distanceKm}{' '}
+						{t('common.kmLabel')}
 					</Text>
 				</View>
 
 				{spotsUsed.length > 0 && (
 					<Text style={styles.spotsInfo}>
-						{spotsUsed.length} spot{spotsUsed.length > 1 ? 's' : ''} sur le
-						trajet
+						{t('navigation.spotsOnRoute', {
+							count: spotsUsed.length,
+							plural: spotsUsed.length > 1 ? 's' : '',
+						})}
 					</Text>
 				)}
 
-				<Text style={styles.question}>Voulez-vous sauvegarder ce voyage ?</Text>
+				<Text style={styles.question}>
+					{t('navigation.saveJourneyQuestion')}
+				</Text>
 
 				<View style={styles.buttons}>
 					<Pressable
@@ -61,7 +69,7 @@ export function NavigationCompleteSheet({
 						]}
 						onPress={onSave}
 					>
-						<Text style={styles.primaryButtonText}>Oui, sauvegarder</Text>
+						<Text style={styles.primaryButtonText}>{t('common.yesSave')}</Text>
 					</Pressable>
 					<Pressable
 						style={({ pressed }) => [
@@ -70,7 +78,9 @@ export function NavigationCompleteSheet({
 						]}
 						onPress={onDiscard}
 					>
-						<Text style={styles.secondaryButtonText}>Non merci</Text>
+						<Text style={styles.secondaryButtonText}>
+							{t('common.noThanks')}
+						</Text>
 					</Pressable>
 				</View>
 			</View>
