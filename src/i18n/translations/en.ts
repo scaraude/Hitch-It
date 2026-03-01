@@ -254,5 +254,8 @@ export default {
 	languages: {
 		en: 'English',
 		fr: 'French',
+		de: 'German',
+		es: 'Spanish',
+		it: 'Italian',
 	},
 } as const;

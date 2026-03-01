@@ -15,6 +15,21 @@ const AVAILABLE_LANGUAGES = [
 		name: 'Français',
 		flag: '🇫🇷',
 	},
+	{
+		code: Language.German,
+		name: 'Deutsch',
+		flag: '🇩🇪',
+	},
+	{
+		code: Language.Spanish,
+		name: 'Español',
+		flag: '🇪🇸',
+	},
+	{
+		code: Language.Italian,
+		name: 'Italiano',
+		flag: '🇮🇹',
+	},
 ] as const;
 
 export function LanguageSelector() {

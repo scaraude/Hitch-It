@@ -262,5 +262,8 @@ export default {
 	languages: {
 		en: 'Anglais',
 		fr: 'Français',
+		de: 'Allemand',
+		es: 'Espagnol',
+		it: 'Italien',
 	},
 } as const;

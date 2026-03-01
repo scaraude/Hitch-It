@@ -1,6 +1,9 @@
 export enum Language {
 	English = 'en',
 	French = 'fr',
+	German = 'de',
+	Spanish = 'es',
+	Italian = 'it',
 }
 
 export type TranslationKey = keyof typeof import('./translations/fr').default;
