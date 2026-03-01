@@ -1,5 +1,6 @@
 import type React from 'react';
 import { createContext, useContext, useRef } from 'react';
+import { useAuth } from '../../../auth';
 import type { MapViewRef } from '../../../components';
 import { useLocation } from '../../../hooks';
 import { useJourney } from '../../../journey/context';
@@ -52,6 +53,7 @@ export const HomeStateProvider: React.FC<HomeStateProviderProps> = ({
 	onRegionChange,
 }) => {
 	const { userLocation, currentRegion, locationLoading } = useLocation();
+	const { isAuthenticated } = useAuth();
 	const spot = useSpotContext();
 	const nav = useNavigation();
 	const journey = useJourney();
@@ -59,6 +61,8 @@ export const HomeStateProvider: React.FC<HomeStateProviderProps> = ({
 
 	const session = useHomeSessionState({
 		navigation: nav.navigation,
+		isAuthenticated,
+		hasActiveJourney: journey.activeJourney !== null,
 		userLocation,
 		startNavigationWithRoute: nav.startNavigationWithRoute,
 		compareWithDriverDirection: nav.compareWithDriverDirection,
@@ -66,6 +70,8 @@ export const HomeStateProvider: React.FC<HomeStateProviderProps> = ({
 		stopNavigation: nav.stopNavigation,
 		startRecording: journey.startRecording,
 		stopRecording: journey.stopRecording,
+		discardJourney: journey.discardJourney,
+		markStop: journey.markStop,
 		isRecording: journey.isRecording,
 		onDeselectSpot: spot.deselectSpot,
 	});

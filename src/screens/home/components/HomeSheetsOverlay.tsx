@@ -21,7 +21,6 @@ import { SpotDetailsSheet, SpotForm } from '../../../spot/components';
 import {
 	useHomeLocation,
 	useHomeMap,
-	useHomeNav,
 	useHomeSession,
 	useHomeSpot,
 } from '../context/HomeStateContext';
@@ -35,7 +34,6 @@ export const HomeSheetsOverlay: React.FC = () => {
 	const { userLocation } = useHomeLocation();
 	const spot = useHomeSpot();
 	const session = useHomeSession();
-	const nav = useHomeNav();
 	const map = useHomeMap();
 
 	const insets = useSafeAreaInsets();
@@ -114,10 +112,10 @@ export const HomeSheetsOverlay: React.FC = () => {
 				/>
 			)}
 
-			{session.showCompletionSheet && nav.navigation.route && (
+			{session.showCompletionSheet && session.completionRoute && (
 				<NavigationCompleteSheet
-					route={nav.navigation.route}
-					spotsUsed={nav.navigation.spotsOnRoute}
+					route={session.completionRoute}
+					spotsUsed={session.completionSpotsUsed}
 					durationMinutes={session.journeyDurationMinutes}
 					onSave={handleSaveJourney}
 					onDiscard={handleDiscardJourney}

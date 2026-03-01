@@ -1,7 +1,15 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Alert } from 'react-native';
 import { toastUtils } from '../../../components/ui';
 import { useArrivalDetection } from '../../../navigation/hooks';
-import type { NavigationState } from '../../../navigation/types';
+import type {
+	NavigationRoute,
+	NavigationState,
+	RootStackParamList,
+	SpotOnRoute,
+} from '../../../navigation/types';
 import type { Spot } from '../../../spot/types';
 import type { Location } from '../../../types';
 import { logger } from '../../../utils';
@@ -19,6 +27,8 @@ interface NavigationStartResult {
 
 interface UseHomeSessionStateArgs {
 	navigation: NavigationState;
+	isAuthenticated: boolean;
+	hasActiveJourney: boolean;
 	userLocation: Location | null;
 	startNavigationWithRoute: (
 		startLocation: Location,
@@ -33,6 +43,8 @@ interface UseHomeSessionStateArgs {
 	stopNavigation: () => void;
 	startRecording: () => Promise<boolean>;
 	stopRecording: () => Promise<void>;
+	discardJourney: () => Promise<void>;
+	markStop: () => void;
 	isRecording: boolean;
 	onDeselectSpot: () => void;
 }
@@ -40,10 +52,13 @@ interface UseHomeSessionStateArgs {
 export interface UseHomeSessionStateReturn {
 	// Journey completion
 	showCompletionSheet: boolean;
+	completionRoute: NavigationRoute | null;
+	completionSpotsUsed: SpotOnRoute[];
 	journeyDurationMinutes: number;
 	handleStopNavigation: () => Promise<void>;
 	handleSaveJourney: () => Promise<void>;
 	handleDiscardJourney: () => Promise<void>;
+	handleMarkStop: () => void;
 	// Embarquer flow
 	showEmbarquerSheet: boolean;
 	embarquerOrigin: NamedLocation | null;
@@ -69,6 +84,8 @@ export interface UseHomeSessionStateReturn {
 
 export const useHomeSessionState = ({
 	navigation,
+	isAuthenticated,
+	hasActiveJourney,
 	userLocation,
 	startNavigationWithRoute,
 	compareWithDriverDirection,
@@ -76,20 +93,73 @@ export const useHomeSessionState = ({
 	stopNavigation,
 	startRecording,
 	stopRecording,
+	discardJourney,
+	markStop,
 	isRecording,
 	onDeselectSpot,
 }: UseHomeSessionStateArgs): UseHomeSessionStateReturn => {
+	const rootNavigation =
+		useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 	// === Journey Session State ===
 	const [showCompletionSheet, setShowCompletionSheet] = useState(false);
+	const [completionRoute, setCompletionRoute] =
+		useState<NavigationRoute | null>(null);
+	const [completionSpotsUsed, setCompletionSpotsUsed] = useState<SpotOnRoute[]>(
+		[]
+	);
 	const [journeyStartTime, setJourneyStartTime] = useState<Date | null>(null);
+	const hasHandledArrivalRef = useRef(false);
 
 	const { hasArrived } = useArrivalDetection(navigation.route, userLocation);
 
 	useEffect(() => {
-		if (hasArrived && navigation.isActive) {
-			setShowCompletionSheet(true);
+		if (!navigation.isActive || !navigation.route) {
+			hasHandledArrivalRef.current = false;
+			return;
 		}
-	}, [hasArrived, navigation.isActive]);
+
+		if (!hasArrived || hasHandledArrivalRef.current) {
+			return;
+		}
+
+		hasHandledArrivalRef.current = true;
+		if (!hasActiveJourney) {
+			stopNavigation();
+			toastUtils.info('Destination proche', 'Arrivée détectée');
+			return;
+		}
+
+		setCompletionRoute(navigation.route);
+		setCompletionSpotsUsed(navigation.spotsOnRoute);
+		setShowCompletionSheet(true);
+
+		void (async () => {
+			try {
+				if (isRecording) {
+					await stopRecording();
+				}
+				stopNavigation();
+				toastUtils.info(
+					'Destination proche',
+					'Fin du trajet détectée automatiquement'
+				);
+			} catch (error) {
+				logger.navigation.error(
+					'Failed to auto-finish journey on arrival detection',
+					error
+				);
+			}
+		})();
+	}, [
+		hasArrived,
+		hasActiveJourney,
+		isRecording,
+		navigation.isActive,
+		navigation.route,
+		navigation.spotsOnRoute,
+		stopNavigation,
+		stopRecording,
+	]);
 
 	const journeyDurationMinutes = useMemo(
 		() =>
@@ -104,9 +174,14 @@ export const useHomeSessionState = ({
 			options: {
 				hideCompletionSheet?: boolean;
 				resetJourneyStart?: boolean;
+				clearCompletionData?: boolean;
 			} = {}
 		) => {
-			const { hideCompletionSheet = true, resetJourneyStart = true } = options;
+			const {
+				hideCompletionSheet = true,
+				resetJourneyStart = true,
+				clearCompletionData = true,
+			} = options;
 
 			if (hideCompletionSheet) {
 				setShowCompletionSheet(false);
@@ -120,6 +195,11 @@ export const useHomeSessionState = ({
 
 			if (resetJourneyStart) {
 				setJourneyStartTime(null);
+			}
+
+			if (clearCompletionData) {
+				setCompletionRoute(null);
+				setCompletionSpotsUsed([]);
 			}
 		},
 		[isRecording, stopNavigation, stopRecording]
@@ -137,7 +217,32 @@ export const useHomeSessionState = ({
 
 	const handleDiscardJourney = useCallback(async () => {
 		await endNavigationSession();
-	}, [endNavigationSession]);
+		if (!hasActiveJourney) {
+			return;
+		}
+		try {
+			await discardJourney();
+			toastUtils.info('Voyage supprimé', 'Le voyage a été supprimé');
+		} catch (error) {
+			logger.journey.error(
+				'Failed to discard journey from completion sheet',
+				error
+			);
+			toastUtils.error('Erreur', 'Suppression du voyage impossible');
+		}
+	}, [discardJourney, endNavigationSession, hasActiveJourney]);
+
+	const handleMarkStop = useCallback(() => {
+		if (!isRecording) {
+			toastUtils.info(
+				'Enregistrement inactif',
+				'Impossible de marquer un arrêt sans enregistrement actif'
+			);
+			return;
+		}
+		markStop();
+		toastUtils.success('Arrêt marqué', 'Point ajouté au trajet');
+	}, [isRecording, markStop]);
 
 	const markJourneyStarted = useCallback(() => {
 		setJourneyStartTime(new Date());
@@ -189,10 +294,13 @@ export const useHomeSessionState = ({
 		[onDeselectSpot]
 	);
 
-	const handleEmbarquerStart = useCallback(
-		async (start: NamedLocation, destination: NamedLocation) => {
-			clearEmbarquerState();
-
+	const startNavigationSession = useCallback(
+		async (
+			start: NamedLocation,
+			destination: NamedLocation,
+			options: { withRecording: boolean }
+		) => {
+			const { withRecording } = options;
 			const result = await startNavigationWithRoute(
 				start.location,
 				destination.location,
@@ -204,17 +312,79 @@ export const useHomeSessionState = ({
 				return;
 			}
 
+			setShowCompletionSheet(false);
+			setCompletionRoute(null);
+			setCompletionSpotsUsed([]);
+			hasHandledArrivalRef.current = false;
+
+			if (!withRecording) {
+				setJourneyStartTime(null);
+				toastUtils.info(
+					'Navigation sans enregistrement',
+					'Connectez-vous pour enregistrer le voyage'
+				);
+				return;
+			}
+
 			const journeyStarted = await startRecording();
 			if (journeyStarted) {
 				markJourneyStarted();
 				logger.navigation.info('Journey recording started with custom route');
+				return;
 			}
+
+			stopNavigation();
+			toastUtils.error(
+				'Erreur',
+				"Impossible de démarrer l'enregistrement du voyage"
+			);
 		},
 		[
-			clearEmbarquerState,
 			markJourneyStarted,
 			startNavigationWithRoute,
 			startRecording,
+			stopNavigation,
+		]
+	);
+
+	const handleEmbarquerStart = useCallback(
+		async (start: NamedLocation, destination: NamedLocation) => {
+			clearEmbarquerState();
+
+			if (!isAuthenticated) {
+				Alert.alert(
+					'Créer un compte pour enregistrer le trajet',
+					'Le voyage est enregistré uniquement pour les utilisateurs connectés.',
+					[
+						{
+							text: "S'inscrire",
+							onPress: () => {
+								rootNavigation.navigate('SignUp');
+							},
+						},
+						{
+							text: 'Continuer sans enregistrement',
+							style: 'cancel',
+							onPress: () => {
+								void startNavigationSession(start, destination, {
+									withRecording: false,
+								});
+							},
+						},
+					]
+				);
+				return;
+			}
+
+			await startNavigationSession(start, destination, {
+				withRecording: true,
+			});
+		},
+		[
+			clearEmbarquerState,
+			isAuthenticated,
+			rootNavigation,
+			startNavigationSession,
 		]
 	);
 
@@ -257,10 +427,13 @@ export const useHomeSessionState = ({
 	return {
 		// Journey completion
 		showCompletionSheet,
+		completionRoute,
+		completionSpotsUsed,
 		journeyDurationMinutes,
 		handleStopNavigation,
 		handleSaveJourney,
 		handleDiscardJourney,
+		handleMarkStop,
 		// Embarquer flow
 		showEmbarquerSheet,
 		embarquerOrigin,

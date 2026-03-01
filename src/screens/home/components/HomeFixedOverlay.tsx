@@ -31,6 +31,7 @@ const MAP_CONTROLS_OFFSET_WITH_NAVIGATION = 170;
 const NAVIGATION_COMPARE_BUTTON_BOTTOM_OFFSET = 56;
 const COMPARE_BUTTON_LABEL = 'Comparer direction conducteur';
 const CLEAR_COMPARE_BUTTON_LABEL = 'Effacer comparaison';
+const MARK_STOP_BUTTON_LABEL = 'Marquer arrêt';
 
 export const HomeFixedOverlay: React.FC = () => {
 	const rootNavigation = useNavigation<NavigationProp>();
@@ -129,6 +130,24 @@ export const HomeFixedOverlay: React.FC = () => {
 					>
 						<Text style={styles.compareDriverDirectionButtonText}>
 							{driverDirectionLabel}
+						</Text>
+					</Pressable>
+
+					<Pressable
+						style={({ pressed }) => [
+							styles.markStopButton,
+							{
+								bottom: NAVIGATION_COMPARE_BUTTON_BOTTOM_OFFSET + insets.bottom,
+							},
+							pressed && styles.markStopButtonPressed,
+						]}
+						onPress={session.handleMarkStop}
+						accessibilityRole="button"
+						accessibilityLabel={MARK_STOP_BUTTON_LABEL}
+						testID="mark-stop-button"
+					>
+						<Text style={styles.markStopButtonText}>
+							{MARK_STOP_BUTTON_LABEL}
 						</Text>
 					</Pressable>
 
