@@ -6,6 +6,11 @@ import { Language, useTranslation } from '../../i18n';
 
 const AVAILABLE_LANGUAGES = [
 	{
+		code: Language.English,
+		name: 'English',
+		flag: '🇬🇧',
+	},
+	{
 		code: Language.French,
 		name: 'Français',
 		flag: '🇫🇷',
