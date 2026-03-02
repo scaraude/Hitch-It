@@ -3,6 +3,7 @@ import type { RefObject } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { BackHandler, Platform } from 'react-native';
 import type { MapViewRef } from '../../../components';
+import { useNavigationProgress } from '../../../navigation/hooks';
 import type { NavigationRoute, SpotOnRoute } from '../../../navigation/types';
 import type { Spot, SpotMarkerData } from '../../../spot/types';
 import type { Location, MapRegion } from '../../../types';
@@ -203,18 +204,39 @@ export const useHomeMapState = ({
 		}
 	}, [driverRoute, isNavigationActive, mapViewRef, navigationRoute]);
 
+	const { visibleSpotsOnRoute, progressRoutePointIndex } =
+		useNavigationProgress({
+			routePolyline: navigationRoute?.polyline ?? [],
+			initialDistanceKm: navigationRoute?.distanceKm ?? 0,
+			userLocation,
+			spotsOnRoute,
+		});
+
 	// === Visible Spots (filtered during navigation) ===
 	const visibleSpots = useMemo(
 		() =>
 			isNavigationActive
-				? (driverRoute ? commonSpotsOnRoute : spotsOnRoute).map(({ spot }) => ({
+				? (driverRoute
+						? commonSpotsOnRoute.filter(
+								({ closestRoutePointIndex }) =>
+									closestRoutePointIndex >= progressRoutePointIndex
+							)
+						: visibleSpotsOnRoute
+					).map(({ spot }) => ({
 						id: spot.id as string,
 						coordinates: spot.coordinates,
 						title: spot.roadName,
 						description: spot.direction,
 					}))
 				: spots,
-		[commonSpotsOnRoute, driverRoute, isNavigationActive, spots, spotsOnRoute]
+		[
+			commonSpotsOnRoute,
+			driverRoute,
+			isNavigationActive,
+			progressRoutePointIndex,
+			spots,
+			visibleSpotsOnRoute,
+		]
 	);
 
 	// === Android Back Handler (map-related) ===

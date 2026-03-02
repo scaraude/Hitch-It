@@ -8,6 +8,7 @@ import {
 	DestinationMarker,
 	RoutePolyline,
 } from '../../../navigation/components';
+import { useNavigationProgress } from '../../../navigation/hooks';
 import {
 	useHomeLocation,
 	useHomeMap,
@@ -20,7 +21,7 @@ import {
 import { homeScreenStyles as styles } from '../homeScreenStyles';
 
 export const HomeMapLayer: React.FC = () => {
-	const { currentRegion, locationLoading } = useHomeLocation();
+	const { userLocation, currentRegion, locationLoading } = useHomeLocation();
 	const mapViewRef = useHomeMapRef();
 	const map = useHomeMap();
 	const nav = useHomeNav();
@@ -28,6 +29,13 @@ export const HomeMapLayer: React.FC = () => {
 	const session = useHomeSession();
 	const spot = useHomeSpot();
 	const { t } = useTranslation();
+
+	const { passedRoutePolyline, remainingRoutePolyline } = useNavigationProgress({
+		routePolyline: nav.navigation.route?.polyline ?? [],
+		initialDistanceKm: nav.navigation.route?.distanceKm ?? 0,
+		userLocation,
+		spotsOnRoute: nav.navigation.spotsOnRoute,
+	});
 
 	return (
 		<View style={styles.mapContainer}>
@@ -72,12 +80,20 @@ export const HomeMapLayer: React.FC = () => {
 						)}
 
 						{nav.navigation.route && (
-							<RoutePolyline
-								route={nav.navigation.route}
-								strokeColor={COLORS.secondary}
-								strokeWidth={5}
-								zIndex={2}
-							/>
+							<>
+								<RoutePolyline
+									coordinates={passedRoutePolyline}
+									strokeColor={COLORS.navigationRoutePassed}
+									strokeWidth={5}
+									zIndex={2}
+								/>
+								<RoutePolyline
+									coordinates={remainingRoutePolyline}
+									strokeColor={COLORS.secondary}
+									strokeWidth={5}
+									zIndex={3}
+								/>
+							</>
 						)}
 
 						{map.longPressMarker && (
