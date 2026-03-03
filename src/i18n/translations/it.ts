@@ -194,7 +194,6 @@ export default {
 		commentsLabel: 'Commenti',
 		destinationPlaceholder: 'Es: Parigi, Lione...',
 		hitchFromSpot: 'Fare autostop da questo spot',
-		hitchIt: 'Autostop',
 		createSpot: 'Crea spot',
 		ratingLabel: 'Valutazione *',
 		commentLabel: 'Commento *',

@@ -194,7 +194,6 @@ export default {
 		commentsLabel: 'Kommentare',
 		destinationPlaceholder: 'z.B.: Paris, Lyon...',
 		hitchFromSpot: 'Von diesem Spot trampen',
-		hitchIt: 'Trampen',
 		createSpot: 'Spot erstellen',
 		ratingLabel: 'Bewertung *',
 		commentLabel: 'Kommentar *',

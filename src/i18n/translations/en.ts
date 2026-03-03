@@ -189,7 +189,6 @@ export default {
 		commentsLabel: 'Comments',
 		destinationPlaceholder: 'E.g.: Paris, Lyon...',
 		hitchFromSpot: 'Hitchhike from this spot',
-		hitchIt: 'Hitch it',
 		createSpot: 'Create spot',
 		ratingLabel: 'Rating *',
 		commentLabel: 'Comment *',

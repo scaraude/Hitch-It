@@ -10,7 +10,6 @@ import {
 	MapControls,
 	SearchBarOverlay,
 } from '../../../components';
-import { APP_CONFIG } from '../../../constants';
 import { useTranslation } from '../../../i18n';
 import { NavigationHeader } from '../../../navigation/components';
 import { useNavigationProgress } from '../../../navigation/hooks';
@@ -199,7 +198,7 @@ export const HomeFixedOverlay: React.FC = () => {
 					onPress={handleBottomEmbarquerPress}
 				>
 					<Text style={styles.longPressEmbarquerButtonText}>
-						{APP_CONFIG.name}
+						{t('navigation.hitchIt')}
 					</Text>
 				</Pressable>
 			)}
