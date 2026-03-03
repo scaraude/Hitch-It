@@ -31,11 +31,11 @@ export const ActionButton: React.FC<ActionButtonProps> = ({
 				variant === 'default' ? styles.button : styles.buttonLarge,
 				{ backgroundColor },
 				!withContainer &&
-				bottomOffset !== undefined && { bottom: bottomOffset },
+					bottomOffset !== undefined && { bottom: bottomOffset },
 				pressed &&
-				(variant === 'default'
-					? styles.buttonPressed
-					: styles.buttonLargePressed),
+					(variant === 'default'
+						? styles.buttonPressed
+						: styles.buttonLargePressed),
 			]}
 			onPress={onPress}
 			accessibilityLabel={accessibilityLabel ?? label}

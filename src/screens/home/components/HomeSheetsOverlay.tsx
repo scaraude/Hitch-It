@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 import { KeyboardAvoidingView, Platform, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
-import { ActionButton, ActionButtons } from '../../../components';
+import { ActionButton } from '../../../components';
 import { SPACING } from '../../../constants';
 import { useTranslation } from '../../../i18n';
 import {
@@ -11,7 +11,11 @@ import {
 	EmbarquerSheet,
 	NavigationCompleteSheet,
 } from '../../../navigation/components';
-import { SpotDetailsSheet, SpotForm } from '../../../spot/components';
+import {
+	SpotDetailsSheet,
+	SpotForm,
+	SpotPlacementOverlay,
+} from '../../../spot/components';
 import {
 	useHomeLocation,
 	useHomeMap,
@@ -63,7 +67,7 @@ export const HomeSheetsOverlay: React.FC = () => {
 	return (
 		<View style={homeStyles.nonMapOverlay} pointerEvents="box-none">
 			{spot.isPlacingSpot && (
-				<ActionButtons
+				<SpotPlacementOverlay
 					onConfirm={handleConfirmSpotPlacement}
 					onCancel={spot.cancelSpotPlacement}
 				/>

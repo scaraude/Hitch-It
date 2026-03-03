@@ -182,6 +182,7 @@ export default {
 		location: 'Location',
 		coordinates: 'Coordinates',
 		addSpot: 'Add spot',
+		addASpot: 'Add a spot',
 		newSpot: 'New Spot',
 		roadNameLabel: 'Road name *',
 		roadNamePlaceholder: 'E.g.: A6, D907, Route de Lyon...',
