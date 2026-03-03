@@ -131,6 +131,7 @@ export const EmbarquerSheet: React.FC<EmbarquerSheetProps> = ({
 						inputTestID="embarquer-destination-input"
 						positionButtonTestID="embarquer-destination-from-position"
 						inputLayerStyle={styles.destinationInputLayer}
+						showPositionButton={false}
 					/>
 				</View>
 

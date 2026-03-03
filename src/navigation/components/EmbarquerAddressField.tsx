@@ -22,6 +22,7 @@ interface EmbarquerAddressFieldProps {
 	inputTestID: string;
 	positionButtonTestID: string;
 	inputLayerStyle: StyleProp<ViewStyle>;
+	showPositionButton?: boolean;
 }
 
 export const EmbarquerAddressField: React.FC<EmbarquerAddressFieldProps> = ({
@@ -38,6 +39,7 @@ export const EmbarquerAddressField: React.FC<EmbarquerAddressFieldProps> = ({
 	inputTestID,
 	positionButtonTestID,
 	inputLayerStyle,
+	showPositionButton = true,
 }) => {
 	const { t } = useTranslation();
 
@@ -58,32 +60,34 @@ export const EmbarquerAddressField: React.FC<EmbarquerAddressFieldProps> = ({
 				/>
 			</View>
 
-			<Pressable
-				style={({ pressed }) => [
-					styles.positionButton,
-					!hasCurrentPosition && styles.positionButtonDisabled,
-					pressed && hasCurrentPosition && styles.positionButtonPressed,
-				]}
-				onPress={onUseCurrentPosition}
-				disabled={!hasCurrentPosition}
-				accessibilityRole="button"
-				accessibilityLabel={positionButtonAccessibilityLabel}
-				testID={positionButtonTestID}
-			>
-				<Ionicons
-					name="locate"
-					size={14}
-					color={hasCurrentPosition ? COLORS.primary : COLORS.textSecondary}
-				/>
-				<Text
-					style={[
-						styles.positionButtonText,
-						!hasCurrentPosition && styles.positionButtonTextDisabled,
+			{showPositionButton ? (
+				<Pressable
+					style={({ pressed }) => [
+						styles.positionButton,
+						!hasCurrentPosition && styles.positionButtonDisabled,
+						pressed && hasCurrentPosition && styles.positionButtonPressed,
 					]}
+					onPress={onUseCurrentPosition}
+					disabled={!hasCurrentPosition}
+					accessibilityRole="button"
+					accessibilityLabel={positionButtonAccessibilityLabel}
+					testID={positionButtonTestID}
 				>
-					{t('common.currentPosition')}
-				</Text>
-			</Pressable>
+					<Ionicons
+						name="locate"
+						size={14}
+						color={hasCurrentPosition ? COLORS.primary : COLORS.textSecondary}
+					/>
+					<Text
+						style={[
+							styles.positionButtonText,
+							!hasCurrentPosition && styles.positionButtonTextDisabled,
+						]}
+					>
+						{t('common.currentPosition')}
+					</Text>
+				</Pressable>
+			) : null}
 		</View>
 	);
 };
