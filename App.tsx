@@ -6,12 +6,18 @@ import { Platform } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AuthProvider } from './src/auth';
 import { ErrorBoundary } from './src/components';
+import { initializeLanguage } from './src/i18n';
 import { RootNavigator } from './src/navigation';
 import { logger } from './src/utils';
 
 const App: React.FC = () => {
 	useEffect(() => {
 		logger.app.info('App initialized');
+
+		// Initialize language preference
+		initializeLanguage().catch(error => {
+			logger.app.warn('Failed to initialize language:', error);
+		});
 
 		// Configure Android navigation bar
 		if (Platform.OS === 'android') {

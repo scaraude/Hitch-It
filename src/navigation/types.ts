@@ -1,3 +1,4 @@
+import type { JourneyId } from '../journey/types';
 import type { Spot } from '../spot/types';
 
 /**
@@ -10,6 +11,9 @@ export type RootStackParamList = {
 	SignUp: undefined;
 	Profile: undefined;
 	ForgotPassword: { email?: string } | undefined;
+	JourneyHistory: undefined;
+	JourneyDetail: { journeyId: JourneyId };
+	ManualJourneyEntry: undefined;
 };
 
 /**

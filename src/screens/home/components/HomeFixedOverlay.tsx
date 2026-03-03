@@ -11,6 +11,7 @@ import {
 	SearchBarOverlay,
 } from '../../../components';
 import { APP_CONFIG } from '../../../constants';
+import { useTranslation } from '../../../i18n';
 import { NavigationHeader } from '../../../navigation/components';
 import type { RootStackParamList } from '../../../navigation/types';
 import {
@@ -29,12 +30,11 @@ const MAP_CONTROLS_OFFSET_WITH_BOTTOM_BAR = 110;
 const MAP_CONTROLS_OFFSET_DEFAULT = 24;
 const MAP_CONTROLS_OFFSET_WITH_NAVIGATION = 170;
 const NAVIGATION_COMPARE_BUTTON_BOTTOM_OFFSET = 56;
-const COMPARE_BUTTON_LABEL = 'Comparer direction conducteur';
-const CLEAR_COMPARE_BUTTON_LABEL = 'Effacer comparaison';
 
 export const HomeFixedOverlay: React.FC = () => {
 	const rootNavigation = useNavigation<NavigationProp>();
 	const { isAuthenticated } = useAuth();
+	const { t } = useTranslation();
 
 	const nav = useHomeNav();
 	const session = useHomeSession();
@@ -81,14 +81,20 @@ export const HomeFixedOverlay: React.FC = () => {
 		: session.openDriverDirectionSheet;
 
 	const driverDirectionLabel = session.hasDriverComparison
-		? CLEAR_COMPARE_BUTTON_LABEL
-		: COMPARE_BUTTON_LABEL;
+		? t('navigation.clearComparison')
+		: t('navigation.compareDriverDirection');
 
 	const handleTabPress = useCallback(
 		(tabId: HomeTabId) => {
 			if (tabId === 'add') spot.startPlacingSpot();
 			else if (tabId === 'search') search.handleSearchToggle();
-			else if (tabId === 'profile') {
+			else if (tabId === 'history') {
+				if (isAuthenticated) {
+					rootNavigation.navigate('JourneyHistory');
+				} else {
+					rootNavigation.navigate('Login');
+				}
+			} else if (tabId === 'profile') {
 				if (isAuthenticated) {
 					rootNavigation.navigate('Profile');
 				} else {
@@ -123,6 +129,24 @@ export const HomeFixedOverlay: React.FC = () => {
 					>
 						<Text style={styles.compareDriverDirectionButtonText}>
 							{driverDirectionLabel}
+						</Text>
+					</Pressable>
+
+					<Pressable
+						style={({ pressed }) => [
+							styles.markStopButton,
+							{
+								bottom: NAVIGATION_COMPARE_BUTTON_BOTTOM_OFFSET + insets.bottom,
+							},
+							pressed && styles.markStopButtonPressed,
+						]}
+						onPress={session.handleMarkStop}
+						accessibilityRole="button"
+						accessibilityLabel={t('navigation.markStop')}
+						testID="mark-stop-button"
+					>
+						<Text style={styles.markStopButtonText}>
+							{t('navigation.markStop')}
 						</Text>
 					</Pressable>
 

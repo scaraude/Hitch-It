@@ -12,6 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AddressInput } from '../../components';
 import { BottomSheetHeader, bottomSheetStyles } from '../../components/ui';
 import { COLORS, SIZES, SPACING } from '../../constants';
+import { useTranslation } from '../../i18n';
 import type { Location } from '../../types';
 
 interface AddressData {
@@ -25,19 +26,13 @@ interface DriverDirectionSheetProps {
 	onClose: () => void;
 }
 
-const SHEET_TITLE = 'Comparer avec la direction du conducteur';
-const SHEET_SUBTITLE =
-	'Entrez la destination du conducteur pour afficher le trajet commun.';
-const DESTINATION_PLACEHOLDER = 'Destination du conducteur';
-const CANCEL_LABEL = 'Annuler';
-const COMPARE_LABEL = 'Comparer';
-
 export function DriverDirectionSheet({
 	initialDestination,
 	onCompare,
 	onClose,
 }: DriverDirectionSheetProps) {
 	const insets = useSafeAreaInsets();
+	const { t } = useTranslation();
 	const [destinationText, setDestinationText] = useState(
 		initialDestination?.name ?? ''
 	);
@@ -86,11 +81,15 @@ export function DriverDirectionSheet({
 				<BottomSheetHeader />
 
 				<View style={styles.content}>
-					<Text style={styles.title}>{SHEET_TITLE}</Text>
-					<Text style={styles.subtitle}>{SHEET_SUBTITLE}</Text>
+					<Text style={styles.title}>
+						{t('navigation.compareDriverDirectionTitle')}
+					</Text>
+					<Text style={styles.subtitle}>
+						{t('navigation.compareDriverDirectionSubtitle')}
+					</Text>
 
 					<AddressInput
-						placeholder={DESTINATION_PLACEHOLDER}
+						placeholder={t('navigation.driverDestinationPlaceholder')}
 						value={destinationText}
 						onChangeText={text => {
 							setDestinationText(text);
@@ -118,10 +117,12 @@ export function DriverDirectionSheet({
 							]}
 							onPress={onClose}
 							accessibilityRole="button"
-							accessibilityLabel="Fermer la comparaison conducteur"
+							accessibilityLabel={t('navigation.closeDriverComparison')}
 							testID="driver-direction-cancel"
 						>
-							<Text style={styles.secondaryButtonText}>{CANCEL_LABEL}</Text>
+							<Text style={styles.secondaryButtonText}>
+								{t('common.cancel')}
+							</Text>
 						</Pressable>
 
 						<Pressable
@@ -135,13 +136,15 @@ export function DriverDirectionSheet({
 							}}
 							disabled={!canCompare}
 							accessibilityRole="button"
-							accessibilityLabel="Lancer la comparaison conducteur"
+							accessibilityLabel={t('navigation.compareDriver')}
 							testID="driver-direction-compare"
 						>
 							{isSubmitting ? (
 								<ActivityIndicator color={COLORS.textLight} />
 							) : (
-								<Text style={styles.primaryButtonText}>{COMPARE_LABEL}</Text>
+								<Text style={styles.primaryButtonText}>
+									{t('navigation.compare')}
+								</Text>
 							)}
 						</Pressable>
 					</View>

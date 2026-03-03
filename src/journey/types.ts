@@ -8,6 +8,11 @@ export type JourneyId = string & { readonly brand: unique symbol };
 export type JourneyPointId = string & { readonly brand: unique symbol };
 export type UserId = string & { readonly brand: unique symbol };
 
+export interface JourneyRoutePoint {
+	latitude: number;
+	longitude: number;
+}
+
 /**
  * Journey status - simple state machine
  */
@@ -57,12 +62,13 @@ export interface Journey {
 
 	// Path data (loaded separately for performance)
 	points: JourneyPoint[];
+	routePolyline?: JourneyRoutePoint[];
 
 	// Enrichment (added post-trip in F12)
 	title?: string;
 	notes?: string;
 
-	// Computed from points
+	// Computed from route polyline (preferred) or points
 	totalDistanceKm?: number;
 
 	// Future: sharing (F5, F6)

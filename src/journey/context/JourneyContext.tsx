@@ -9,11 +9,11 @@ import {
 	useState,
 } from 'react';
 import { AppState, type AppStateStatus } from 'react-native';
+import { useAuth } from '../../auth';
 import { logger } from '../../utils';
 import {
-	getActiveJourney,
+	deleteJourney,
 	saveJourney,
-	saveJourneyPoint,
 	saveJourneyPoints,
 } from '../services/journeyRepository';
 import { locationTrackingService } from '../services/locationTrackingService';
@@ -23,13 +23,16 @@ import {
 	type JourneyPoint,
 	type JourneyPointId,
 	JourneyPointType,
+	type JourneyRoutePoint,
 	JourneyStatus,
 	type LocationUpdate,
 	type UserId,
 } from '../types';
 
-// Buffer for batching location points before saving
-const POINTS_BUFFER_SIZE = 10;
+const toRoutePoint = (location: LocationUpdate): JourneyRoutePoint => ({
+	latitude: location.latitude,
+	longitude: location.longitude,
+});
 
 interface JourneyContextValue {
 	// State
@@ -41,6 +44,7 @@ interface JourneyContextValue {
 	// Core actions
 	startRecording: () => Promise<boolean>;
 	stopRecording: () => Promise<void>;
+	discardJourney: () => Promise<void>;
 	pauseRecording: () => Promise<void>;
 	resumeRecording: () => Promise<void>;
 
@@ -55,15 +59,17 @@ const JourneyContext = createContext<JourneyContextValue | undefined>(
 export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 	children,
 }) => {
+	const { user, isAuthenticated } = useAuth();
 	const [activeJourney, setActiveJourney] = useState<Journey | null>(null);
 	const [isRecording, setIsRecording] = useState(false);
 	const [currentLocation, setCurrentLocation] = useState<LocationUpdate | null>(
 		null
 	);
 
-	// Refs for callback access
+	// Refs for callback access and in-memory journey cache
 	const activeJourneyRef = useRef<Journey | null>(null);
-	const pointsBufferRef = useRef<JourneyPoint[]>([]);
+	const routePolylineRef = useRef<JourneyRoutePoint[]>([]);
+	const hasPersistedJourneyRef = useRef(false);
 
 	// Keep ref in sync with state
 	useEffect(() => {
@@ -75,26 +81,11 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 		activeJourney?.points.filter(p => p.type === JourneyPointType.Stop)
 			.length ?? 0;
 
-	// Flush points buffer to database
-	const flushPointsBuffer = useCallback(async () => {
-		const points = pointsBufferRef.current;
-		if (points.length === 0) return;
-
-		pointsBufferRef.current = [];
-		try {
-			await saveJourneyPoints(points);
-		} catch (error) {
-			logger.journey.error('Failed to flush points buffer', error);
-			// Put points back in buffer on failure
-			pointsBufferRef.current = [...points, ...pointsBufferRef.current];
-		}
-	}, []);
-
 	const updateJourneyStatus = useCallback(
-		async (
+		(
 			status: JourneyStatus,
 			options: { endedAt?: Date } = {}
-		): Promise<Journey | null> => {
+		): Journey | null => {
 			if (!activeJourneyRef.current) return null;
 
 			const updatedJourney: Journey = {
@@ -106,78 +97,65 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 			setActiveJourney(updatedJourney);
 			activeJourneyRef.current = updatedJourney;
 
-			try {
-				await saveJourney(updatedJourney);
-			} catch (error) {
-				logger.journey.error('Failed to save journey status update', error);
-			}
-
 			return updatedJourney;
 		},
 		[]
 	);
 
+	const resetJourneyState = useCallback(() => {
+		routePolylineRef.current = [];
+		hasPersistedJourneyRef.current = false;
+		setActiveJourney(null);
+		activeJourneyRef.current = null;
+		setIsRecording(false);
+		setCurrentLocation(null);
+	}, []);
+
 	// Handle location updates
-	const handleLocationUpdate = useCallback(
-		(location: LocationUpdate) => {
-			setCurrentLocation(location);
+	const handleLocationUpdate = useCallback((location: LocationUpdate) => {
+		setCurrentLocation(location);
 
-			const journey = activeJourneyRef.current;
-			if (!journey || journey.status !== JourneyStatus.Recording) return;
+		const journey = activeJourneyRef.current;
+		if (!journey || journey.status !== JourneyStatus.Recording) return;
 
-			// Create location point
-			const point: JourneyPoint = {
-				id: Crypto.randomUUID() as JourneyPointId,
-				journeyId: journey.id,
-				type: JourneyPointType.Location,
-				latitude: location.latitude,
-				longitude: location.longitude,
-				timestamp: location.timestamp,
-			};
-
-			// Add to buffer
-			pointsBufferRef.current.push(point);
-
-			// Flush when buffer is full
-			if (pointsBufferRef.current.length >= POINTS_BUFFER_SIZE) {
-				flushPointsBuffer();
-			}
-		},
-		[flushPointsBuffer]
-	);
+		routePolylineRef.current.push(toRoutePoint(location));
+	}, []);
 
 	const handleLocationError = useCallback((error: Error) => {
 		logger.journey.error('Location tracking error', error);
 	}, []);
 
-	// Restore active journey on mount
+	// Rebind callbacks if tracking is active in this runtime.
 	const restoreActiveJourney = useCallback(async () => {
 		const isTrackingActive =
 			await locationTrackingService.isCurrentlyTracking();
 
 		if (!isTrackingActive) return;
 
-		logger.journey.info('Background tracking active, restoring journey');
+		const journey = activeJourneyRef.current;
+		if (!journey) {
+			logger.journey.warn(
+				'Background tracking active without cached journey, stopping tracking'
+			);
+			await locationTrackingService.stopTracking();
+			return;
+		}
+
+		logger.journey.info('Rebinding tracking callbacks for cached journey', {
+			id: journey.id,
+		});
 
 		try {
-			// TODO: Replace with actual user ID when auth is implemented
-			const userId = 'anonymous-user' as UserId;
-			const journey = await getActiveJourney(userId);
-
-			if (journey) {
-				logger.journey.info('Journey restored', { id: journey.id });
-				setActiveJourney(journey);
-				activeJourneyRef.current = journey;
-				setIsRecording(journey.status === JourneyStatus.Recording);
-			} else {
-				logger.journey.warn('No active journey found, stopping tracking');
-				await locationTrackingService.stopTracking();
-			}
+			await locationTrackingService.startTracking({
+				onLocationUpdate: handleLocationUpdate,
+				onError: handleLocationError,
+			});
+			setIsRecording(journey.status === JourneyStatus.Recording);
 		} catch (error) {
-			logger.journey.error('Failed to restore journey', error);
+			logger.journey.error('Failed to rebind tracking callbacks', error);
 			await locationTrackingService.stopTracking();
 		}
-	}, []);
+	}, [handleLocationError, handleLocationUpdate]);
 
 	useEffect(() => {
 		restoreActiveJourney();
@@ -200,6 +178,13 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 
 	// Start recording a new journey
 	const startRecording = useCallback(async (): Promise<boolean> => {
+		if (!isAuthenticated || !user) {
+			logger.journey.warn(
+				'Journey recording requires an authenticated user session'
+			);
+			return false;
+		}
+
 		if (await locationTrackingService.isCurrentlyTracking()) {
 			logger.journey.warn('Already recording a journey');
 			return false;
@@ -217,60 +202,122 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 			return false;
 		}
 
-		// TODO: Replace with actual user ID when auth is implemented
-		const userId = 'anonymous-user' as UserId;
+		const initialRoutePolyline = currentLocation
+			? [toRoutePoint(currentLocation)]
+			: [];
 
 		const journey: Journey = {
 			id: Crypto.randomUUID() as JourneyId,
-			userId,
+			userId: user.id as UserId,
 			status: JourneyStatus.Recording,
 			startedAt: new Date(),
 			points: [],
+			routePolyline: initialRoutePolyline,
 		};
 
+		routePolylineRef.current = [...initialRoutePolyline];
+		hasPersistedJourneyRef.current = false;
 		setActiveJourney(journey);
 		activeJourneyRef.current = journey;
 		setIsRecording(true);
 
-		// Persist journey
-		try {
-			await saveJourney(journey);
-		} catch (error) {
-			logger.journey.error('Failed to save journey', error);
-		}
-
 		logger.journey.info('Journey recording started', { id: journey.id });
 		return true;
-	}, [handleLocationUpdate, handleLocationError]);
+	}, [
+		currentLocation,
+		handleLocationError,
+		handleLocationUpdate,
+		isAuthenticated,
+		user,
+	]);
 
 	// Stop recording
 	const stopRecording = useCallback(async () => {
-		logger.journey.info('Stopping journey recording');
+		const journey = activeJourneyRef.current;
+		if (!journey) {
+			logger.journey.warn('Cannot stop recording: no active journey');
+			await locationTrackingService.stopTracking();
+			setIsRecording(false);
+			return;
+		}
 
-		// Flush remaining points
-		await flushPointsBuffer();
+		logger.journey.info('Stopping journey recording');
 
 		await locationTrackingService.stopTracking();
 
-		await updateJourneyStatus(JourneyStatus.Completed, { endedAt: new Date() });
+		const completedJourney: Journey = {
+			...journey,
+			status: JourneyStatus.Completed,
+			endedAt: new Date(),
+			routePolyline:
+				routePolylineRef.current.length > 0
+					? [...routePolylineRef.current]
+					: undefined,
+		};
+
+		setActiveJourney(completedJourney);
+		activeJourneyRef.current = completedJourney;
+
+		try {
+			await saveJourney(completedJourney);
+			hasPersistedJourneyRef.current = true;
+
+			const stopPoints = completedJourney.points.filter(
+				point => point.type === JourneyPointType.Stop
+			);
+			if (stopPoints.length > 0) {
+				await saveJourneyPoints(stopPoints);
+			}
+		} catch (error) {
+			logger.journey.error('Failed to persist completed journey', error, {
+				journeyId: completedJourney.id,
+			});
+		}
 
 		setIsRecording(false);
 		logger.journey.info('Journey recording stopped');
-	}, [flushPointsBuffer, updateJourneyStatus]);
+	}, []);
+
+	const discardJourney = useCallback(async () => {
+		const journeyToDiscard = activeJourneyRef.current;
+
+		try {
+			const isTrackingActive =
+				await locationTrackingService.isCurrentlyTracking();
+			if (isTrackingActive) {
+				await locationTrackingService.stopTracking();
+			}
+		} catch (error) {
+			logger.journey.error('Failed to stop tracking during discard', error);
+		}
+
+		if (journeyToDiscard && hasPersistedJourneyRef.current) {
+			try {
+				await deleteJourney(journeyToDiscard.id);
+			} catch (error) {
+				logger.journey.error('Failed to delete discarded journey', error, {
+					id: journeyToDiscard.id,
+				});
+				throw error;
+			}
+		}
+
+		resetJourneyState();
+		logger.journey.info('Journey discarded successfully', {
+			journeyId: journeyToDiscard?.id,
+		});
+	}, [resetJourneyState]);
 
 	// Pause recording
 	const pauseRecording = useCallback(async () => {
 		logger.journey.info('Pausing journey recording');
 
-		// Flush points before pausing
-		await flushPointsBuffer();
-
 		await locationTrackingService.stopTracking();
 
-		await updateJourneyStatus(JourneyStatus.Paused);
+		updateJourneyStatus(JourneyStatus.Paused);
 
 		setIsRecording(false);
-	}, [flushPointsBuffer, updateJourneyStatus]);
+	}, [updateJourneyStatus]);
 
 	// Resume recording
 	const resumeRecording = useCallback(async () => {
@@ -291,7 +338,7 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 			return;
 		}
 
-		await updateJourneyStatus(JourneyStatus.Recording);
+		updateJourneyStatus(JourneyStatus.Recording);
 		setIsRecording(true);
 	}, [handleLocationUpdate, handleLocationError, updateJourneyStatus]);
 
@@ -300,8 +347,10 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 		const journey = activeJourneyRef.current;
 		const location = currentLocation;
 
-		if (!journey || !location) {
-			logger.journey.warn('Cannot mark stop: no active journey or location');
+		if (!journey || journey.status !== JourneyStatus.Recording || !location) {
+			logger.journey.warn(
+				'Cannot mark stop: journey must be recording with a known location'
+			);
 			return;
 		}
 
@@ -324,11 +373,7 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 
 		setActiveJourney(updatedJourney);
 		activeJourneyRef.current = updatedJourney;
-
-		// Persist stop immediately (stops are important)
-		saveJourneyPoint(stopPoint).catch(error => {
-			logger.journey.error('Failed to save stop point', error);
-		});
+		routePolylineRef.current.push(toRoutePoint(location));
 
 		logger.journey.info('Stop marked', { id: stopPoint.id });
 	}, [currentLocation]);
@@ -340,6 +385,7 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 		stopsCount,
 		startRecording,
 		stopRecording,
+		discardJourney,
 		pauseRecording,
 		resumeRecording,
 		markStop,

@@ -2,9 +2,10 @@ import type React from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { COLORS, SIZES, SPACING } from '../../constants';
 import { A11Y_LABELS } from '../../constants/accessibility';
+import { useTranslation } from '../../i18n';
 import {
-	COMMENT_APPRECIATION_CONFIG,
 	COMMENT_APPRECIATIONS,
+	getCommentAppreciationConfig,
 } from '../constants';
 import type { CommentAppreciation } from '../types';
 
@@ -21,9 +22,11 @@ export const CommentEditor: React.FC<CommentEditorProps> = ({
 	onAppreciationChange,
 	onCommentChange,
 }) => {
+	const { t } = useTranslation();
+	const appreciationConfig = getCommentAppreciationConfig(t);
 	return (
 		<View style={styles.container}>
-			<Text style={styles.label}>Appréciation *</Text>
+			<Text style={styles.label}>{t('spots.ratingLabel')}</Text>
 			<View style={styles.appreciationButtons}>
 				{COMMENT_APPRECIATIONS.map(value => (
 					<Pressable
@@ -47,19 +50,19 @@ export const CommentEditor: React.FC<CommentEditorProps> = ({
 								appreciation === value && styles.appreciationButtonTextSelected,
 							]}
 						>
-							{COMMENT_APPRECIATION_CONFIG[value].emoji}{' '}
-							{COMMENT_APPRECIATION_CONFIG[value].label}
+							{appreciationConfig[value].emoji}{' '}
+							{appreciationConfig[value].label}
 						</Text>
 					</Pressable>
 				))}
 			</View>
 
-			<Text style={styles.label}>Commentaire *</Text>
+			<Text style={styles.label}>{t('spots.commentLabel')}</Text>
 			<TextInput
 				style={styles.input}
 				value={comment}
 				onChangeText={onCommentChange}
-				placeholder="Décris ton expérience sur ce spot..."
+				placeholder={t('spots.commentPlaceholder')}
 				placeholderTextColor={COLORS.textSecondary}
 				multiline
 				numberOfLines={4}

@@ -1,8 +1,9 @@
 import type React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { COLORS, SIZES, SPACING } from '../../constants';
+import { useTranslation } from '../../i18n';
 import { formatDate } from '../../utils';
-import { COMMENT_APPRECIATION_CONFIG } from '../constants';
+import { getCommentAppreciationConfig } from '../constants';
 import type { Comment } from '../types';
 
 interface CommentListProps {
@@ -10,17 +11,18 @@ interface CommentListProps {
 }
 
 export const CommentList: React.FC<CommentListProps> = ({ comments }) => {
+	const { t } = useTranslation();
+	const commentAppreciationConfig = getCommentAppreciationConfig(t);
+
 	if (comments.length === 0) {
-		return (
-			<Text style={styles.emptyState}>Aucun commentaire pour le moment</Text>
-		);
+		return <Text style={styles.emptyState}>{t('comment.noCommentsYet')}</Text>;
 	}
 
 	return (
 		<View style={styles.list}>
 			{comments.map(comment => {
 				const appreciationConfig =
-					COMMENT_APPRECIATION_CONFIG[comment.appreciation];
+					commentAppreciationConfig[comment.appreciation];
 
 				return (
 					<View key={comment.id} style={styles.card}>

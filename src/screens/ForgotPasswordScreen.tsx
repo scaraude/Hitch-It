@@ -15,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../auth';
 import { COLORS, SPACING } from '../constants';
 import { SIZES } from '../constants/sizes';
+import { useTranslation } from '../i18n';
 import type { RootStackParamList } from '../navigation/types';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -24,6 +25,7 @@ const RESEND_COOLDOWN_SECONDS = 60;
 export default function ForgotPasswordScreen() {
 	const navigation = useNavigation<NavigationProp>();
 	const { sendPasswordResetEmail } = useAuth();
+	const { t } = useTranslation();
 
 	const [email, setEmail] = useState('');
 	const [error, setError] = useState('');
@@ -60,12 +62,12 @@ export default function ForgotPasswordScreen() {
 		const trimmedEmail = email.trim().toLowerCase();
 
 		if (!trimmedEmail) {
-			setError('Please enter your email address');
+			setError(t('auth.emailRequired'));
 			return;
 		}
 
 		if (!trimmedEmail.includes('@')) {
-			setError('Please enter a valid email address');
+			setError(t('auth.invalidEmail'));
 			return;
 		}
 
@@ -119,11 +121,11 @@ export default function ForgotPasswordScreen() {
 				</Pressable>
 
 				<View style={styles.header}>
-					<Text style={styles.title}>Reset Password</Text>
+					<Text style={styles.title}>{t('auth.resetPassword')}</Text>
 					<Text style={styles.subtitle}>
 						{emailSent
-							? 'Check your email for the reset link'
-							: "Enter your email and we'll send you a reset link"}
+							? t('auth.checkEmailForResetLink')
+							: t('auth.resetPasswordSubtitle')}
 					</Text>
 				</View>
 
@@ -139,12 +141,11 @@ export default function ForgotPasswordScreen() {
 								style={styles.successIcon}
 							/>
 							<Text style={styles.successText}>
-								We've sent a password reset link to{'\n'}
+								{t('auth.resetLinkSentTo')}
 								<Text style={styles.emailHighlight}>{email.trim()}</Text>
 							</Text>
 							<Text style={styles.instructionText}>
-								Check your inbox and spam folder. The link will expire in 1
-								hour.
+								{t('auth.resetLinkExpireHint')}
 							</Text>
 							<Pressable
 								style={[
@@ -157,10 +158,10 @@ export default function ForgotPasswordScreen() {
 							>
 								<Text style={styles.resendButtonText}>
 									{isLoading
-										? 'Sending...'
+										? t('auth.sending')
 										: resendCooldown > 0
-											? `Resend in ${resendCooldown}s`
-											: 'Resend reset email'}
+											? t('auth.resendIn', { seconds: resendCooldown })
+											: t('auth.resendResetEmail')}
 								</Text>
 							</Pressable>
 						</View>
@@ -175,7 +176,7 @@ export default function ForgotPasswordScreen() {
 								/>
 								<TextInput
 									style={styles.input}
-									placeholder="Email address"
+									placeholder={t('auth.emailAddressPlaceholder')}
 									placeholderTextColor={COLORS.textSecondary}
 									value={email}
 									onChangeText={setEmail}
@@ -192,7 +193,7 @@ export default function ForgotPasswordScreen() {
 								disabled={isLoading}
 							>
 								<Text style={styles.buttonText}>
-									{isLoading ? 'Sending...' : 'Send Reset Link'}
+									{isLoading ? t('auth.sending') : t('auth.sendResetLink')}
 								</Text>
 							</Pressable>
 						</>
@@ -200,9 +201,9 @@ export default function ForgotPasswordScreen() {
 				</View>
 
 				<View style={styles.footer}>
-					<Text style={styles.footerText}>Remember your password? </Text>
+					<Text style={styles.footerText}>{t('auth.rememberPassword')}</Text>
 					<Pressable onPress={goToLogin}>
-						<Text style={styles.linkText}>Sign In</Text>
+						<Text style={styles.linkText}>{t('auth.signIn')}</Text>
 					</Pressable>
 				</View>
 			</KeyboardAvoidingView>

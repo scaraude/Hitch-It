@@ -12,6 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import { ActionButtons } from '../../../components';
 import { COLORS, SIZES, SPACING } from '../../../constants';
+import { useTranslation } from '../../../i18n';
 import {
 	DriverDirectionSheet,
 	EmbarquerSheet,
@@ -21,7 +22,6 @@ import { SpotDetailsSheet, SpotForm } from '../../../spot/components';
 import {
 	useHomeLocation,
 	useHomeMap,
-	useHomeNav,
 	useHomeSession,
 	useHomeSpot,
 } from '../context/HomeStateContext';
@@ -35,8 +35,8 @@ export const HomeSheetsOverlay: React.FC = () => {
 	const { userLocation } = useHomeLocation();
 	const spot = useHomeSpot();
 	const session = useHomeSession();
-	const nav = useHomeNav();
 	const map = useHomeMap();
+	const { t } = useTranslation();
 
 	const insets = useSafeAreaInsets();
 
@@ -114,10 +114,10 @@ export const HomeSheetsOverlay: React.FC = () => {
 				/>
 			)}
 
-			{session.showCompletionSheet && nav.navigation.route && (
+			{session.showCompletionSheet && session.completionRoute && (
 				<NavigationCompleteSheet
-					route={nav.navigation.route}
-					spotsUsed={nav.navigation.spotsOnRoute}
+					route={session.completionRoute}
+					spotsUsed={session.completionSpotsUsed}
 					durationMinutes={session.journeyDurationMinutes}
 					onSave={handleSaveJourney}
 					onDiscard={handleDiscardJourney}
@@ -137,11 +137,11 @@ export const HomeSheetsOverlay: React.FC = () => {
 							pressed && styles.spotHitchButtonPressed,
 						]}
 						onPress={() => session.handleSpotEmbarquer(selectedSpot)}
-						accessibilityLabel="Hitch from this spot"
+						accessibilityLabel={t('spots.hitchFromSpot')}
 						accessibilityRole="button"
 						testID="spot-embarquer-button"
 					>
-						<Text style={styles.spotHitchButtonText}>Hitch it</Text>
+						<Text style={styles.spotHitchButtonText}>{t('navigation.hitchIt')}</Text>
 					</Pressable>
 				</View>
 			)}

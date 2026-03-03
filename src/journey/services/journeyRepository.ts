@@ -1,10 +1,11 @@
 import { supabase } from '@/lib/supabaseClient';
-import { logger } from '@/utils';
+import { decodePolyline, encodePolyline, logger } from '@/utils';
 import type {
 	Journey,
 	JourneyId,
 	JourneyPoint,
 	JourneyPointId,
+	JourneyRoutePoint,
 	SpotId,
 	UserId,
 } from '../types';
@@ -18,6 +19,7 @@ type JourneyRow = {
 	ended_at: string | null;
 	title: string | null;
 	notes: string | null;
+	route_polyline: string | null;
 	total_distance_km: number | null;
 	is_shared: boolean;
 	share_token: string | null;
@@ -40,6 +42,7 @@ type JourneyPointRow = {
 
 const journeyStatusValues = new Set(Object.values(JourneyStatus));
 const journeyPointTypeValues = new Set(Object.values(JourneyPointType));
+const JOURNEY_POINTS_PAGE_SIZE = 1000;
 
 const parseJourneyStatus = (
 	value: string,
@@ -67,6 +70,26 @@ const parseJourneyPointType = (
 	);
 };
 
+const parseRoutePolyline = (
+	value: string | null,
+	journeyId: string
+): JourneyRoutePoint[] | undefined => {
+	if (!value) {
+		return undefined;
+	}
+
+	try {
+		const points = decodePolyline(value);
+		return points.length > 0 ? points : undefined;
+	} catch (error) {
+		logger.repository.warn('Invalid route polyline for journey', {
+			journeyId,
+			errorMessage: error instanceof Error ? error.message : String(error),
+		});
+		return undefined;
+	}
+};
+
 const mapRowToJourney = (
 	row: JourneyRow,
 	points: JourneyPoint[] = []
@@ -78,6 +101,7 @@ const mapRowToJourney = (
 	endedAt: row.ended_at ? new Date(row.ended_at) : undefined,
 	title: row.title ?? undefined,
 	notes: row.notes ?? undefined,
+	routePolyline: parseRoutePolyline(row.route_polyline, row.id),
 	totalDistanceKm: row.total_distance_km ?? undefined,
 	isShared: row.is_shared,
 	shareToken: row.share_token ?? undefined,
@@ -96,8 +120,58 @@ const mapRowToJourneyPoint = (row: JourneyPointRow): JourneyPoint => ({
 	notes: row.notes ?? undefined,
 });
 
+const getJourneyPointRows = async (
+	journeyId: JourneyId,
+	pointType?: JourneyPointType
+): Promise<JourneyPointRow[]> => {
+	const rows: JourneyPointRow[] = [];
+	let from = 0;
+
+	while (true) {
+		const to = from + JOURNEY_POINTS_PAGE_SIZE - 1;
+		let query = supabase
+			.from('journey_points')
+			.select('*')
+			.eq('journey_id', journeyId)
+			.order('timestamp', { ascending: true })
+			.order('created_at', { ascending: true })
+			.order('id', { ascending: true });
+
+		if (pointType) {
+			query = query.eq('type', pointType);
+		}
+
+		const { data, error } = await query.range(from, to);
+
+		if (error) {
+			logger.repository.error('Failed to fetch journey points page', error, {
+				journeyId,
+				pointType,
+				from,
+				to,
+			});
+			throw error;
+		}
+
+		const pageRows = (data ?? []) as JourneyPointRow[];
+		rows.push(...pageRows);
+
+		if (pageRows.length < JOURNEY_POINTS_PAGE_SIZE) {
+			break;
+		}
+
+		from += JOURNEY_POINTS_PAGE_SIZE;
+	}
+
+	return rows;
+};
+
 export const saveJourney = async (journey: Journey): Promise<void> => {
 	logger.repository.info('Saving journey', { id: journey.id });
+	const encodedRoutePolyline =
+		journey.routePolyline && journey.routePolyline.length > 0
+			? encodePolyline(journey.routePolyline)
+			: null;
 
 	const { error } = await supabase.from('journeys').upsert({
 		id: journey.id,
@@ -107,6 +181,7 @@ export const saveJourney = async (journey: Journey): Promise<void> => {
 		ended_at: journey.endedAt?.toISOString() ?? null,
 		title: journey.title ?? null,
 		notes: journey.notes ?? null,
+		route_polyline: encodedRoutePolyline,
 		total_distance_km: journey.totalDistanceKm ?? null,
 		is_shared: journey.isShared ?? false,
 		share_token: journey.shareToken ?? null,
@@ -199,24 +274,13 @@ export const getJourneyById = async (
 		return null;
 	}
 
-	const { data: pointsData, error: pointsError } = await supabase
-		.from('journey_points')
-		.select('*')
-		.eq('journey_id', id)
-		.order('timestamp', { ascending: true });
+	const journeyRow = journeyData as JourneyRow;
+	const pointsRows = journeyRow.route_polyline
+		? await getJourneyPointRows(id, JourneyPointType.Stop)
+		: await getJourneyPointRows(id);
+	const points = pointsRows.map(row => mapRowToJourneyPoint(row));
 
-	if (pointsError) {
-		logger.repository.error('Failed to fetch journey points', pointsError, {
-			id,
-		});
-		throw pointsError;
-	}
-
-	const points = (pointsData ?? []).map(row =>
-		mapRowToJourneyPoint(row as JourneyPointRow)
-	);
-
-	return mapRowToJourney(journeyData as JourneyRow, points);
+	return mapRowToJourney(journeyRow, points);
 };
 
 export const getActiveJourney = async (
@@ -244,25 +308,11 @@ export const getActiveJourney = async (
 		return null;
 	}
 
-	// For active journey, only load Stop points (Location points loaded on demand)
-	const { data: pointsData, error: pointsError } = await supabase
-		.from('journey_points')
-		.select('*')
-		.eq('journey_id', journeyData.id)
-		.eq('type', JourneyPointType.Stop)
-		.order('timestamp', { ascending: true });
-
-	if (pointsError) {
-		logger.repository.error(
-			'Failed to fetch active journey stops',
-			pointsError
-		);
-		throw pointsError;
-	}
-
-	const points = (pointsData ?? []).map(row =>
-		mapRowToJourneyPoint(row as JourneyPointRow)
+	const pointsRows = await getJourneyPointRows(
+		journeyData.id as JourneyId,
+		JourneyPointType.Stop
 	);
+	const points = pointsRows.map(row => mapRowToJourneyPoint(row));
 
 	return mapRowToJourney(journeyData as JourneyRow, points);
 };
@@ -287,6 +337,31 @@ export const getJourneysByUserId = async (
 	return (journeysData ?? []).map(row =>
 		mapRowToJourney(row as JourneyRow, [])
 	);
+};
+
+export const updateJourneyTitle = async (
+	id: JourneyId,
+	title: string | undefined
+): Promise<void> => {
+	const normalizedTitle = title?.trim() ?? null;
+
+	logger.repository.info('Updating journey title', {
+		id,
+		hasTitle: Boolean(normalizedTitle),
+	});
+
+	const { error } = await supabase
+		.from('journeys')
+		.update({
+			title: normalizedTitle || null,
+			updated_at: new Date().toISOString(),
+		})
+		.eq('id', id);
+
+	if (error) {
+		logger.repository.error('Failed to update journey title', error, { id });
+		throw error;
+	}
 };
 
 export const deleteJourney = async (id: JourneyId): Promise<void> => {

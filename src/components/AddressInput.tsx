@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { COLORS, SIZES, SPACING } from '../constants';
 import { usePlaceSuggestions } from '../hooks';
+import { useTranslation } from '../i18n';
 import type { SearchSuggestion } from '../services/geocodingService';
 import type { Location } from '../types';
 
@@ -32,7 +33,6 @@ interface AddressInputProps {
 	inputContainerStyle?: StyleProp<ViewStyle>;
 	suggestionsStyle?: 'dropdown' | 'inline';
 	suggestionsPlacement?: 'above' | 'below';
-	showTopSuggestionLabel?: boolean;
 	disableSuggestions?: boolean;
 }
 
@@ -51,9 +51,9 @@ export function AddressInput({
 	inputContainerStyle,
 	suggestionsStyle = 'dropdown',
 	suggestionsPlacement = 'below',
-	showTopSuggestionLabel = false,
 	disableSuggestions = false,
 }: AddressInputProps) {
+	const { t } = useTranslation();
 	const [isFocused, setIsFocused] = useState(false);
 	const blurTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -134,7 +134,7 @@ export function AddressInput({
 							showAbove && styles.suggestionsAbove,
 						]}
 					>
-						<Text style={styles.emptyText}>Aucun résultat</Text>
+						<Text style={styles.emptyText}>{t('common.noResults')}</Text>
 					</View>
 				)}
 
@@ -148,11 +148,6 @@ export function AddressInput({
 						{ opacity: suggestionsOpacity },
 					]}
 				>
-					{showTopSuggestionLabel ? (
-						<Text style={styles.topSuggestionLabel}>
-							Suggestion la plus probable
-						</Text>
-					) : null}
 					{suggestions.slice(0, 4).map(suggestion => (
 						<SuggestionItem
 							key={suggestion.id}
@@ -264,13 +259,5 @@ const styles = StyleSheet.create({
 		fontSize: SIZES.fontSm,
 		color: COLORS.textSecondary,
 		marginTop: SPACING.xs,
-	},
-	topSuggestionLabel: {
-		fontSize: SIZES.fontSm,
-		color: COLORS.textSecondary,
-		paddingHorizontal: SPACING.md,
-		paddingTop: SPACING.sm,
-		paddingBottom: SPACING.xs,
-		fontStyle: 'italic',
 	},
 });

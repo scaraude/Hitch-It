@@ -4,10 +4,9 @@ import type { StyleProp, ViewStyle } from 'react-native';
 import { Pressable, Text, View } from 'react-native';
 import { AddressInput } from '../../components';
 import { COLORS } from '../../constants';
+import { useTranslation } from '../../i18n/useTranslation';
 import type { Location } from '../../types';
 import { embarquerSheetStyles as styles } from './embarquerSheetStyles';
-
-const FROM_MY_POSITION_LABEL = 'from my position';
 
 interface EmbarquerAddressFieldProps {
 	label: string;
@@ -40,6 +39,8 @@ export const EmbarquerAddressField: React.FC<EmbarquerAddressFieldProps> = ({
 	positionButtonTestID,
 	inputLayerStyle,
 }) => {
+	const { t } = useTranslation();
+
 	return (
 		<View style={styles.field}>
 			<View style={inputLayerStyle}>
@@ -80,7 +81,7 @@ export const EmbarquerAddressField: React.FC<EmbarquerAddressFieldProps> = ({
 						!hasCurrentPosition && styles.positionButtonTextDisabled,
 					]}
 				>
-					{FROM_MY_POSITION_LABEL}
+					{t('common.currentPosition')}
 				</Text>
 			</Pressable>
 		</View>

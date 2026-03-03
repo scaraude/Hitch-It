@@ -15,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../auth';
 import { COLORS, SPACING } from '../constants';
 import { SIZES } from '../constants/sizes';
+import { useTranslation } from '../i18n';
 import type { RootStackParamList } from '../navigation/types';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -22,6 +23,7 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 export default function SignUpScreen() {
 	const navigation = useNavigation<NavigationProp>();
 	const { signUp } = useAuth();
+	const { t } = useTranslation();
 
 	const [username, setUsername] = useState('');
 	const [email, setEmail] = useState('');
@@ -31,22 +33,22 @@ export default function SignUpScreen() {
 
 	const handleSignUp = async () => {
 		if (!username.trim() || !email.trim() || !password) {
-			setError('Please fill in all fields');
+			setError(t('auth.fillAllFields'));
 			return;
 		}
 
 		if (username.trim().length < 3) {
-			setError('Username must be at least 3 characters');
+			setError(t('auth.usernameMinLength'));
 			return;
 		}
 
 		if (!email.includes('@')) {
-			setError('Please enter a valid email');
+			setError(t('auth.invalidEmail'));
 			return;
 		}
 
 		if (password.length < 6) {
-			setError('Password must be at least 6 characters');
+			setError(t('auth.passwordMinLength'));
 			return;
 		}
 
@@ -86,8 +88,8 @@ export default function SignUpScreen() {
 				</Pressable>
 
 				<View style={styles.header}>
-					<Text style={styles.title}>Create account</Text>
-					<Text style={styles.subtitle}>Join the hitchhiking community</Text>
+					<Text style={styles.title}>{t('auth.createAccount')}</Text>
+					<Text style={styles.subtitle}>{t('auth.joinCommunity')}</Text>
 				</View>
 
 				<View style={styles.form}>
@@ -102,7 +104,7 @@ export default function SignUpScreen() {
 						/>
 						<TextInput
 							style={styles.input}
-							placeholder="Username"
+							placeholder={t('auth.usernamePlaceholder')}
 							placeholderTextColor={COLORS.textSecondary}
 							value={username}
 							onChangeText={setUsername}
@@ -121,7 +123,7 @@ export default function SignUpScreen() {
 						/>
 						<TextInput
 							style={styles.input}
-							placeholder="Email"
+							placeholder={t('auth.emailPlaceholder')}
 							placeholderTextColor={COLORS.textSecondary}
 							value={email}
 							onChangeText={setEmail}
@@ -141,7 +143,7 @@ export default function SignUpScreen() {
 						/>
 						<TextInput
 							style={styles.input}
-							placeholder="Password"
+							placeholder={t('auth.passwordPlaceholder')}
 							placeholderTextColor={COLORS.textSecondary}
 							value={password}
 							onChangeText={setPassword}
@@ -156,15 +158,15 @@ export default function SignUpScreen() {
 						disabled={isLoading}
 					>
 						<Text style={styles.buttonText}>
-							{isLoading ? 'Creating account...' : 'Sign Up'}
+							{isLoading ? t('auth.creatingAccount') : t('auth.signUp')}
 						</Text>
 					</Pressable>
 				</View>
 
 				<View style={styles.footer}>
-					<Text style={styles.footerText}>Already have an account? </Text>
+					<Text style={styles.footerText}>{t('auth.haveAccount')}</Text>
 					<Pressable onPress={goToLogin}>
-						<Text style={styles.linkText}>Sign In</Text>
+						<Text style={styles.linkText}>{t('auth.signIn')}</Text>
 					</Pressable>
 				</View>
 			</KeyboardAvoidingView>

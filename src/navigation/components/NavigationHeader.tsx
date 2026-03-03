@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS, SIZES, SPACING } from '../../constants';
+import { useTranslation } from '../../i18n/useTranslation';
 
 interface NavigationHeaderProps {
 	destinationName: string;
@@ -13,6 +14,7 @@ export function NavigationHeader({
 	distanceKm,
 	onStop,
 }: NavigationHeaderProps) {
+	const { t } = useTranslation();
 	const insets = useSafeAreaInsets();
 
 	return (
@@ -21,7 +23,7 @@ export function NavigationHeader({
 		>
 			<View style={styles.leftSection}>
 				<Text style={styles.destination} numberOfLines={1}>
-					Vers {destinationName}
+					{t('navigation.toDestination', { destination: destinationName })}
 				</Text>
 				<Text style={styles.distance}>{distanceKm} km</Text>
 			</View>
@@ -32,7 +34,7 @@ export function NavigationHeader({
 				]}
 				onPress={onStop}
 			>
-				<Text style={styles.stopText}>Stop</Text>
+				<Text style={styles.stopText}>{t('journey.stop')}</Text>
 			</Pressable>
 		</View>
 	);

@@ -3,43 +3,24 @@ import type React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS, SIZES, SPACING } from '../../constants';
+import { useTranslation } from '../../i18n';
 
 type TabId = 'home' | 'search' | 'add' | 'history' | 'profile';
 type IconName = React.ComponentProps<typeof Ionicons>['name'];
 
 interface TabConfig {
 	id: TabId;
-	label: string;
 	icon: IconName;
 	activeIcon: IconName;
 }
 
 const TABS: TabConfig[] = [
-	{ id: 'home', label: 'Home', icon: 'home-outline', activeIcon: 'home' },
-	{
-		id: 'search',
-		label: 'Search',
-		icon: 'search-outline',
-		activeIcon: 'search',
-	},
-	{ id: 'add', label: '', icon: 'add', activeIcon: 'add' },
-	{
-		id: 'history',
-		label: 'History',
-		icon: 'time-outline',
-		activeIcon: 'time',
-	},
-	{
-		id: 'profile',
-		label: 'Profile',
-		icon: 'person-outline',
-		activeIcon: 'person',
-	},
+	{ id: 'home', icon: 'home-outline', activeIcon: 'home' },
+	{ id: 'search', icon: 'search-outline', activeIcon: 'search' },
+	{ id: 'add', icon: 'add', activeIcon: 'add' },
+	{ id: 'history', icon: 'time-outline', activeIcon: 'time' },
+	{ id: 'profile', icon: 'person-outline', activeIcon: 'person' },
 ];
-
-function getProfileLabel(isAuthenticated: boolean): string {
-	return isAuthenticated ? 'Profile' : 'Log in';
-}
 
 interface BottomNavBarProps {
 	activeTab?: TabId;
@@ -53,6 +34,24 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
 	isAuthenticated = false,
 }) => {
 	const insets = useSafeAreaInsets();
+	const { t } = useTranslation();
+
+	const getTabLabel = (tabId: TabId): string => {
+		switch (tabId) {
+			case 'home':
+				return t('navigation.home');
+			case 'search':
+				return t('navigation.search');
+			case 'history':
+				return t('navigation.history');
+			case 'profile':
+				return isAuthenticated
+					? t('navigation.profile')
+					: t('navigation.logIn');
+			default:
+				return '';
+		}
+	};
 
 	return (
 		<View style={styles.wrapper}>
@@ -63,7 +62,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
 					pressed && styles.addButtonPressed,
 				]}
 				onPress={() => onTabPress('add')}
-				accessibilityLabel="Ajouter un spot"
+				accessibilityLabel={t('spots.add')}
 				accessibilityRole="button"
 				testID="bottom-nav-add"
 			>
@@ -101,7 +100,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
 									pressed && styles.tabPressed,
 								]}
 								onPress={() => onTabPress(tab.id)}
-								accessibilityLabel={tab.label}
+								accessibilityLabel={getTabLabel(tab.id)}
 								accessibilityRole="tab"
 								accessibilityState={{ selected: isActive }}
 								testID={`bottom-nav-${tab.id}`}
@@ -116,9 +115,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
 								<Text
 									style={[styles.tabLabel, isActive && styles.tabLabelActive]}
 								>
-									{tab.id === 'profile'
-										? getProfileLabel(isAuthenticated)
-										: tab.label}
+									{getTabLabel(tab.id)}
 								</Text>
 							</Pressable>
 						);

@@ -1,5 +1,8 @@
 export { default as ForgotPasswordScreen } from './ForgotPasswordScreen';
 export { default as HomeScreen } from './HomeScreen';
+export { default as JourneyDetailScreen } from './JourneyDetailScreen';
+export { default as JourneyHistoryScreen } from './JourneyHistoryScreen';
 export { default as LoginScreen } from './LoginScreen';
+export { default as ManualJourneyEntryScreen } from './ManualJourneyEntryScreen';
 export { default as ProfileScreen } from './ProfileScreen';
 export { default as SignUpScreen } from './SignUpScreen';
