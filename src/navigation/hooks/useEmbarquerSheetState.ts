@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Keyboard } from 'react-native';
+import { useTranslation } from '../../i18n/useTranslation';
 import type { Location } from '../../types';
 import type { AddressData } from '../components/embarquerSheetTypes';
 
-const MY_POSITION_NAME = 'My position';
 const SHEET_SLIDE_OFFSET = -36;
 
 interface UseEmbarquerSheetStateArgs {
@@ -40,11 +40,13 @@ export const useEmbarquerSheetState = ({
 	currentPosition,
 	onStart,
 }: UseEmbarquerSheetStateArgs): UseEmbarquerSheetStateReturn => {
+	const { t } = useTranslation();
+	const currentPositionLabel = t('common.currentPosition');
 	const shouldDefaultStartToCurrentPosition =
 		initialStart === undefined && currentPosition !== null;
 	const [startText, setStartText] = useState(
 		initialStart?.name ??
-			(shouldDefaultStartToCurrentPosition ? MY_POSITION_NAME : '')
+			(shouldDefaultStartToCurrentPosition ? currentPositionLabel : '')
 	);
 	const [startLocation, setStartLocation] = useState<Location | null>(
 		initialStart?.location ?? currentPosition
@@ -95,9 +97,9 @@ export const useEmbarquerSheetState = ({
 
 		setIsStartFromCurrentPosition(true);
 		setStartLocation(currentPosition);
-		setStartText(MY_POSITION_NAME);
+		setStartText(currentPositionLabel);
 		Keyboard.dismiss();
-	}, [currentPosition, startLocation, startText]);
+	}, [currentPosition, currentPositionLabel, startLocation, startText]);
 
 	const handleStartLocationSelected = (location: Location, name: string) => {
 		startSelectionRef.current = true;
@@ -142,7 +144,7 @@ export const useEmbarquerSheetState = ({
 
 		setIsStartFromCurrentPosition(true);
 		setStartLocation(currentPosition);
-		setStartText(MY_POSITION_NAME);
+		setStartText(currentPositionLabel);
 		Keyboard.dismiss();
 	};
 
@@ -153,7 +155,7 @@ export const useEmbarquerSheetState = ({
 
 		setIsDestinationFromCurrentPosition(true);
 		setDestinationLocation(currentPosition);
-		setDestinationText(MY_POSITION_NAME);
+		setDestinationText(currentPositionLabel);
 		Keyboard.dismiss();
 	};
 
