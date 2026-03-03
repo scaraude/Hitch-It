@@ -86,21 +86,6 @@ export const useEmbarquerSheetState = ({
 		]).start();
 	}, [opacityValue, slideValue]);
 
-	useEffect(() => {
-		if (currentPosition === null) {
-			return;
-		}
-
-		if (startLocation !== null || startText.trim().length > 0) {
-			return;
-		}
-
-		setIsStartFromCurrentPosition(true);
-		setStartLocation(currentPosition);
-		setStartText(currentPositionLabel);
-		Keyboard.dismiss();
-	}, [currentPosition, currentPositionLabel, startLocation, startText]);
-
 	const handleStartLocationSelected = (location: Location, name: string) => {
 		startSelectionRef.current = true;
 		setStartLocation(location);
