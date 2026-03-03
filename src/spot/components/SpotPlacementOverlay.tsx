@@ -1,5 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
+import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import type React from 'react';
+import { useMemo, useRef } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS, SIZES, SPACING } from '../../constants';
@@ -10,18 +12,31 @@ interface SpotPlacementOverlayProps {
 	onCancel: () => void;
 }
 
+const SNAP_POINTS = ['25%'] as const;
+
 export const SpotPlacementOverlay: React.FC<SpotPlacementOverlayProps> = ({
 	onConfirm,
 	onCancel,
 }) => {
 	const { t } = useTranslation();
 	const insets = useSafeAreaInsets();
+	const bottomSheetRef = useRef<BottomSheet>(null);
+	const snapPoints = useMemo(() => [...SNAP_POINTS], []);
 
 	return (
-		<View style={styles.container} pointerEvents="box-none">
-			<View
+		<BottomSheet
+			ref={bottomSheetRef}
+			index={0}
+			snapPoints={snapPoints}
+			enablePanDownToClose
+			onClose={onCancel}
+			backgroundStyle={styles.sheetBackground}
+			handleStyle={styles.handle}
+			handleIndicatorStyle={styles.handleIndicator}
+		>
+			<BottomSheetView
 				style={[
-					styles.bottomSheet,
+					styles.content,
 					{ paddingBottom: Math.max(insets.bottom, SPACING.md) },
 				]}
 			>
@@ -52,31 +67,34 @@ export const SpotPlacementOverlay: React.FC<SpotPlacementOverlayProps> = ({
 						<Ionicons name="checkmark" size={32} color={COLORS.background} />
 					</Pressable>
 				</View>
-			</View>
-		</View>
+			</BottomSheetView>
+		</BottomSheet>
 	);
 };
 
 const styles = StyleSheet.create({
-	container: {
-		position: 'absolute',
-		bottom: 0,
-		left: 0,
-		right: 0,
-		alignItems: 'center',
-	},
-	bottomSheet: {
-		width: '100%',
+	sheetBackground: {
 		backgroundColor: COLORS.background,
 		borderTopLeftRadius: SIZES.radiusXLarge,
 		borderTopRightRadius: SIZES.radiusXLarge,
-		paddingHorizontal: SPACING.lg,
-		paddingTop: SPACING.lg,
 		shadowColor: COLORS.text,
 		shadowOffset: { width: 0, height: -4 },
 		shadowOpacity: 0.1,
 		shadowRadius: 12,
 		elevation: 8,
+	},
+	handle: {
+		backgroundColor: 'transparent',
+		paddingVertical: SPACING.sm,
+	},
+	handleIndicator: {
+		backgroundColor: COLORS.surface,
+		width: 40,
+		height: 4,
+	},
+	content: {
+		paddingHorizontal: SPACING.lg,
+		paddingTop: SPACING.sm,
 	},
 	title: {
 		fontSize: SIZES.fontLg,
