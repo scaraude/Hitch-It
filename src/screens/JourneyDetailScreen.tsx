@@ -4,7 +4,6 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useCallback, useEffect, useState } from 'react';
 import {
-	ActivityIndicator,
 	Alert,
 	Pressable,
 	ScrollView,
@@ -18,34 +17,20 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, SPACING } from '../constants';
 import { SIZES } from '../constants/sizes';
 import { useTranslation } from '../i18n';
+import {
+	JourneyDetailFeedback,
+	JourneyDetailHeader,
+	JourneyStopsList,
+} from '../journey/components/journeyDetail';
 import * as journeyRepository from '../journey/services/journeyRepository';
 import type { Journey } from '../journey/types';
-import { JourneyPointType } from '../journey/types';
+import { buildJourneyDetailViewModel } from '../journey/utils/journeyDetailViewModel';
 import type { RootStackParamList } from '../navigation/types';
 
 type JourneyDetailRouteProp = RouteProp<RootStackParamList, 'JourneyDetail'>;
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+
 const JOURNEY_FALLBACK_TITLE = 'Journey';
-
-function formatDuration(startedAt: Date, endedAt?: Date): string {
-	if (!endedAt) return '—';
-
-	const durationMs = endedAt.getTime() - startedAt.getTime();
-	const minutes = Math.floor(durationMs / (1000 * 60));
-
-	if (minutes < 60) {
-		return `${minutes}min`;
-	}
-
-	const hours = Math.floor(minutes / 60);
-	const remainingMinutes = minutes % 60;
-	return `${hours}h${remainingMinutes.toString().padStart(2, '0')}`;
-}
-
-function formatDistance(km?: number): string {
-	if (!km) return '—';
-	return `${Math.round(km)} km`;
-}
 
 export default function JourneyDetailScreen() {
 	const navigation = useNavigation<NavigationProp>();
@@ -97,10 +82,7 @@ export default function JourneyDetailScreen() {
 
 		try {
 			await journeyRepository.updateJourneyTitle(journey.id, normalizedTitle);
-			setJourney({
-				...journey,
-				title: normalizedTitle,
-			});
+			setJourney({ ...journey, title: normalizedTitle });
 			setEditableTitle(normalizedTitle ?? '');
 		} catch {
 			Alert.alert(t('common.error'), t('errors.updateTitleFailed'));
@@ -136,26 +118,15 @@ export default function JourneyDetailScreen() {
 		]);
 	}, [executeDeleteJourney, t]);
 
+	const goBack = useCallback(() => navigation.goBack(), [navigation]);
+
+	// ---- Loading / error shells ----
+
 	if (isLoading) {
 		return (
 			<SafeAreaView style={styles.container}>
-				<View style={styles.header}>
-					<Pressable
-						style={styles.backButton}
-						onPress={() => navigation.goBack()}
-					>
-						<Ionicons
-							name="arrow-back"
-							size={SIZES.iconMd}
-							color={COLORS.text}
-						/>
-					</Pressable>
-					<Text style={styles.headerTitle}>{t('journey.details')}</Text>
-					<View style={styles.headerSpacer} />
-				</View>
-				<View style={styles.loadingContainer}>
-					<ActivityIndicator size="large" color={COLORS.primary} />
-				</View>
+				<JourneyDetailHeader title={t('journey.details')} onBack={goBack} />
+				<JourneyDetailFeedback variant="loading" />
 			</SafeAreaView>
 		);
 	}
@@ -163,131 +134,55 @@ export default function JourneyDetailScreen() {
 	if (error || !journey) {
 		return (
 			<SafeAreaView style={styles.container}>
-				<View style={styles.header}>
-					<Pressable
-						style={styles.backButton}
-						onPress={() => navigation.goBack()}
-					>
-						<Ionicons
-							name="arrow-back"
-							size={SIZES.iconMd}
-							color={COLORS.text}
-						/>
-					</Pressable>
-					<Text style={styles.headerTitle}>{t('journey.details')}</Text>
-					<View style={styles.headerSpacer} />
-				</View>
-				<View style={styles.errorContainer}>
-					<Ionicons
-						name="alert-circle-outline"
-						size={64}
-						color={COLORS.error}
-					/>
-					<Text style={styles.errorText}>
-						{error?.message ?? t('journey.notFound')}
-					</Text>
-				</View>
+				<JourneyDetailHeader title={t('journey.details')} onBack={goBack} />
+				<JourneyDetailFeedback
+					variant="error"
+					message={error?.message ?? t('journey.notFound')}
+				/>
 			</SafeAreaView>
 		);
 	}
 
-	const title = journey.title || JOURNEY_FALLBACK_TITLE;
-	const distance = formatDistance(journey.totalDistanceKm);
-	const duration = formatDuration(journey.startedAt, journey.endedAt);
-	const stopPoints = journey.points.filter(
-		p => p.type === JourneyPointType.Stop
-	);
-	const routePolylinePoints = journey.routePolyline ?? [];
-	const routePoints = journey.points.filter(
-		p => p.type === JourneyPointType.Location
-	);
-	const mapPoints =
-		routePolylinePoints.length > 1
-			? routePolylinePoints
-			: routePoints.length > 1
-				? routePoints
-				: journey.points;
-	const carCount = stopPoints.length;
+	// ---- View model ----
+
+	const vm = buildJourneyDetailViewModel(journey, JOURNEY_FALLBACK_TITLE);
 	const titleChanged = (journey.title ?? '') !== editableTitle.trim();
 
-	// Calculate map region to fit all points
-	const mapRegion =
-		mapPoints.length > 0
-			? (() => {
-					const lats = mapPoints.map(p => p.latitude);
-					const lngs = mapPoints.map(p => p.longitude);
-					const minLat = Math.min(...lats);
-					const maxLat = Math.max(...lats);
-					const minLng = Math.min(...lngs);
-					const maxLng = Math.max(...lngs);
-					const latDelta = (maxLat - minLat) * 1.3; // Add padding
-					const lngDelta = (maxLng - minLng) * 1.3;
-
-					return {
-						latitude: (minLat + maxLat) / 2,
-						longitude: (minLng + maxLng) / 2,
-						latitudeDelta: Math.max(latDelta, 0.01),
-						longitudeDelta: Math.max(lngDelta, 0.01),
-					};
-				})()
-			: undefined;
-
-	const startPoint =
-		stopPoints.length > 0 ? stopPoints[0] : (mapPoints[0] ?? null);
-	const endPoint =
-		stopPoints.length > 0
-			? stopPoints[stopPoints.length - 1]
-			: mapPoints.length > 0
-				? mapPoints[mapPoints.length - 1]
-				: null;
-
-	const polylineCoordinates = mapPoints.map(p => ({
-		latitude: p.latitude,
-		longitude: p.longitude,
-	}));
+	// ---- Render ----
 
 	return (
 		<SafeAreaView style={styles.container}>
-			<View style={styles.header}>
-				<Pressable
-					style={styles.backButton}
-					onPress={() => navigation.goBack()}
-				>
-					<Ionicons name="arrow-back" size={SIZES.iconMd} color={COLORS.text} />
-				</Pressable>
-				<Text style={styles.headerTitle}>{title}</Text>
-				<View style={styles.headerSpacer} />
-			</View>
+			<JourneyDetailHeader title={vm.title} onBack={goBack} />
 
 			<ScrollView style={styles.content}>
-				{mapRegion && (
+				{vm.mapRegion && (
 					<View style={styles.mapContainer}>
 						<MapView
 							style={styles.map}
 							provider={PROVIDER_DEFAULT}
-							initialRegion={mapRegion}
+							initialRegion={vm.mapRegion}
 						>
-							{startPoint && (
+							{vm.startPoint && (
 								<Marker
 									coordinate={{
-										latitude: startPoint.latitude,
-										longitude: startPoint.longitude,
+										latitude: vm.startPoint.latitude,
+										longitude: vm.startPoint.longitude,
 									}}
 									pinColor={COLORS.secondary}
 									title={t('journey.startMarker')}
 								/>
 							)}
-							{endPoint && startPoint !== endPoint && (
+							{vm.endPoint && vm.startPoint !== vm.endPoint && (
 								<Marker
 									coordinate={{
-										latitude: endPoint.latitude,
-										longitude: endPoint.longitude,
+										latitude: vm.endPoint.latitude,
+										longitude: vm.endPoint.longitude,
 									}}
 									pinColor={COLORS.error}
 									title={t('journey.endMarker')}
 								/>
 							)}
-							{stopPoints.map(point => (
+							{vm.stopPoints.map(point => (
 								<Marker
 									key={point.id}
 									coordinate={{
@@ -297,9 +192,9 @@ export default function JourneyDetailScreen() {
 									pinColor={COLORS.primary}
 								/>
 							))}
-							{polylineCoordinates.length > 1 && (
+							{vm.polylineCoordinates.length > 1 && (
 								<Polyline
-									coordinates={polylineCoordinates}
+									coordinates={vm.polylineCoordinates}
 									strokeColor={COLORS.primary}
 									strokeWidth={3}
 								/>
@@ -309,6 +204,7 @@ export default function JourneyDetailScreen() {
 				)}
 
 				<View style={styles.infoPanel}>
+					{/* Title editor */}
 					<View style={styles.titleSection}>
 						<Text style={styles.titleSectionLabel}>
 							{t('journey.titleLabel')}
@@ -352,6 +248,7 @@ export default function JourneyDetailScreen() {
 						</View>
 					</View>
 
+					{/* Stats row */}
 					<View style={styles.statsRow}>
 						<View style={styles.statBox}>
 							<Ionicons
@@ -359,50 +256,21 @@ export default function JourneyDetailScreen() {
 								size={24}
 								color={COLORS.primary}
 							/>
-							<Text style={styles.statValue}>{distance}</Text>
+							<Text style={styles.statValue}>{vm.distance}</Text>
 						</View>
 						<View style={styles.statBox}>
 							<Ionicons name="car-outline" size={24} color={COLORS.primary} />
 							<Text style={styles.statValue}>
-								{carCount} {t('journey.carLabel')}
+								{vm.stopPoints.length} {t('journey.carLabel')}
 							</Text>
 						</View>
 						<View style={styles.statBox}>
 							<Ionicons name="time-outline" size={24} color={COLORS.primary} />
-							<Text style={styles.statValue}>{duration}</Text>
+							<Text style={styles.statValue}>{vm.duration}</Text>
 						</View>
 					</View>
 
-					{stopPoints.length > 0 && (
-						<View style={styles.stopsSection}>
-							<Text style={styles.stopsTitle}>{t('journey.stopsLabel')}</Text>
-							{stopPoints.map((point, index) => (
-								<View key={point.id} style={styles.stopItem}>
-									<View style={styles.stopNumber}>
-										<Text style={styles.stopNumberText}>{index + 1}</Text>
-									</View>
-									<View style={styles.stopDetails}>
-										<Text style={styles.stopTime}>
-											{point.timestamp.toLocaleTimeString([], {
-												hour: '2-digit',
-												minute: '2-digit',
-											})}
-										</Text>
-										{point.waitTimeMinutes !== undefined && (
-											<Text style={styles.stopWaitTime}>
-												{t('journey.waitTime', {
-													minutes: point.waitTimeMinutes,
-												})}
-											</Text>
-										)}
-										{point.notes && (
-											<Text style={styles.stopNotes}>{point.notes}</Text>
-										)}
-									</View>
-								</View>
-							))}
-						</View>
-					)}
+					<JourneyStopsList stopPoints={vm.stopPoints} />
 
 					{journey.notes && (
 						<View style={styles.notesSection}>
@@ -435,48 +303,6 @@ const styles = StyleSheet.create({
 	container: {
 		flex: 1,
 		backgroundColor: COLORS.background,
-	},
-	header: {
-		flexDirection: 'row',
-		alignItems: 'center',
-		paddingHorizontal: SPACING.md,
-		paddingVertical: SPACING.sm,
-		borderBottomWidth: 1,
-		borderBottomColor: COLORS.border,
-		backgroundColor: COLORS.background,
-	},
-	backButton: {
-		width: 40,
-		height: 40,
-		justifyContent: 'center',
-		alignItems: 'center',
-	},
-	headerTitle: {
-		flex: 1,
-		fontSize: SIZES.fontLg,
-		fontWeight: '600',
-		color: COLORS.text,
-		textAlign: 'center',
-	},
-	headerSpacer: {
-		width: 40,
-	},
-	loadingContainer: {
-		flex: 1,
-		justifyContent: 'center',
-		alignItems: 'center',
-	},
-	errorContainer: {
-		flex: 1,
-		justifyContent: 'center',
-		alignItems: 'center',
-		paddingHorizontal: SPACING.xl,
-	},
-	errorText: {
-		fontSize: SIZES.fontMd,
-		color: COLORS.error,
-		marginTop: SPACING.md,
-		textAlign: 'center',
 	},
 	content: {
 		flex: 1,
@@ -556,55 +382,6 @@ const styles = StyleSheet.create({
 		fontSize: SIZES.fontMd,
 		fontWeight: '600',
 		color: COLORS.text,
-	},
-	stopsSection: {
-		marginTop: SPACING.lg,
-	},
-	stopsTitle: {
-		fontSize: SIZES.fontLg,
-		fontWeight: '700',
-		color: COLORS.text,
-		marginBottom: SPACING.md,
-	},
-	stopItem: {
-		flexDirection: 'row',
-		marginBottom: SPACING.md,
-		paddingBottom: SPACING.md,
-		borderBottomWidth: 1,
-		borderBottomColor: COLORS.border,
-	},
-	stopNumber: {
-		width: 32,
-		height: 32,
-		borderRadius: 16,
-		backgroundColor: COLORS.primary,
-		justifyContent: 'center',
-		alignItems: 'center',
-		marginRight: SPACING.md,
-	},
-	stopNumberText: {
-		fontSize: SIZES.fontSm,
-		fontWeight: '700',
-		color: COLORS.textLight,
-	},
-	stopDetails: {
-		flex: 1,
-	},
-	stopTime: {
-		fontSize: SIZES.fontMd,
-		fontWeight: '600',
-		color: COLORS.text,
-		marginBottom: SPACING.xs,
-	},
-	stopWaitTime: {
-		fontSize: SIZES.fontSm,
-		color: COLORS.textSecondary,
-		marginBottom: SPACING.xs,
-	},
-	stopNotes: {
-		fontSize: SIZES.fontSm,
-		color: COLORS.text,
-		fontStyle: 'italic',
 	},
 	notesSection: {
 		marginTop: SPACING.lg,

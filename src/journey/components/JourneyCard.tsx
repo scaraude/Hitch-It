@@ -5,34 +5,19 @@ import { COLORS, SIZES, SPACING } from '../../constants';
 import { useTranslation } from '../../i18n/useTranslation';
 import type { Journey } from '../types';
 import { JourneyPointType } from '../types';
+import {
+	formatDistance,
+	formatDuration,
+	resolveStopPoints,
+} from '../utils/journeyDetailViewModel';
 
 interface JourneyCardProps {
 	journey: Journey;
 	onPress: () => void;
 }
 
-function formatDuration(startedAt: Date, endedAt?: Date): string {
-	if (!endedAt) return '—';
-
-	const durationMs = endedAt.getTime() - startedAt.getTime();
-	const minutes = Math.floor(durationMs / (1000 * 60));
-
-	if (minutes < 60) {
-		return `${minutes}min`;
-	}
-
-	const hours = Math.floor(minutes / 60);
-	const remainingMinutes = minutes % 60;
-	return `${hours}h${remainingMinutes.toString().padStart(2, '0')}`;
-}
-
-function formatDistance(km?: number): string {
-	if (!km) return '—';
-	return `${Math.round(km)} km`;
-}
-
 function getStopCount(journey: Journey): number {
-	return journey.points.filter(p => p.type === JourneyPointType.Stop).length;
+	return resolveStopPoints(journey).length;
 }
 
 export function JourneyCard({ journey, onPress }: JourneyCardProps) {
