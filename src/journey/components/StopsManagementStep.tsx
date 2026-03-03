@@ -18,6 +18,9 @@ import { useTranslation } from '../../i18n';
 import type { Location, MapRegion } from '../../types';
 import type { ManualStop } from '../hooks/useManualJourneyFlow';
 
+// Non-token color used for unselected stop markers (dark gray dot)
+const STOP_MARKER_COLOR = '#333333';
+
 interface StopsManagementStepProps {
 	startLocation: Location;
 	startName: string;
@@ -38,6 +41,323 @@ interface StopsManagementStepProps {
 	onSave: () => void;
 	onBack: () => void;
 }
+
+// ---------------------------------------------------------------------------
+// StopEditor
+// ---------------------------------------------------------------------------
+
+interface StopEditorProps {
+	stop: ManualStop;
+	stopNumber: number;
+	onUpdate: (updates: Partial<ManualStop>) => void;
+	onRemove: () => void;
+	onDone: () => void;
+}
+
+const StopEditor: React.FC<StopEditorProps> = ({
+	stop,
+	stopNumber,
+	onUpdate,
+	onRemove,
+	onDone,
+}) => {
+	const { t } = useTranslation();
+
+	const handleWaitTimeChange = useCallback(
+		(text: string) => {
+			const minutes = Number.parseInt(text, 10);
+			onUpdate({
+				waitTimeMinutes: Number.isNaN(minutes) ? undefined : minutes,
+			});
+		},
+		[onUpdate]
+	);
+
+	const handleNotesChange = useCallback(
+		(text: string) => {
+			onUpdate({ notes: text || undefined });
+		},
+		[onUpdate]
+	);
+
+	return (
+		<View style={editorStyles.container}>
+			<View style={editorStyles.header}>
+				<Text style={editorStyles.title}>
+					{t('journey.stopLabel', { number: stopNumber })}
+				</Text>
+				<Pressable
+					onPress={onRemove}
+					accessibilityLabel={t('journey.removeStop')}
+				>
+					<Ionicons name="trash-outline" size={20} color={COLORS.error} />
+				</Pressable>
+			</View>
+
+			<TextInput
+				style={editorStyles.input}
+				placeholder={t('journey.waitTimePlaceholder')}
+				value={stop.waitTimeMinutes?.toString() ?? ''}
+				onChangeText={handleWaitTimeChange}
+				keyboardType="numeric"
+				placeholderTextColor={COLORS.textSecondary}
+			/>
+
+			<TextInput
+				style={[editorStyles.input, editorStyles.notesInput]}
+				placeholder={t('common.notesLabelOptional')}
+				value={stop.notes ?? ''}
+				onChangeText={handleNotesChange}
+				multiline
+				numberOfLines={2}
+				placeholderTextColor={COLORS.textSecondary}
+			/>
+
+			<Pressable style={editorStyles.doneButton} onPress={onDone}>
+				<Text style={editorStyles.doneButtonText}>{t('common.done')}</Text>
+			</Pressable>
+		</View>
+	);
+};
+
+const editorStyles = StyleSheet.create({
+	container: {
+		backgroundColor: COLORS.surface,
+		borderRadius: SIZES.radiusMedium,
+		padding: SPACING.md,
+		borderWidth: 1,
+		borderColor: COLORS.border,
+	},
+	header: {
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+		alignItems: 'center',
+		marginBottom: SPACING.sm,
+	},
+	title: {
+		fontSize: SIZES.fontMd,
+		fontWeight: '600',
+		color: COLORS.text,
+	},
+	input: {
+		backgroundColor: COLORS.background,
+		borderWidth: 1,
+		borderColor: COLORS.border,
+		borderRadius: SIZES.radiusMedium,
+		paddingHorizontal: SPACING.md,
+		paddingVertical: SPACING.sm,
+		fontSize: SIZES.fontMd,
+		color: COLORS.text,
+		marginBottom: SPACING.sm,
+	},
+	notesInput: {
+		minHeight: 60,
+		textAlignVertical: 'top',
+	},
+	doneButton: {
+		alignItems: 'center',
+		paddingVertical: SPACING.sm,
+	},
+	doneButtonText: {
+		fontSize: SIZES.fontMd,
+		fontWeight: '600',
+		color: COLORS.primary,
+	},
+});
+
+// ---------------------------------------------------------------------------
+// StopsList
+// ---------------------------------------------------------------------------
+
+interface StopsListProps {
+	stops: ManualStop[];
+	onSelectStop: (id: string) => void;
+}
+
+const StopsList: React.FC<StopsListProps> = ({ stops, onSelectStop }) => {
+	const { t } = useTranslation();
+
+	return (
+		<View style={listStyles.container}>
+			{stops.map((stop, index) => (
+				<Pressable
+					key={stop.id}
+					style={listStyles.item}
+					onPress={() => onSelectStop(stop.id)}
+				>
+					<View style={listStyles.dot} />
+					<View style={listStyles.content}>
+						<Text style={listStyles.itemTitle}>
+							{t('journey.stopLabel', { number: index + 1 })}
+						</Text>
+						{stop.waitTimeMinutes != null && (
+							<Text style={listStyles.itemDetail}>
+								{t('journey.minuteWait', { minutes: stop.waitTimeMinutes })}
+							</Text>
+						)}
+					</View>
+					<Ionicons
+						name="chevron-forward"
+						size={18}
+						color={COLORS.textSecondary}
+					/>
+				</Pressable>
+			))}
+		</View>
+	);
+};
+
+const listStyles = StyleSheet.create({
+	container: {
+		gap: SPACING.xs,
+	},
+	item: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		backgroundColor: COLORS.surface,
+		borderRadius: SIZES.radiusMedium,
+		padding: SPACING.sm,
+		borderWidth: 1,
+		borderColor: COLORS.border,
+	},
+	dot: {
+		width: 10,
+		height: 10,
+		borderRadius: 5,
+		backgroundColor: STOP_MARKER_COLOR,
+		marginRight: SPACING.sm,
+	},
+	content: {
+		flex: 1,
+	},
+	itemTitle: {
+		fontSize: SIZES.fontMd,
+		fontWeight: '500',
+		color: COLORS.text,
+	},
+	itemDetail: {
+		fontSize: SIZES.fontSm,
+		color: COLORS.textSecondary,
+	},
+});
+
+// ---------------------------------------------------------------------------
+// StopsSection
+// ---------------------------------------------------------------------------
+
+interface StopsSectionProps {
+	stops: ManualStop[];
+	selectedStop: ManualStop | undefined;
+	isAddingStop: boolean;
+	onToggleAddStop: () => void;
+	onSelectStop: (id: string | null) => void;
+	onUpdateStop: (id: string, updates: Partial<ManualStop>) => void;
+	onRemoveStop: (id: string) => void;
+}
+
+const StopsSection: React.FC<StopsSectionProps> = ({
+	stops,
+	selectedStop,
+	isAddingStop,
+	onToggleAddStop,
+	onSelectStop,
+	onUpdateStop,
+	onRemoveStop,
+}) => {
+	const { t } = useTranslation();
+	const selectedStopNumber = selectedStop
+		? stops.findIndex(s => s.id === selectedStop.id) + 1
+		: 0;
+
+	return (
+		<View style={sectionStyles.container}>
+			<View style={sectionStyles.header}>
+				<Text style={sectionStyles.label}>
+					{t('journey.stopsCount', { count: stops.length })}
+				</Text>
+				<Pressable
+					style={[
+						sectionStyles.addButton,
+						isAddingStop && sectionStyles.addButtonActive,
+					]}
+					onPress={onToggleAddStop}
+				>
+					<Ionicons
+						name={isAddingStop ? 'close' : 'add'}
+						size={18}
+						color={isAddingStop ? COLORS.error : COLORS.primary}
+					/>
+					<Text
+						style={[
+							sectionStyles.addButtonText,
+							isAddingStop && sectionStyles.addButtonTextActive,
+						]}
+					>
+						{isAddingStop ? t('common.cancel') : t('journey.addStop')}
+					</Text>
+				</Pressable>
+			</View>
+
+			{selectedStop ? (
+				<StopEditor
+					stop={selectedStop}
+					stopNumber={selectedStopNumber}
+					onUpdate={updates => onUpdateStop(selectedStop.id, updates)}
+					onRemove={() => onRemoveStop(selectedStop.id)}
+					onDone={() => onSelectStop(null)}
+				/>
+			) : (
+				stops.length > 0 && (
+					<StopsList stops={stops} onSelectStop={onSelectStop} />
+				)
+			)}
+		</View>
+	);
+};
+
+const sectionStyles = StyleSheet.create({
+	container: {
+		marginBottom: SPACING.md,
+	},
+	header: {
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+		alignItems: 'center',
+		marginBottom: SPACING.sm,
+	},
+	label: {
+		fontSize: SIZES.fontSm,
+		fontWeight: '600',
+		color: COLORS.text,
+	},
+	addButton: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		gap: SPACING.xs,
+		paddingHorizontal: SPACING.sm,
+		paddingVertical: SPACING.xs,
+		backgroundColor: COLORS.surface,
+		borderRadius: SIZES.radiusMedium,
+		borderWidth: 1,
+		borderColor: COLORS.primary,
+	},
+	addButtonActive: {
+		borderColor: COLORS.error,
+		backgroundColor: 'rgba(244, 67, 54, 0.1)',
+	},
+	addButtonText: {
+		fontSize: SIZES.fontSm,
+		fontWeight: '600',
+		color: COLORS.primary,
+	},
+	addButtonTextActive: {
+		color: COLORS.error,
+	},
+});
+
+// ---------------------------------------------------------------------------
+// StopsManagementStep
+// ---------------------------------------------------------------------------
 
 /**
  * Step 3: Manage stops on the route and finalize the journey.
@@ -69,7 +389,8 @@ export const StopsManagementStep: React.FC<StopsManagementStepProps> = ({
 	const [isAddingStop, setIsAddingStop] = useState(false);
 	const { t } = useTranslation();
 
-	// Calculate region to fit all points
+	const selectedStop = stops.find(s => s.id === selectedStopId);
+
 	const initialRegion = useMemo((): MapRegion => {
 		const allLats = [
 			startLocation.latitude,
@@ -87,30 +408,26 @@ export const StopsManagementStep: React.FC<StopsManagementStepProps> = ({
 		const minLng = Math.min(...allLngs);
 		const maxLng = Math.max(...allLngs);
 
-		const latDelta = Math.max((maxLat - minLat) * 1.5, 0.02);
-		const lngDelta = Math.max((maxLng - minLng) * 1.5, 0.02);
-
 		return {
 			latitude: (minLat + maxLat) / 2,
 			longitude: (minLng + maxLng) / 2,
-			latitudeDelta: latDelta,
-			longitudeDelta: lngDelta,
+			latitudeDelta: Math.max((maxLat - minLat) * 1.5, 0.02),
+			longitudeDelta: Math.max((maxLng - minLng) * 1.5, 0.02),
 		};
 	}, [startLocation, endLocation, stops]);
 
-	// Preview line: straight segments between waypoints in entry order.
-	const polylineCoordinates = useMemo(() => {
-		return [
+	const polylineCoordinates = useMemo(
+		() => [
 			{ latitude: startLocation.latitude, longitude: startLocation.longitude },
-			...stops.map(stop => ({
-				latitude: stop.location.latitude,
-				longitude: stop.location.longitude,
+			...stops.map(s => ({
+				latitude: s.location.latitude,
+				longitude: s.location.longitude,
 			})),
 			{ latitude: endLocation.latitude, longitude: endLocation.longitude },
-		];
-	}, [startLocation, endLocation, stops]);
+		],
+		[startLocation, endLocation, stops]
+	);
 
-	// Fit map to show all points on mount
 	useEffect(() => {
 		const timer = setTimeout(() => {
 			mapRef.current?.animateToRegion(initialRegion, 500);
@@ -128,7 +445,6 @@ export const StopsManagementStep: React.FC<StopsManagementStepProps> = ({
 		[isAddingStop, onAddStop]
 	);
 
-	// Long press always adds a stop (more intuitive gesture)
 	const handleMapLongPress = useCallback(
 		(location: Location) => {
 			onAddStop(location);
@@ -144,11 +460,6 @@ export const StopsManagementStep: React.FC<StopsManagementStepProps> = ({
 		[selectedStopId, onSelectStop]
 	);
 
-	const selectedStop = useMemo(
-		() => stops.find(s => s.id === selectedStopId),
-		[stops, selectedStopId]
-	);
-
 	return (
 		<View style={styles.container}>
 			{/* Map */}
@@ -160,40 +471,34 @@ export const StopsManagementStep: React.FC<StopsManagementStepProps> = ({
 					onPress={handleMapPress}
 					onLongPress={handleMapLongPress}
 				>
-					{/* Route polyline */}
 					<Polyline
 						coordinates={polylineCoordinates}
 						strokeColor={COLORS.primary}
 						strokeWidth={3}
 					/>
-
-					{/* Start marker (blue) */}
 					<Marker
 						coordinate={startLocation}
 						title={startName || t('journey.startMarker')}
 						pinColor={COLORS.secondary}
 					/>
-
-					{/* End marker (red) */}
 					<Marker
 						coordinate={endLocation}
 						title={endName || t('journey.endMarker')}
 						pinColor={COLORS.error}
 					/>
-
-					{/* Stop markers (black) */}
 					{stops.map((stop, index) => (
 						<Marker
 							key={stop.id}
 							coordinate={stop.location}
 							title={t('journey.stopMarkerTitle', { number: index + 1 })}
-							pinColor={stop.id === selectedStopId ? COLORS.primary : '#333333'}
+							pinColor={
+								stop.id === selectedStopId ? COLORS.primary : STOP_MARKER_COLOR
+							}
 							onPress={() => handleStopMarkerPress(stop.id)}
 						/>
 					))}
 				</MapViewComponent>
 
-				{/* Adding stop hint overlay */}
 				{isAddingStop && (
 					<View style={styles.addingStopOverlay} pointerEvents="none">
 						<View style={styles.addingStopHint}>
@@ -238,7 +543,6 @@ export const StopsManagementStep: React.FC<StopsManagementStepProps> = ({
 					style={styles.bottomPanelContent}
 					showsVerticalScrollIndicator={false}
 				>
-					{/* Journey title */}
 					<View style={styles.inputSection}>
 						<Text style={styles.inputLabel}>
 							{t('journey.titleLabelOptional')}
@@ -252,128 +556,16 @@ export const StopsManagementStep: React.FC<StopsManagementStepProps> = ({
 						/>
 					</View>
 
-					{/* Add stop button or stop list */}
-					<View style={styles.stopsSection}>
-						<View style={styles.stopsSectionHeader}>
-							<Text style={styles.inputLabel}>
-								{t('journey.stopsCount', { count: stops.length })}
-							</Text>
-							<Pressable
-								style={[
-									styles.addStopButton,
-									isAddingStop && styles.addStopButtonActive,
-								]}
-								onPress={() => setIsAddingStop(!isAddingStop)}
-							>
-								<Ionicons
-									name={isAddingStop ? 'close' : 'add'}
-									size={18}
-									color={isAddingStop ? COLORS.error : COLORS.primary}
-								/>
-								<Text
-									style={[
-										styles.addStopButtonText,
-										isAddingStop && styles.addStopButtonTextActive,
-									]}
-								>
-									{isAddingStop ? t('common.cancel') : t('journey.addStop')}
-								</Text>
-							</Pressable>
-						</View>
+					<StopsSection
+						stops={stops}
+						selectedStop={selectedStop}
+						isAddingStop={isAddingStop}
+						onToggleAddStop={() => setIsAddingStop(prev => !prev)}
+						onSelectStop={onSelectStop}
+						onUpdateStop={onUpdateStop}
+						onRemoveStop={onRemoveStop}
+					/>
 
-						{/* Selected stop editor */}
-						{selectedStop && (
-							<View style={styles.stopEditor}>
-								<View style={styles.stopEditorHeader}>
-									<Text style={styles.stopEditorTitle}>
-										{t('journey.stopLabel', {
-											number:
-												stops.findIndex(s => s.id === selectedStop.id) + 1,
-										})}
-									</Text>
-									<Pressable
-										onPress={() => onRemoveStop(selectedStop.id)}
-										accessibilityLabel={t('journey.removeStop')}
-									>
-										<Ionicons
-											name="trash-outline"
-											size={20}
-											color={COLORS.error}
-										/>
-									</Pressable>
-								</View>
-
-								<TextInput
-									style={styles.stopInput}
-									placeholder={t('journey.waitTimePlaceholder')}
-									value={selectedStop.waitTimeMinutes?.toString() || ''}
-									onChangeText={text => {
-										const minutes = Number.parseInt(text, 10);
-										onUpdateStop(selectedStop.id, {
-											waitTimeMinutes: Number.isNaN(minutes)
-												? undefined
-												: minutes,
-										});
-									}}
-									keyboardType="numeric"
-									placeholderTextColor={COLORS.textSecondary}
-								/>
-
-								<TextInput
-									style={[styles.stopInput, styles.stopNotesInput]}
-									placeholder={t('common.notesLabelOptional')}
-									value={selectedStop.notes || ''}
-									onChangeText={text =>
-										onUpdateStop(selectedStop.id, { notes: text || undefined })
-									}
-									multiline
-									numberOfLines={2}
-									placeholderTextColor={COLORS.textSecondary}
-								/>
-
-								<Pressable
-									style={styles.doneEditingButton}
-									onPress={() => onSelectStop(null)}
-								>
-									<Text style={styles.doneEditingText}>{t('common.done')}</Text>
-								</Pressable>
-							</View>
-						)}
-
-						{/* Stops preview list (when not editing) */}
-						{!selectedStop && stops.length > 0 && (
-							<View style={styles.stopsList}>
-								{stops.map((stop, index) => (
-									<Pressable
-										key={stop.id}
-										style={styles.stopItem}
-										onPress={() => onSelectStop(stop.id)}
-									>
-										<View style={styles.stopItemDot} />
-										<View style={styles.stopItemContent}>
-											<Text style={styles.stopItemTitle}>
-												{t('journey.stopLabel', { number: index + 1 })}
-											</Text>
-											{stop.waitTimeMinutes && (
-												<Text style={styles.stopItemDetail}>
-													{t('journey.minuteWait', {
-														minutes: stop.waitTimeMinutes,
-													})}
-												</Text>
-											)}
-										</View>
-										<Ionicons
-											name="chevron-forward"
-											size={18}
-											color={COLORS.textSecondary}
-										/>
-									</Pressable>
-								))}
-							</View>
-						)}
-					</View>
-
-					{/* Journey notes */}
 					<View style={styles.inputSection}>
 						<Text style={styles.inputLabel}>
 							{t('common.notesLabelOptional')}
@@ -390,7 +582,6 @@ export const StopsManagementStep: React.FC<StopsManagementStepProps> = ({
 					</View>
 				</ScrollView>
 
-				{/* Save button */}
 				<Pressable
 					style={[
 						styles.saveButton,
@@ -510,111 +701,6 @@ const styles = StyleSheet.create({
 	notesInput: {
 		minHeight: 80,
 		textAlignVertical: 'top',
-	},
-	stopsSection: {
-		marginBottom: SPACING.md,
-	},
-	stopsSectionHeader: {
-		flexDirection: 'row',
-		justifyContent: 'space-between',
-		alignItems: 'center',
-		marginBottom: SPACING.sm,
-	},
-	addStopButton: {
-		flexDirection: 'row',
-		alignItems: 'center',
-		gap: SPACING.xs,
-		paddingHorizontal: SPACING.sm,
-		paddingVertical: SPACING.xs,
-		backgroundColor: COLORS.surface,
-		borderRadius: SIZES.radiusMedium,
-		borderWidth: 1,
-		borderColor: COLORS.primary,
-	},
-	addStopButtonActive: {
-		borderColor: COLORS.error,
-		backgroundColor: 'rgba(244, 67, 54, 0.1)',
-	},
-	addStopButtonText: {
-		fontSize: SIZES.fontSm,
-		fontWeight: '600',
-		color: COLORS.primary,
-	},
-	addStopButtonTextActive: {
-		color: COLORS.error,
-	},
-	stopEditor: {
-		backgroundColor: COLORS.surface,
-		borderRadius: SIZES.radiusMedium,
-		padding: SPACING.md,
-		borderWidth: 1,
-		borderColor: COLORS.border,
-	},
-	stopEditorHeader: {
-		flexDirection: 'row',
-		justifyContent: 'space-between',
-		alignItems: 'center',
-		marginBottom: SPACING.sm,
-	},
-	stopEditorTitle: {
-		fontSize: SIZES.fontMd,
-		fontWeight: '600',
-		color: COLORS.text,
-	},
-	stopInput: {
-		backgroundColor: COLORS.background,
-		borderWidth: 1,
-		borderColor: COLORS.border,
-		borderRadius: SIZES.radiusMedium,
-		paddingHorizontal: SPACING.md,
-		paddingVertical: SPACING.sm,
-		fontSize: SIZES.fontMd,
-		color: COLORS.text,
-		marginBottom: SPACING.sm,
-	},
-	stopNotesInput: {
-		minHeight: 60,
-		textAlignVertical: 'top',
-	},
-	doneEditingButton: {
-		alignItems: 'center',
-		paddingVertical: SPACING.sm,
-	},
-	doneEditingText: {
-		fontSize: SIZES.fontMd,
-		fontWeight: '600',
-		color: COLORS.primary,
-	},
-	stopsList: {
-		gap: SPACING.xs,
-	},
-	stopItem: {
-		flexDirection: 'row',
-		alignItems: 'center',
-		backgroundColor: COLORS.surface,
-		borderRadius: SIZES.radiusMedium,
-		padding: SPACING.sm,
-		borderWidth: 1,
-		borderColor: COLORS.border,
-	},
-	stopItemDot: {
-		width: 10,
-		height: 10,
-		borderRadius: 5,
-		backgroundColor: '#333333',
-		marginRight: SPACING.sm,
-	},
-	stopItemContent: {
-		flex: 1,
-	},
-	stopItemTitle: {
-		fontSize: SIZES.fontMd,
-		fontWeight: '500',
-		color: COLORS.text,
-	},
-	stopItemDetail: {
-		fontSize: SIZES.fontSm,
-		color: COLORS.textSecondary,
 	},
 	saveButton: {
 		backgroundColor: COLORS.primary,
