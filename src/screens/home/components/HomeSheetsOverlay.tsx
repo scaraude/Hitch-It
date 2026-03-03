@@ -1,6 +1,6 @@
 import type React from 'react';
 import { useCallback } from 'react';
-import { KeyboardAvoidingView, Platform } from 'react-native';
+import { KeyboardAvoidingView, Platform, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import { ActionButton, ActionButtons } from '../../../components';
@@ -61,12 +61,7 @@ export const HomeSheetsOverlay: React.FC = () => {
 	}, [session.handleDiscardJourney]);
 
 	return (
-		<KeyboardAvoidingView
-			style={homeStyles.nonMapOverlay}
-			behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-			keyboardVerticalOffset={0}
-			pointerEvents="box-none"
-		>
+		<View style={homeStyles.nonMapOverlay} pointerEvents="box-none">
 			{spot.isPlacingSpot && (
 				<ActionButtons
 					onConfirm={handleConfirmSpotPlacement}
@@ -75,10 +70,17 @@ export const HomeSheetsOverlay: React.FC = () => {
 			)}
 
 			{spot.isShowingForm && (
-				<SpotForm
-					onSubmit={spot.submitSpotForm}
-					onCancel={spot.cancelSpotForm}
-				/>
+				<KeyboardAvoidingView
+					style={homeStyles.nonMapOverlay}
+					behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+					keyboardVerticalOffset={0}
+					pointerEvents="box-none"
+				>
+					<SpotForm
+						onSubmit={spot.submitSpotForm}
+						onCancel={spot.cancelSpotForm}
+					/>
+				</KeyboardAvoidingView>
 			)}
 
 			{selectedSpot && !spot.isShowingForm && (
@@ -129,6 +131,6 @@ export const HomeSheetsOverlay: React.FC = () => {
 			)}
 
 			<Toast />
-		</KeyboardAvoidingView>
+		</View>
 	);
 };
