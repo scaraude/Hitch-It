@@ -92,9 +92,11 @@ export default {
 		appreciationGood: 'Gut',
 		appreciationBad: 'Schlecht',
 		loadError: 'Laden fehlgeschlagen',
-		loadErrorMessage: 'Kommentare für diesen Spot konnten nicht geladen werden.',
+		loadErrorMessage:
+			'Kommentare für diesen Spot konnten nicht geladen werden.',
 		commentRequired: 'Kommentar erforderlich',
-		commentRequiredMessage: 'Fügen Sie einen Kommentar hinzu, bevor Sie absenden.',
+		commentRequiredMessage:
+			'Fügen Sie einen Kommentar hinzu, bevor Sie absenden.',
 		commentAdded: 'Kommentar hinzugefügt',
 		addError: 'Hinzufügen nicht möglich',
 		addErrorMessage: 'Der Kommentar konnte nicht gespeichert werden.',

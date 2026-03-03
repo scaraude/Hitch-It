@@ -38,10 +38,7 @@ export const useSpotComments = (spotId: SpotId): UseSpotCommentsReturn => {
 			logger.repository.error('Unable to load comments for spot', error, {
 				spotId,
 			});
-			toastUtils.error(
-				t('comment.loadError'),
-				t('comment.loadErrorMessage')
-			);
+			toastUtils.error(t('comment.loadError'), t('comment.loadErrorMessage'));
 		} finally {
 			setIsLoading(false);
 		}
@@ -79,10 +76,7 @@ export const useSpotComments = (spotId: SpotId): UseSpotCommentsReturn => {
 				logger.repository.error('Unable to create comment', error, {
 					spotId,
 				});
-				toastUtils.error(
-					t('comment.addError'),
-					t('comment.addErrorMessage')
-				);
+				toastUtils.error(t('comment.addError'), t('comment.addErrorMessage'));
 				return false;
 			} finally {
 				setIsSubmitting(false);

@@ -23,7 +23,10 @@ function toRadians(degrees: number): number {
 	return (degrees * Math.PI) / 180;
 }
 
-function haversineDistanceMeters(pointA: RoutePoint, pointB: RoutePoint): number {
+function haversineDistanceMeters(
+	pointA: RoutePoint,
+	pointB: RoutePoint
+): number {
 	const latitudeDelta = toRadians(pointB.latitude - pointA.latitude);
 	const longitudeDelta = toRadians(pointB.longitude - pointA.longitude);
 	const startLatitude = toRadians(pointA.latitude);
@@ -37,7 +40,8 @@ function haversineDistanceMeters(pointA: RoutePoint, pointB: RoutePoint): number
 			Math.sin(longitudeDelta / 2);
 
 	const distanceFormulaC =
-		2 * Math.atan2(Math.sqrt(distanceFormulaA), Math.sqrt(1 - distanceFormulaA));
+		2 *
+		Math.atan2(Math.sqrt(distanceFormulaA), Math.sqrt(1 - distanceFormulaA));
 
 	return EARTH_RADIUS_METERS * distanceFormulaC;
 }
@@ -50,7 +54,10 @@ function findClosestRoutePointIndex(
 	let minDistance = Number.POSITIVE_INFINITY;
 
 	for (let index = 0; index < routePolyline.length; index += 1) {
-		const distance = haversineDistanceMeters(userLocation, routePolyline[index]);
+		const distance = haversineDistanceMeters(
+			userLocation,
+			routePolyline[index]
+		);
 		if (distance < minDistance) {
 			minDistance = distance;
 			closestIndex = index;
@@ -128,7 +135,10 @@ export function useNavigationProgress({
 		);
 		highestProgressIndexRef.current = progressRoutePointIndex;
 
-		const passedRoutePolyline = routePolyline.slice(0, progressRoutePointIndex + 1);
+		const passedRoutePolyline = routePolyline.slice(
+			0,
+			progressRoutePointIndex + 1
+		);
 		const remainingRoutePolyline = routePolyline.slice(progressRoutePointIndex);
 		const visibleSpotsOnRoute = spotsOnRoute.filter(
 			({ closestRoutePointIndex: spotRoutePointIndex }) =>

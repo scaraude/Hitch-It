@@ -6,6 +6,7 @@ import { Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../../auth';
 import {
+	ActionButton,
 	BottomNavBar,
 	MapControls,
 	SearchBarOverlay,
@@ -189,18 +190,12 @@ export const HomeFixedOverlay: React.FC = () => {
 			)}
 
 			{shouldShowBottomEmbarquer && (
-				<Pressable
-					style={({ pressed }) => [
-						styles.longPressEmbarquerButton,
-						{ bottom: controlsBottomOffset },
-						pressed && styles.longPressEmbarquerButtonPressed,
-					]}
+				<ActionButton
+					label={t('navigation.hitchIt')}
 					onPress={handleBottomEmbarquerPress}
-				>
-					<Text style={styles.longPressEmbarquerButtonText}>
-						{t('navigation.hitchIt')}
-					</Text>
-				</Pressable>
+					bottomOffset={controlsBottomOffset}
+					testID="bottom-embarquer-button"
+				/>
 			)}
 
 			{search.shouldShowBottomBar && (

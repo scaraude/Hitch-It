@@ -251,8 +251,7 @@ export default {
 
 	// Errors
 	errors: {
-		updateTitleFailed:
-			'Aggiornamento del titolo fallito. Riprova di nuovo.',
+		updateTitleFailed: 'Aggiornamento del titolo fallito. Riprova di nuovo.',
 		deleteFailed: 'Eliminazione fallita. Riprova di nuovo.',
 		saveFailed: 'Salvataggio fallito. Riprova di nuovo.',
 		unexpectedError: 'Ops! Si è verificato un errore',
