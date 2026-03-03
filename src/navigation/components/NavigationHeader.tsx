@@ -25,7 +25,7 @@ export function NavigationHeader({
 				<Text style={styles.destination} numberOfLines={1}>
 					{t('navigation.toDestination', { destination: destinationName })}
 				</Text>
-				<Text style={styles.distance}>{distanceKm} km</Text>
+				<Text style={styles.distance}>{distanceKm.toFixed(1)} km</Text>
 			</View>
 			<Pressable
 				style={({ pressed }) => [

@@ -17,6 +17,7 @@ export const COLORS = {
 	textSecondary: '#757575',
 	textLight: '#FFFFFF',
 	border: '#E0E0E0',
+	navigationRoutePassed: '#9E9E9E',
 } as const;
 
 export const MAP_CONFIG = {

@@ -13,8 +13,10 @@ import {
 import { APP_CONFIG } from '../../../constants';
 import { useTranslation } from '../../../i18n';
 import { NavigationHeader } from '../../../navigation/components';
+import { useNavigationProgress } from '../../../navigation/hooks';
 import type { RootStackParamList } from '../../../navigation/types';
 import {
+	useHomeLocation,
 	useHomeMap,
 	useHomeNav,
 	useHomeSearch,
@@ -36,11 +38,19 @@ export const HomeFixedOverlay: React.FC = () => {
 	const { isAuthenticated } = useAuth();
 	const { t } = useTranslation();
 
+	const { userLocation } = useHomeLocation();
 	const nav = useHomeNav();
 	const session = useHomeSession();
 	const search = useHomeSearch();
 	const map = useHomeMap();
 	const spot = useHomeSpot();
+
+	const { remainingDistanceKm } = useNavigationProgress({
+		routePolyline: nav.navigation.route?.polyline ?? [],
+		initialDistanceKm: nav.navigation.route?.distanceKm ?? 0,
+		userLocation,
+		spotsOnRoute: nav.navigation.spotsOnRoute,
+	});
 
 	const insets = useSafeAreaInsets();
 
@@ -152,7 +162,7 @@ export const HomeFixedOverlay: React.FC = () => {
 
 					<NavigationHeader
 						destinationName={navigationRoute.destinationName}
-						distanceKm={navigationRoute.distanceKm}
+						distanceKm={remainingDistanceKm}
 						onStop={handleStopNavigation}
 					/>
 				</>

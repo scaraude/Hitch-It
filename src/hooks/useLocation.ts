@@ -6,15 +6,16 @@ import { useTranslation } from '../i18n/useTranslation';
 import type { Location as LocationType, MapRegion } from '../types';
 import { logger } from '../utils';
 
+const LOCATION_ACCURACY = Location.Accuracy.Balanced;
+const LOCATION_TIME_INTERVAL_MS = 2000;
+const LOCATION_DISTANCE_INTERVAL_METERS = 10;
+
 interface UseLocationReturn {
 	userLocation: LocationType | null;
 	currentRegion: MapRegion;
 	locationLoading: boolean;
 	getCurrentLocation: () => Promise<void>;
 }
-
-const LOCATION_WATCH_TIME_INTERVAL_MS = 5000;
-const LOCATION_WATCH_DISTANCE_INTERVAL_METERS = 25;
 
 export const useLocation = (): UseLocationReturn => {
 	const { t } = useTranslation();
@@ -23,9 +24,8 @@ export const useLocation = (): UseLocationReturn => {
 		MAP_CONFIG.defaultRegion
 	);
 	const [locationLoading, setLocationLoading] = useState(true);
-	const locationSubscriptionRef = useRef<Location.LocationSubscription | null>(
-		null
-	);
+	const locationSubscriptionRef =
+		useRef<Location.LocationSubscription | null>(null);
 	const hasCenteredOnUserRef = useRef(false);
 
 	const stopLocationWatch = useCallback(() => {
@@ -33,33 +33,43 @@ export const useLocation = (): UseLocationReturn => {
 		locationSubscriptionRef.current = null;
 	}, []);
 
-	const applyLocationUpdate = useCallback(
-		(location: Location.LocationObject) => {
-			const userCoordinate: LocationType = {
-				latitude: location.coords.latitude,
-				longitude: location.coords.longitude,
-			};
+	const applyLocationUpdate = useCallback((location: Location.LocationObject) => {
+		const userCoordinate: LocationType = {
+			latitude: location.coords.latitude,
+			longitude: location.coords.longitude,
+		};
 
-			logger.location.debug('User location updated', {
+		logger.location.debug('User location updated', {
+			latitude: userCoordinate.latitude,
+			longitude: userCoordinate.longitude,
+			accuracy: location.coords.accuracy,
+		});
+
+		setUserLocation(userCoordinate);
+
+		if (!hasCenteredOnUserRef.current) {
+			hasCenteredOnUserRef.current = true;
+			setCurrentRegion({
 				latitude: userCoordinate.latitude,
 				longitude: userCoordinate.longitude,
-				accuracy: location.coords.accuracy,
+				latitudeDelta: MAP_CONFIG.defaultRegion.latitudeDelta,
+				longitudeDelta: MAP_CONFIG.defaultRegion.longitudeDelta,
 			});
+		}
+	}, []);
 
-			setUserLocation(userCoordinate);
+	const startLocationWatcher = useCallback(async () => {
+		stopLocationWatch();
 
-			if (!hasCenteredOnUserRef.current) {
-				hasCenteredOnUserRef.current = true;
-				setCurrentRegion({
-					latitude: userCoordinate.latitude,
-					longitude: userCoordinate.longitude,
-					latitudeDelta: MAP_CONFIG.defaultRegion.latitudeDelta,
-					longitudeDelta: MAP_CONFIG.defaultRegion.longitudeDelta,
-				});
-			}
-		},
-		[]
-	);
+		locationSubscriptionRef.current = await Location.watchPositionAsync(
+			{
+				accuracy: LOCATION_ACCURACY,
+				timeInterval: LOCATION_TIME_INTERVAL_MS,
+				distanceInterval: LOCATION_DISTANCE_INTERVAL_METERS,
+			},
+			applyLocationUpdate
+		);
+	}, [applyLocationUpdate, stopLocationWatch]);
 
 	const getCurrentLocation = useCallback(async () => {
 		logger.location.info('Getting current location from useLocation hook');
@@ -79,19 +89,11 @@ export const useLocation = (): UseLocationReturn => {
 
 			logger.location.info('Location permission granted, fetching position');
 			const location = await Location.getCurrentPositionAsync({
-				accuracy: Location.Accuracy.Balanced,
+				accuracy: LOCATION_ACCURACY,
 			});
 			applyLocationUpdate(location);
 
-			stopLocationWatch();
-			locationSubscriptionRef.current = await Location.watchPositionAsync(
-				{
-					accuracy: Location.Accuracy.Balanced,
-					timeInterval: LOCATION_WATCH_TIME_INTERVAL_MS,
-					distanceInterval: LOCATION_WATCH_DISTANCE_INTERVAL_METERS,
-				},
-				applyLocationUpdate
-			);
+			await startLocationWatcher();
 		} catch (error) {
 			logger.location.error(
 				'Error getting location from useLocation hook',
@@ -105,7 +107,7 @@ export const useLocation = (): UseLocationReturn => {
 		} finally {
 			setLocationLoading(false);
 		}
-	}, [applyLocationUpdate, stopLocationWatch, t]);
+	}, [applyLocationUpdate, startLocationWatcher, t]);
 
 	useEffect(() => {
 		void getCurrentLocation();
