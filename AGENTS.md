@@ -39,6 +39,7 @@ Read in this order before significant work:
 5. **Strong domain types**: avoid raw `string` IDs/statuses; use branded IDs and enums/unions.
 6. **Boundary parsing**: validate/sanitize external data in repositories/services.
 7. **Quality gates**: `pnpm lint` and `pnpm type-check` must pass.
+8. **i18n-first UI copy**: never hardcode user-facing strings in components/screens; use `src/i18n/translations/*` via `useTranslation()`/`i18n.t(...)`. For bilingual UI, resolve both locales from i18n (do not inline literal text).
 
 ---
 
@@ -338,6 +339,7 @@ pnpm type-check
 - [ ] No new magic strings/numbers
 - [ ] No raw domain `string` IDs/statuses
 - [ ] Reused existing component/hook/library where possible
+- [ ] User-facing strings come from i18n (including bilingual labels)
 - [ ] No `console.log` (use `logger`)
 - [ ] Error paths handled and user feedback shown when needed
 - [ ] `pnpm lint` passes
