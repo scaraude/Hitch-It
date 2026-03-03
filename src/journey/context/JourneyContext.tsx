@@ -71,10 +71,10 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 	const routePolylineRef = useRef<JourneyRoutePoint[]>([]);
 	const hasPersistedJourneyRef = useRef(false);
 
-	// Keep ref in sync with state
-	useEffect(() => {
-		activeJourneyRef.current = activeJourney;
-	}, [activeJourney]);
+	const setJourney = useCallback((journey: Journey | null) => {
+		activeJourneyRef.current = journey;
+		setActiveJourney(journey);
+	}, []);
 
 	// Calculate stops count from journey
 	const stopsCount =
@@ -94,22 +94,20 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 				...(options.endedAt ? { endedAt: options.endedAt } : {}),
 			};
 
-			setActiveJourney(updatedJourney);
-			activeJourneyRef.current = updatedJourney;
+			setJourney(updatedJourney);
 
 			return updatedJourney;
 		},
-		[]
+		[setJourney]
 	);
 
 	const resetJourneyState = useCallback(() => {
 		routePolylineRef.current = [];
 		hasPersistedJourneyRef.current = false;
-		setActiveJourney(null);
-		activeJourneyRef.current = null;
+		setJourney(null);
 		setIsRecording(false);
 		setCurrentLocation(null);
-	}, []);
+	}, [setJourney]);
 
 	// Handle location updates
 	const handleLocationUpdate = useCallback((location: LocationUpdate) => {
@@ -217,8 +215,7 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 
 		routePolylineRef.current = [...initialRoutePolyline];
 		hasPersistedJourneyRef.current = false;
-		setActiveJourney(journey);
-		activeJourneyRef.current = journey;
+		setJourney(journey);
 		setIsRecording(true);
 
 		logger.journey.info('Journey recording started', { id: journey.id });
@@ -228,6 +225,7 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 		handleLocationError,
 		handleLocationUpdate,
 		isAuthenticated,
+		setJourney,
 		user,
 	]);
 
@@ -255,8 +253,7 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 					: undefined,
 		};
 
-		setActiveJourney(completedJourney);
-		activeJourneyRef.current = completedJourney;
+		setJourney(completedJourney);
 
 		try {
 			await saveJourney(completedJourney);
@@ -276,7 +273,7 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 
 		setIsRecording(false);
 		logger.journey.info('Journey recording stopped');
-	}, []);
+	}, [setJourney]);
 
 	const discardJourney = useCallback(async () => {
 		const journeyToDiscard = activeJourneyRef.current;
@@ -371,12 +368,11 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 			points: [...journey.points, stopPoint],
 		};
 
-		setActiveJourney(updatedJourney);
-		activeJourneyRef.current = updatedJourney;
+		setJourney(updatedJourney);
 		routePolylineRef.current.push(toRoutePoint(location));
 
 		logger.journey.info('Stop marked', { id: stopPoint.id });
-	}, [currentLocation]);
+	}, [currentLocation, setJourney]);
 
 	const value: JourneyContextValue = {
 		activeJourney,
