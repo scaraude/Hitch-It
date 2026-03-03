@@ -4,7 +4,7 @@ import { KeyboardAvoidingView, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import { ActionButton, ActionButtons } from '../../../components';
-import { COLORS, SPACING } from '../../../constants';
+import { SPACING } from '../../../constants';
 import { useTranslation } from '../../../i18n';
 import {
 	DriverDirectionSheet,
@@ -120,7 +120,6 @@ export const HomeSheetsOverlay: React.FC = () => {
 				<ActionButton
 					label={t('navigation.hitchIt')}
 					onPress={() => session.handleSpotEmbarquer(selectedSpot)}
-					backgroundColor={COLORS.warning}
 					bottomOffset={insets.bottom + SPOT_HITCH_BOTTOM_OFFSET}
 					variant="large"
 					withContainer
