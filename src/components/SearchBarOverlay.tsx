@@ -13,6 +13,7 @@ interface SearchBarOverlayProps {
 	onSearchTextChange: (text: string) => void;
 	onLocationSelected: (location: Location, name: string) => void;
 	onToggle: () => void;
+	onBackPress: () => void;
 }
 
 export const SearchBarOverlay: React.FC<SearchBarOverlayProps> = ({
@@ -21,6 +22,7 @@ export const SearchBarOverlay: React.FC<SearchBarOverlayProps> = ({
 	onSearchTextChange,
 	onLocationSelected,
 	onToggle,
+	onBackPress,
 }) => {
 	const insets = useSafeAreaInsets();
 	const { t } = useTranslation();
@@ -33,7 +35,7 @@ export const SearchBarOverlay: React.FC<SearchBarOverlayProps> = ({
 				<View style={styles.expandedSearchBar}>
 					<Pressable
 						style={styles.backButton}
-						onPress={onToggle}
+						onPress={onBackPress}
 						accessibilityLabel={t('common.closeSearch')}
 						accessibilityRole="button"
 					>
