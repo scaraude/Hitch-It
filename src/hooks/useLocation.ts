@@ -24,8 +24,9 @@ export const useLocation = (): UseLocationReturn => {
 		MAP_CONFIG.defaultRegion
 	);
 	const [locationLoading, setLocationLoading] = useState(true);
-	const locationSubscriptionRef =
-		useRef<Location.LocationSubscription | null>(null);
+	const locationSubscriptionRef = useRef<Location.LocationSubscription | null>(
+		null
+	);
 	const hasCenteredOnUserRef = useRef(false);
 
 	const stopLocationWatch = useCallback(() => {
@@ -33,30 +34,33 @@ export const useLocation = (): UseLocationReturn => {
 		locationSubscriptionRef.current = null;
 	}, []);
 
-	const applyLocationUpdate = useCallback((location: Location.LocationObject) => {
-		const userCoordinate: LocationType = {
-			latitude: location.coords.latitude,
-			longitude: location.coords.longitude,
-		};
+	const applyLocationUpdate = useCallback(
+		(location: Location.LocationObject) => {
+			const userCoordinate: LocationType = {
+				latitude: location.coords.latitude,
+				longitude: location.coords.longitude,
+			};
 
-		logger.location.debug('User location updated', {
-			latitude: userCoordinate.latitude,
-			longitude: userCoordinate.longitude,
-			accuracy: location.coords.accuracy,
-		});
-
-		setUserLocation(userCoordinate);
-
-		if (!hasCenteredOnUserRef.current) {
-			hasCenteredOnUserRef.current = true;
-			setCurrentRegion({
+			logger.location.debug('User location updated', {
 				latitude: userCoordinate.latitude,
 				longitude: userCoordinate.longitude,
-				latitudeDelta: MAP_CONFIG.defaultRegion.latitudeDelta,
-				longitudeDelta: MAP_CONFIG.defaultRegion.longitudeDelta,
+				accuracy: location.coords.accuracy,
 			});
-		}
-	}, []);
+
+			setUserLocation(userCoordinate);
+
+			if (!hasCenteredOnUserRef.current) {
+				hasCenteredOnUserRef.current = true;
+				setCurrentRegion({
+					latitude: userCoordinate.latitude,
+					longitude: userCoordinate.longitude,
+					latitudeDelta: MAP_CONFIG.defaultRegion.latitudeDelta,
+					longitudeDelta: MAP_CONFIG.defaultRegion.longitudeDelta,
+				});
+			}
+		},
+		[]
+	);
 
 	const startLocationWatcher = useCallback(async () => {
 		stopLocationWatch();
@@ -99,11 +103,9 @@ export const useLocation = (): UseLocationReturn => {
 				'Error getting location from useLocation hook',
 				error
 			);
-			Alert.alert(
-				t('map.locationError'),
-				t('map.locationErrorMessage'),
-				[{ text: t('common.ok'), onPress: () => setLocationLoading(false) }]
-			);
+			Alert.alert(t('map.locationError'), t('map.locationErrorMessage'), [
+				{ text: t('common.ok'), onPress: () => setLocationLoading(false) },
+			]);
 		} finally {
 			setLocationLoading(false);
 		}

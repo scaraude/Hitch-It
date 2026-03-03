@@ -140,6 +140,7 @@ export const useHomeSearchState = ({
 	useEffect(() => {
 		if (!canUseSearch && isSearchOpen) {
 			setIsSearchOpen(false);
+			Keyboard.dismiss();
 		}
 	}, [canUseSearch, isSearchOpen]);
 

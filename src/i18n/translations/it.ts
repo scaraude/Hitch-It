@@ -184,6 +184,7 @@ export default {
 		location: 'Posizione',
 		coordinates: 'Coordinate',
 		addSpot: 'Aggiungi spot',
+		addASpot: 'Aggiungi uno spot',
 		newSpot: 'Nuovo Spot',
 		roadNameLabel: 'Nome strada *',
 		roadNamePlaceholder: 'Es: A6, D907, Route de Lyon...',
@@ -194,7 +195,6 @@ export default {
 		commentsLabel: 'Commenti',
 		destinationPlaceholder: 'Es: Parigi, Lione...',
 		hitchFromSpot: 'Fare autostop da questo spot',
-		hitchIt: 'Autostop',
 		createSpot: 'Crea spot',
 		ratingLabel: 'Valutazione *',
 		commentLabel: 'Commento *',
@@ -252,8 +252,7 @@ export default {
 
 	// Errors
 	errors: {
-		updateTitleFailed:
-			'Aggiornamento del titolo fallito. Riprova di nuovo.',
+		updateTitleFailed: 'Aggiornamento del titolo fallito. Riprova di nuovo.',
 		deleteFailed: 'Eliminazione fallita. Riprova di nuovo.',
 		saveFailed: 'Salvataggio fallito. Riprova di nuovo.',
 		unexpectedError: 'Ops! Si è verificato un errore',

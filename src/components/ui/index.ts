@@ -1,4 +1,4 @@
-export { ActionButtons } from './ActionButtons';
+export { ActionButton } from './ActionButton';
 export { BottomNavBar } from './BottomNavBar';
 export { BottomSheetHeader, bottomSheetStyles } from './BottomSheet';
 export { CompassIcon } from './CompassIcon';

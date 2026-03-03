@@ -6,11 +6,11 @@ import { Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../../auth';
 import {
+	ActionButton,
 	BottomNavBar,
 	MapControls,
 	SearchBarOverlay,
 } from '../../../components';
-import { APP_CONFIG } from '../../../constants';
 import { useTranslation } from '../../../i18n';
 import { NavigationHeader } from '../../../navigation/components';
 import { useNavigationProgress } from '../../../navigation/hooks';
@@ -190,18 +190,12 @@ export const HomeFixedOverlay: React.FC = () => {
 			)}
 
 			{shouldShowBottomEmbarquer && (
-				<Pressable
-					style={({ pressed }) => [
-						styles.longPressEmbarquerButton,
-						{ bottom: controlsBottomOffset },
-						pressed && styles.longPressEmbarquerButtonPressed,
-					]}
+				<ActionButton
+					label={t('navigation.hitchIt')}
 					onPress={handleBottomEmbarquerPress}
-				>
-					<Text style={styles.longPressEmbarquerButtonText}>
-						{APP_CONFIG.name}
-					</Text>
-				</Pressable>
+					bottomOffset={controlsBottomOffset}
+					testID="bottom-embarquer-button"
+				/>
 			)}
 
 			{search.shouldShowBottomBar && (

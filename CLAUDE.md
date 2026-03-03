@@ -36,6 +36,7 @@
 5. Avoid generic `string` for domain IDs/statuses; use branded IDs and enums/unions.
 6. Parse and validate external data in repositories.
 7. Keep files/components small and focused.
+8. Do not hardcode user-facing UI text; use i18n translations (`useTranslation()` / `i18n.t(...)`). For bilingual displays, resolve both locales through i18n rather than inline strings.
 
 ## Library-First Development
 
@@ -114,6 +115,7 @@ When a screen grows:
 - [ ] No magic string/number introduced
 - [ ] No raw domain `string` where constrained type exists
 - [ ] Existing library/component reused where possible
+- [ ] User-facing copy comes from i18n (including bilingual UI)
 - [ ] File complexity reduced or stable
 - [ ] Lint and type-check pass
 - [ ] Logging and user-facing error handling are present
@@ -126,4 +128,3 @@ Run before finalizing any implementation:
 pnpm lint
 pnpm type-check
 ```
-

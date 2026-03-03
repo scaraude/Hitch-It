@@ -30,12 +30,14 @@ export const HomeMapLayer: React.FC = () => {
 	const spot = useHomeSpot();
 	const { t } = useTranslation();
 
-	const { passedRoutePolyline, remainingRoutePolyline } = useNavigationProgress({
-		routePolyline: nav.navigation.route?.polyline ?? [],
-		initialDistanceKm: nav.navigation.route?.distanceKm ?? 0,
-		userLocation,
-		spotsOnRoute: nav.navigation.spotsOnRoute,
-	});
+	const { passedRoutePolyline, remainingRoutePolyline } = useNavigationProgress(
+		{
+			routePolyline: nav.navigation.route?.polyline ?? [],
+			initialDistanceKm: nav.navigation.route?.distanceKm ?? 0,
+			userLocation,
+			spotsOnRoute: nav.navigation.spotsOnRoute,
+		}
+	);
 
 	return (
 		<View style={styles.mapContainer}>

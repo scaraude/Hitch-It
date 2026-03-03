@@ -45,11 +45,13 @@ export default {
 		sendingResetEmail: 'Sending...',
 		resetEmailSent: 'Email sent ({{seconds}}s)',
 		resendResetEmail: 'Resend email',
-		resendEmailRequired: 'Please enter your email address to resend the confirmation.',
+		resendEmailRequired:
+			'Please enter your email address to resend the confirmation.',
 		fillAllFields: 'Please fill in all fields',
 		welcomeBack: 'Welcome back',
 		signInSubtitle: 'Sign in to your account',
-		emailConfirmationHint: 'Check your inbox and spam folder for the confirmation link.',
+		emailConfirmationHint:
+			'Check your inbox and spam folder for the confirmation link.',
 		sending: 'Sending...',
 		resendIn: 'Resend in {{seconds}}s',
 		resendConfirmationEmail: 'Resend confirmation email',
@@ -72,7 +74,8 @@ export default {
 		checkEmailForResetLink: 'Check your email for the reset link',
 		resetPasswordSubtitle: 'Enter your email and we will send you a reset link',
 		resetLinkSentTo: "We've sent a reset link to{'\\n'}",
-		resetLinkExpireHint: 'Check your inbox and spam folder. The link will expire in 1 hour.',
+		resetLinkExpireHint:
+			'Check your inbox and spam folder. The link will expire in 1 hour.',
 		emailAddressPlaceholder: 'Email address',
 		sendResetLink: 'Send reset link',
 		rememberPassword: 'Remember your password? ',
@@ -179,6 +182,7 @@ export default {
 		location: 'Location',
 		coordinates: 'Coordinates',
 		addSpot: 'Add spot',
+		addASpot: 'Add a spot',
 		newSpot: 'New Spot',
 		roadNameLabel: 'Road name *',
 		roadNamePlaceholder: 'E.g.: A6, D907, Route de Lyon...',
@@ -189,7 +193,6 @@ export default {
 		commentsLabel: 'Comments',
 		destinationPlaceholder: 'E.g.: Paris, Lyon...',
 		hitchFromSpot: 'Hitchhike from this spot',
-		hitchIt: 'Hitch it',
 		createSpot: 'Create spot',
 		ratingLabel: 'Rating *',
 		commentLabel: 'Comment *',
@@ -208,9 +211,11 @@ export default {
 		locateUser: 'Center on my location',
 		searchLocationPlaceholder: 'Search for a place',
 		permissionDenied: 'Permission denied',
-		permissionDeniedMessage: 'Location permission is required to show your position on the map.',
+		permissionDeniedMessage:
+			'Location permission is required to show your position on the map.',
 		locationError: 'Location error',
-		locationErrorMessage: 'Unable to get your current location. Using default location.',
+		locationErrorMessage:
+			'Unable to get your current location. Using default location.',
 	},
 
 	// Navigation
@@ -230,7 +235,8 @@ export default {
 		destinationPlaceholder: 'Where are you going?',
 		go: 'go',
 		compareDriverDirectionTitle: 'Compare with driver direction',
-		compareDriverDirectionSubtitle: 'Enter the driver\'s destination to display the common route.',
+		compareDriverDirectionSubtitle:
+			"Enter the driver's destination to display the common route.",
 		driverDestinationPlaceholder: 'Driver destination',
 		compare: 'Compare',
 		closeDriverComparison: 'Close driver comparison',

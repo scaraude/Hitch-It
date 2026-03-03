@@ -1,24 +1,21 @@
 import type React from 'react';
 import { useCallback } from 'react';
-import {
-	KeyboardAvoidingView,
-	Platform,
-	Pressable,
-	StyleSheet,
-	Text,
-	View,
-} from 'react-native';
+import { KeyboardAvoidingView, Platform, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
-import { ActionButtons } from '../../../components';
-import { COLORS, SIZES, SPACING } from '../../../constants';
+import { ActionButton } from '../../../components';
+import { SPACING } from '../../../constants';
 import { useTranslation } from '../../../i18n';
 import {
 	DriverDirectionSheet,
 	EmbarquerSheet,
 	NavigationCompleteSheet,
 } from '../../../navigation/components';
-import { SpotDetailsSheet, SpotForm } from '../../../spot/components';
+import {
+	SpotDetailsSheet,
+	SpotForm,
+	SpotPlacementOverlay,
+} from '../../../spot/components';
 import {
 	useHomeLocation,
 	useHomeMap,
@@ -29,7 +26,6 @@ import { homeScreenStyles as homeStyles } from '../homeScreenStyles';
 import type { NamedLocation } from '../types';
 
 const SPOT_HITCH_BOTTOM_OFFSET = SPACING.sm;
-const SPOT_HITCH_HORIZONTAL_PADDING = SPACING.lg;
 
 export const HomeSheetsOverlay: React.FC = () => {
 	const { userLocation } = useHomeLocation();
@@ -69,24 +65,26 @@ export const HomeSheetsOverlay: React.FC = () => {
 	}, [session.handleDiscardJourney]);
 
 	return (
-		<KeyboardAvoidingView
-			style={homeStyles.nonMapOverlay}
-			behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-			keyboardVerticalOffset={0}
-			pointerEvents="box-none"
-		>
+		<View style={homeStyles.nonMapOverlay} pointerEvents="box-none">
 			{spot.isPlacingSpot && (
-				<ActionButtons
+				<SpotPlacementOverlay
 					onConfirm={handleConfirmSpotPlacement}
 					onCancel={spot.cancelSpotPlacement}
 				/>
 			)}
 
 			{spot.isShowingForm && (
-				<SpotForm
-					onSubmit={spot.submitSpotForm}
-					onCancel={spot.cancelSpotForm}
-				/>
+				<KeyboardAvoidingView
+					style={homeStyles.nonMapOverlay}
+					behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+					keyboardVerticalOffset={0}
+					pointerEvents="box-none"
+				>
+					<SpotForm
+						onSubmit={spot.submitSpotForm}
+						onCancel={spot.cancelSpotForm}
+					/>
+				</KeyboardAvoidingView>
 			)}
 
 			{selectedSpot && !spot.isShowingForm && (
@@ -125,60 +123,18 @@ export const HomeSheetsOverlay: React.FC = () => {
 			)}
 
 			{shouldShowSpotHitchButton && selectedSpot && (
-				<View
-					style={[
-						styles.spotHitchContainer,
-						{ paddingBottom: insets.bottom + SPOT_HITCH_BOTTOM_OFFSET },
-					]}
-				>
-					<Pressable
-						style={({ pressed }) => [
-							styles.spotHitchButton,
-							pressed && styles.spotHitchButtonPressed,
-						]}
-						onPress={() => session.handleSpotEmbarquer(selectedSpot)}
-						accessibilityLabel={t('spots.hitchFromSpot')}
-						accessibilityRole="button"
-						testID="spot-embarquer-button"
-					>
-						<Text style={styles.spotHitchButtonText}>{t('navigation.hitchIt')}</Text>
-					</Pressable>
-				</View>
+				<ActionButton
+					label={t('navigation.hitchIt')}
+					onPress={() => session.handleSpotEmbarquer(selectedSpot)}
+					bottomOffset={insets.bottom + SPOT_HITCH_BOTTOM_OFFSET}
+					variant="large"
+					withContainer
+					accessibilityLabel={t('spots.hitchFromSpot')}
+					testID="spot-embarquer-button"
+				/>
 			)}
 
 			<Toast />
-		</KeyboardAvoidingView>
+		</View>
 	);
 };
-
-const styles = StyleSheet.create({
-	spotHitchContainer: {
-		position: 'absolute',
-		left: 0,
-		right: 0,
-		bottom: 0,
-		paddingTop: SPACING.md,
-		paddingHorizontal: SPOT_HITCH_HORIZONTAL_PADDING,
-		backgroundColor: COLORS.background,
-	},
-	spotHitchButton: {
-		backgroundColor: COLORS.warning,
-		borderRadius: SIZES.radiusXLarge,
-		paddingVertical: SPACING.md + SPACING.xs,
-		alignItems: 'center',
-		justifyContent: 'center',
-		shadowColor: COLORS.text,
-		shadowOffset: { width: 0, height: 6 },
-		shadowOpacity: 0.18,
-		shadowRadius: 10,
-		elevation: 6,
-	},
-	spotHitchButtonPressed: {
-		opacity: 0.9,
-	},
-	spotHitchButtonText: {
-		fontSize: SIZES.font3Xl,
-		fontWeight: '700',
-		color: COLORS.background,
-	},
-});
