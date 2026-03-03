@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import type { RoutePoint, SpotOnRoute } from '../types';
 
 const EARTH_RADIUS_METERS = 6371000;
@@ -99,10 +99,12 @@ export function useNavigationProgress({
 	spotsOnRoute,
 }: UseNavigationProgressArgs): NavigationProgressState {
 	const highestProgressIndexRef = useRef(0);
+	const previousRoutePolylineRef = useRef(routePolyline);
 
-	useEffect(() => {
+	if (previousRoutePolylineRef.current !== routePolyline) {
 		highestProgressIndexRef.current = 0;
-	}, [routePolyline]);
+		previousRoutePolylineRef.current = routePolyline;
+	}
 
 	return useMemo(() => {
 		if (routePolyline.length === 0) {
