@@ -34,6 +34,7 @@ export interface UseHomeSearchStateReturn {
 	shouldShowSearchEmbarquer: boolean;
 	// Search actions
 	handleSearchToggle: () => void;
+	handleSearchClear: () => void;
 	handleSearchTextChange: (text: string) => void;
 	handleSearchLocationSelected: (location: Location, name: string) => void;
 	handleSearchEmbarquer: () => void;
@@ -194,6 +195,7 @@ export const useHomeSearchState = ({
 		isSearchOpen,
 		shouldShowSearchEmbarquer,
 		handleSearchToggle,
+		handleSearchClear,
 		handleSearchTextChange,
 		handleSearchLocationSelected,
 		handleSearchEmbarquer,

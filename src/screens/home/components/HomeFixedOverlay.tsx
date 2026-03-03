@@ -175,6 +175,7 @@ export const HomeFixedOverlay: React.FC = () => {
 					onSearchTextChange={search.handleSearchTextChange}
 					onLocationSelected={search.handleSearchLocationSelected}
 					onToggle={search.handleSearchToggle}
+					onBackPress={search.handleSearchClear}
 				/>
 			)}
 
