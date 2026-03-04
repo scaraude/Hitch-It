@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import type React from 'react';
-import { useMemo, useRef } from 'react';
+import { useRef } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS, SIZES, SPACING } from '../../constants';
@@ -12,7 +12,7 @@ interface SpotPlacementOverlayProps {
 	onCancel: () => void;
 }
 
-const SNAP_POINTS = ['25%'] as const;
+const SNAP_POINTS: Array<string | number> = ['25%'];
 
 export const SpotPlacementOverlay: React.FC<SpotPlacementOverlayProps> = ({
 	onConfirm,
@@ -21,13 +21,12 @@ export const SpotPlacementOverlay: React.FC<SpotPlacementOverlayProps> = ({
 	const { t } = useTranslation();
 	const insets = useSafeAreaInsets();
 	const bottomSheetRef = useRef<BottomSheet>(null);
-	const snapPoints = useMemo(() => [...SNAP_POINTS], []);
 
 	return (
 		<BottomSheet
 			ref={bottomSheetRef}
 			index={0}
-			snapPoints={snapPoints}
+			snapPoints={SNAP_POINTS}
 			enablePanDownToClose
 			onClose={onCancel}
 			backgroundStyle={styles.sheetBackground}
