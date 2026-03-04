@@ -4,6 +4,7 @@ import { Image, Pressable, Text, View } from 'react-native';
 import { CompassIcon } from '../../components/ui';
 import { COLORS, SIZES } from '../../constants';
 import { A11Y_LABELS } from '../../constants/accessibility';
+import { useTranslation } from '../../i18n';
 import { EMPTY_MAIN_ROAD } from './spotDetailsSheetHelpers';
 import { spotDetailsSheetStyles as styles } from './spotDetailsSheetStyles';
 import type {
@@ -71,11 +72,13 @@ export const SpotDetailsSummarySection: React.FC<
 	waitingRecordsLabel,
 	destinationsLabel,
 }) => {
+	const { t } = useTranslation();
+
 	return (
 		<>
 			<View style={styles.summaryRow}>
 				<View style={styles.summaryBlock}>
-					<Text style={styles.label}>Direction</Text>
+					<Text style={styles.label}>{t('spots.direction')}</Text>
 					<View style={styles.directionRow}>
 						<CompassIcon heading={directionHeading} size={SIZES.iconMd} />
 						<Text style={styles.value}>{directionLabel}</Text>
@@ -83,19 +86,19 @@ export const SpotDetailsSummarySection: React.FC<
 				</View>
 
 				<View style={[styles.summaryBlock, styles.waitingBlock]}>
-					<Text style={styles.label}>Waiting time</Text>
+					<Text style={styles.label}>{t('spots.waitingTimeLabel')}</Text>
 					<Text style={styles.waitingValue}>{waitingTimeLabel}</Text>
 					<Text style={styles.waitingRecords}>{waitingRecordsLabel}</Text>
 				</View>
 			</View>
 
 			<View style={styles.dataSection}>
-				<Text style={styles.label}>Main roads</Text>
+				<Text style={styles.label}>{t('spots.mainRoadsLabel')}</Text>
 				<Text style={styles.value}>{EMPTY_MAIN_ROAD}</Text>
 			</View>
 
 			<View style={styles.dataSection}>
-				<Text style={styles.label}>Destinations</Text>
+				<Text style={styles.label}>{t('spots.destinations')}</Text>
 				<Text style={styles.value}>{destinationsLabel}</Text>
 			</View>
 		</>
