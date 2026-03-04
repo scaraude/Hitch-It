@@ -64,7 +64,7 @@ export const HomeMapLayer: React.FC = () => {
 
 						{search.searchDestination &&
 							!nav.navigation.isActive &&
-							!session.showEmbarquerSheet && (
+							!session.showNavigationSetupSheet && (
 								<Marker
 									coordinate={search.searchDestination.location}
 									pinColor={COLORS.error}

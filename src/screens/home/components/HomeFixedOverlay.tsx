@@ -63,28 +63,29 @@ export const HomeFixedOverlay: React.FC = () => {
 			? MAP_CONTROLS_OFFSET_WITH_BOTTOM_BAR + insets.bottom
 			: MAP_CONTROLS_OFFSET_DEFAULT + insets.bottom;
 
-	const shouldShowLongPressEmbarquer =
+	const shouldShowLongPressNavigationSetup =
 		!!map.longPressMarker && !search.isSearchOpen;
-	const shouldShowBottomEmbarquer =
+	const shouldShowBottomNavigationSetup =
 		!isNavigationActive &&
-		(shouldShowLongPressEmbarquer || search.shouldShowSearchEmbarquer);
+		(shouldShowLongPressNavigationSetup ||
+			search.shouldShowSearchNavigationSetup);
 
 	const handleStopNavigation = useCallback(() => {
 		void search.handleStopNavigationAndOpenSearch();
 	}, [search.handleStopNavigationAndOpenSearch]);
 
-	const handleLongPressEmbarquer = useCallback(() => {
-		session.handleLongPressEmbarquer(map.longPressMarker);
+	const handleLongPressNavigationSetup = useCallback(() => {
+		session.handleLongPressNavigationSetup(map.longPressMarker);
 		map.clearLongPressMarker();
 	}, [
 		map.clearLongPressMarker,
 		map.longPressMarker,
-		session.handleLongPressEmbarquer,
+		session.handleLongPressNavigationSetup,
 	]);
 
-	const handleBottomEmbarquerPress = shouldShowLongPressEmbarquer
-		? handleLongPressEmbarquer
-		: search.handleSearchEmbarquer;
+	const handleBottomNavigationSetupPress = shouldShowLongPressNavigationSetup
+		? handleLongPressNavigationSetup
+		: search.handleSearchNavigationSetup;
 
 	const handleDriverDirectionPress = session.hasDriverComparison
 		? session.handleDriverDirectionClear
@@ -189,12 +190,12 @@ export const HomeFixedOverlay: React.FC = () => {
 				/>
 			)}
 
-			{shouldShowBottomEmbarquer && (
+			{shouldShowBottomNavigationSetup && (
 				<ActionButton
 					label={t('navigation.hitchIt')}
-					onPress={handleBottomEmbarquerPress}
+					onPress={handleBottomNavigationSetupPress}
 					bottomOffset={controlsBottomOffset}
-					testID="bottom-embarquer-button"
+					testID="bottom-navigation-setup-button"
 				/>
 			)}
 

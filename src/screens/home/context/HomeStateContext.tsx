@@ -80,10 +80,10 @@ export const HomeStateProvider: React.FC<HomeStateProviderProps> = ({
 		isNavigationActive: nav.navigation.isActive,
 		isPlacingSpot: spot.isPlacingSpot,
 		isShowingForm: spot.isShowingForm,
-		showEmbarquerSheet: session.showEmbarquerSheet,
+		showNavigationSetupSheet: session.showNavigationSetupSheet,
 		showCompletionSheet: session.showCompletionSheet,
 		selectedSpot: spot.selectedSpot,
-		onEmbarquerFromSearch: session.handleEmbarquerFromSearch,
+		onNavigationSetupFromSearch: session.handleNavigationSetupFromSearch,
 		onStopNavigation: session.handleStopNavigation,
 		mapViewRef,
 	});
