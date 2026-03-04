@@ -169,6 +169,12 @@ export const useHomeSessionState = ({
 		[journeyStartTime]
 	);
 
+	const clearCompletionState = useCallback(() => {
+		setCompletionRoute(null);
+		setCompletionSpotsUsed([]);
+		hasHandledArrivalRef.current = false;
+	}, []);
+
 	const endNavigationSession = useCallback(
 		async (
 			options: {
@@ -198,11 +204,10 @@ export const useHomeSessionState = ({
 			}
 
 			if (clearCompletionData) {
-				setCompletionRoute(null);
-				setCompletionSpotsUsed([]);
+				clearCompletionState();
 			}
 		},
-		[isRecording, stopNavigation, stopRecording]
+		[clearCompletionState, isRecording, stopNavigation, stopRecording]
 	);
 
 	const handleStopNavigation = useCallback(async () => {
@@ -313,9 +318,7 @@ export const useHomeSessionState = ({
 			}
 
 			setShowCompletionSheet(false);
-			setCompletionRoute(null);
-			setCompletionSpotsUsed([]);
-			hasHandledArrivalRef.current = false;
+			clearCompletionState();
 
 			if (!withRecording) {
 				setJourneyStartTime(null);
@@ -340,6 +343,7 @@ export const useHomeSessionState = ({
 			);
 		},
 		[
+			clearCompletionState,
 			markJourneyStarted,
 			startNavigationWithRoute,
 			startRecording,
