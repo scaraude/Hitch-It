@@ -2,18 +2,18 @@ import { useEffect, useRef, useState } from 'react';
 import { Animated, Keyboard } from 'react-native';
 import { useTranslation } from '../../i18n/useTranslation';
 import type { Location } from '../../types';
-import type { AddressData } from '../components/embarquerSheetTypes';
+import type { AddressData } from '../components/navigationSetupSheetTypes';
 
 const SHEET_SLIDE_OFFSET = -36;
 
-interface UseEmbarquerSheetStateArgs {
+interface UseNavigationSetupStateArgs {
 	initialStart?: AddressData;
 	initialDestination?: AddressData;
 	currentPosition: Location | null;
 	onStart: (start: AddressData, destination: AddressData) => void;
 }
 
-interface UseEmbarquerSheetStateReturn {
+interface UseNavigationSetupStateReturn {
 	startText: string;
 	startLocation: Location | null;
 	destinationText: string;
@@ -34,12 +34,12 @@ interface UseEmbarquerSheetStateReturn {
 	onStartNavigation: () => void;
 }
 
-export const useEmbarquerSheetState = ({
+export const useNavigationSetupState = ({
 	initialStart,
 	initialDestination,
 	currentPosition,
 	onStart,
-}: UseEmbarquerSheetStateArgs): UseEmbarquerSheetStateReturn => {
+}: UseNavigationSetupStateArgs): UseNavigationSetupStateReturn => {
 	const { t } = useTranslation();
 	const currentPositionLabel = t('common.currentPosition');
 	const shouldDefaultStartToCurrentPosition =

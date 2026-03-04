@@ -6,9 +6,9 @@ import { AddressInput } from '../../components';
 import { COLORS } from '../../constants';
 import { useTranslation } from '../../i18n/useTranslation';
 import type { Location } from '../../types';
-import { embarquerSheetStyles as styles } from './embarquerSheetStyles';
+import { navigationSetupSheetStyles as styles } from './navigationSetupSheetStyles';
 
-interface EmbarquerAddressFieldProps {
+interface NavigationSetupAddressFieldProps {
 	label: string;
 	placeholder: string;
 	value: string;
@@ -25,7 +25,9 @@ interface EmbarquerAddressFieldProps {
 	showPositionButton?: boolean;
 }
 
-export const EmbarquerAddressField: React.FC<EmbarquerAddressFieldProps> = ({
+export const NavigationSetupAddressField: React.FC<
+	NavigationSetupAddressFieldProps
+> = ({
 	label,
 	placeholder,
 	value,

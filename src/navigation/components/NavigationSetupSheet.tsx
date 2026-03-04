@@ -12,14 +12,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MapControlButton } from '../../components';
 import { COLORS, SIZES } from '../../constants';
 import { useTranslation } from '../../i18n';
-import { useEmbarquerSheetState } from '../hooks';
-import { EmbarquerAddressField } from './EmbarquerAddressField';
-import { embarquerSheetStyles as styles } from './embarquerSheetStyles';
-import type { EmbarquerSheetProps } from './embarquerSheetTypes';
+import { useNavigationSetupState } from '../hooks';
+import { NavigationSetupAddressField } from './NavigationSetupAddressField';
+import { navigationSetupSheetStyles as styles } from './navigationSetupSheetStyles';
+import type { NavigationSetupSheetProps } from './navigationSetupSheetTypes';
 
 const SHEET_TOP_MARGIN = 6;
 
-export const EmbarquerSheet: React.FC<EmbarquerSheetProps> = ({
+export const NavigationSetupSheet: React.FC<NavigationSetupSheetProps> = ({
 	initialStart,
 	initialDestination,
 	currentPosition = null,
@@ -47,7 +47,7 @@ export const EmbarquerSheet: React.FC<EmbarquerSheetProps> = ({
 		onUseCurrentPositionForDestination,
 		onSwapLocations,
 		onStartNavigation,
-	} = useEmbarquerSheetState({
+	} = useNavigationSetupState({
 		initialStart,
 		initialDestination,
 		currentPosition,
@@ -85,7 +85,7 @@ export const EmbarquerSheet: React.FC<EmbarquerSheetProps> = ({
 				</Pressable>
 
 				<View style={styles.form}>
-					<EmbarquerAddressField
+					<NavigationSetupAddressField
 						label={t('navigation.startPointLabel')}
 						placeholder={t('navigation.startPointPlaceholder')}
 						value={startText}
@@ -117,7 +117,7 @@ export const EmbarquerSheet: React.FC<EmbarquerSheetProps> = ({
 						/>
 					</View>
 
-					<EmbarquerAddressField
+					<NavigationSetupAddressField
 						label={t('navigation.destinationLabel')}
 						placeholder={t('navigation.destinationPlaceholder')}
 						value={destinationText}

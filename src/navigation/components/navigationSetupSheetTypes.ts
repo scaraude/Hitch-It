@@ -5,7 +5,7 @@ export interface AddressData {
 	name: string;
 }
 
-export interface EmbarquerSheetProps {
+export interface NavigationSetupSheetProps {
 	initialStart?: AddressData;
 	initialDestination?: AddressData;
 	currentPosition?: Location | null;
