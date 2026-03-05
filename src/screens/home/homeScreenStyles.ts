@@ -1,5 +1,5 @@
 import { StyleSheet } from 'react-native';
-import { COLORS } from '../../constants';
+import { COLORS, SPACING } from '../../constants';
 
 export const homeScreenStyles = StyleSheet.create({
 	container: {
@@ -8,6 +8,13 @@ export const homeScreenStyles = StyleSheet.create({
 	},
 	mapContainer: {
 		flex: 1,
+	},
+	locationLoadingOverlay: {
+		position: 'absolute',
+		top: SPACING.lg,
+		left: SPACING.md,
+		right: SPACING.md,
+		alignItems: 'center',
 	},
 	nonMapOverlay: {
 		...StyleSheet.absoluteFillObject,

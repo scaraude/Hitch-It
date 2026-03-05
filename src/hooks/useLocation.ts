@@ -9,6 +9,7 @@ import { logger } from '../utils';
 const LOCATION_ACCURACY = Location.Accuracy.Balanced;
 const LOCATION_TIME_INTERVAL_MS = 2000;
 const LOCATION_DISTANCE_INTERVAL_METERS = 10;
+const LAST_KNOWN_LOCATION_MAX_AGE_MS = 5 * 60 * 1000;
 
 interface UseLocationReturn {
 	userLocation: LocationType | null;
@@ -75,41 +76,72 @@ export const useLocation = (): UseLocationReturn => {
 		);
 	}, [applyLocationUpdate, stopLocationWatch]);
 
+	const fetchPreciseCurrentLocation = useCallback(async () => {
+		try {
+			const location = await Location.getCurrentPositionAsync({
+				accuracy: LOCATION_ACCURACY,
+			});
+			applyLocationUpdate(location);
+		} catch (error) {
+			logger.location.warn('Unable to fetch precise current location', {
+				error,
+			});
+		}
+	}, [applyLocationUpdate]);
+
 	const getCurrentLocation = useCallback(async () => {
 		logger.location.info('Getting current location from useLocation hook');
 		try {
 			setLocationLoading(true);
-			const { status } = await Location.requestForegroundPermissionsAsync();
+			const existingPermission = await Location.getForegroundPermissionsAsync();
+			const status =
+				existingPermission.status === 'granted'
+					? existingPermission.status
+					: (await Location.requestForegroundPermissionsAsync()).status;
 
 			if (status !== 'granted') {
 				logger.location.warn('Location permission denied by user', { status });
 				Alert.alert(
 					t('map.permissionDenied'),
 					t('map.permissionDeniedMessage'),
-					[{ text: t('common.ok'), onPress: () => setLocationLoading(false) }]
+					[{ text: t('common.ok') }]
 				);
 				return;
 			}
 
-			logger.location.info('Location permission granted, fetching position');
-			const location = await Location.getCurrentPositionAsync({
-				accuracy: LOCATION_ACCURACY,
-			});
-			applyLocationUpdate(location);
-
+			logger.location.info(
+				'Location permission granted, starting non-blocking location bootstrap'
+			);
 			await startLocationWatcher();
+
+			const lastKnownLocation = await Location.getLastKnownPositionAsync({
+				maxAge: LAST_KNOWN_LOCATION_MAX_AGE_MS,
+			});
+			if (lastKnownLocation) {
+				applyLocationUpdate(lastKnownLocation);
+			} else {
+				logger.location.debug('No recent last known location available');
+			}
+
+			// Do not block UI on GPS lock; refresh precise position in background.
+			void fetchPreciseCurrentLocation();
 		} catch (error) {
 			logger.location.error(
 				'Error getting location from useLocation hook',
 				error
 			);
 			Alert.alert(t('map.locationError'), t('map.locationErrorMessage'), [
-				{ text: t('common.ok'), onPress: () => setLocationLoading(false) },
+				{ text: t('common.ok') },
 			]);
 		} finally {
 			setLocationLoading(false);
 		}
-	}, [applyLocationUpdate, startLocationWatcher, t]);
+	}, [
+		applyLocationUpdate,
+		fetchPreciseCurrentLocation,
+		startLocationWatcher,
+		t,
+	]);
 
 	useEffect(() => {
 		void getCurrentLocation();
