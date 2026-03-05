@@ -5,7 +5,7 @@ const SHEET_MAX_HEIGHT = '60%';
 const GO_BUTTON_WIDTH = 64;
 const GO_BUTTON_HEIGHT = 36;
 
-export const embarquerSheetStyles = StyleSheet.create({
+export const navigationSetupSheetStyles = StyleSheet.create({
 	overlay: {
 		...StyleSheet.absoluteFillObject,
 		zIndex: 1100,
