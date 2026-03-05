@@ -13,11 +13,11 @@ interface UseHomeSearchStateArgs {
 	isNavigationActive: boolean;
 	isPlacingSpot: boolean;
 	isShowingForm: boolean;
-	showEmbarquerSheet: boolean;
+	showNavigationSetupSheet: boolean;
 	showCompletionSheet: boolean;
 	selectedSpot: Spot | null;
 	// Search actions
-	onEmbarquerFromSearch: (destination: NamedLocation) => void;
+	onNavigationSetupFromSearch: (destination: NamedLocation) => void;
 	onStopNavigation: () => Promise<void>;
 	// Map
 	mapViewRef: RefObject<MapViewRef | null>;
@@ -31,13 +31,13 @@ export interface UseHomeSearchStateReturn {
 	searchText: string;
 	searchDestination: NamedLocation | null;
 	isSearchOpen: boolean;
-	shouldShowSearchEmbarquer: boolean;
+	shouldShowSearchNavigationSetup: boolean;
 	// Search actions
 	handleSearchToggle: () => void;
 	handleSearchClear: () => void;
 	handleSearchTextChange: (text: string) => void;
 	handleSearchLocationSelected: (location: Location, name: string) => void;
-	handleSearchEmbarquer: () => void;
+	handleSearchNavigationSetup: () => void;
 	handleStopNavigationAndOpenSearch: () => Promise<void>;
 }
 
@@ -45,10 +45,10 @@ export const useHomeSearchState = ({
 	isNavigationActive,
 	isPlacingSpot,
 	isShowingForm,
-	showEmbarquerSheet,
+	showNavigationSetupSheet,
 	showCompletionSheet,
 	selectedSpot,
-	onEmbarquerFromSearch,
+	onNavigationSetupFromSearch,
 	onStopNavigation,
 	mapViewRef,
 }: UseHomeSearchStateArgs): UseHomeSearchStateReturn => {
@@ -57,7 +57,7 @@ export const useHomeSearchState = ({
 		const isOverlayBlocking =
 			isPlacingSpot ||
 			isShowingForm ||
-			showEmbarquerSheet ||
+			showNavigationSetupSheet ||
 			Boolean(selectedSpot) ||
 			showCompletionSheet;
 		const canSearch = !isNavigationActive && !isOverlayBlocking;
@@ -72,7 +72,7 @@ export const useHomeSearchState = ({
 		isShowingForm,
 		selectedSpot,
 		showCompletionSheet,
-		showEmbarquerSheet,
+		showNavigationSetupSheet,
 	]);
 
 	// === Search State ===
@@ -129,12 +129,12 @@ export const useHomeSearchState = ({
 		[mapViewRef]
 	);
 
-	const handleSearchEmbarquer = useCallback(() => {
+	const handleSearchNavigationSetup = useCallback(() => {
 		if (!searchDestination) return;
-		onEmbarquerFromSearch(searchDestination);
+		onNavigationSetupFromSearch(searchDestination);
 		setIsSearchOpen(false);
 		Keyboard.dismiss();
-	}, [onEmbarquerFromSearch, searchDestination]);
+	}, [onNavigationSetupFromSearch, searchDestination]);
 
 	// Close search when it becomes unavailable
 	useEffect(() => {
@@ -185,8 +185,8 @@ export const useHomeSearchState = ({
 		}, [handleSearchClear, isSearchOpen])
 	);
 
-	const shouldShowSearchEmbarquer =
-		!!searchDestination && !isNavigationActive && !showEmbarquerSheet;
+	const shouldShowSearchNavigationSetup =
+		!!searchDestination && !isNavigationActive && !showNavigationSetupSheet;
 
 	return {
 		canUseSearch,
@@ -194,12 +194,12 @@ export const useHomeSearchState = ({
 		searchText,
 		searchDestination,
 		isSearchOpen,
-		shouldShowSearchEmbarquer,
+		shouldShowSearchNavigationSetup,
 		handleSearchToggle,
 		handleSearchClear,
 		handleSearchTextChange,
 		handleSearchLocationSelected,
-		handleSearchEmbarquer,
+		handleSearchNavigationSetup,
 		handleStopNavigationAndOpenSearch,
 	};
 };

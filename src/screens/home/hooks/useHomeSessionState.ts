@@ -59,18 +59,18 @@ export interface UseHomeSessionStateReturn {
 	handleSaveJourney: () => Promise<void>;
 	handleDiscardJourney: () => Promise<void>;
 	handleMarkStop: () => void;
-	// Embarquer flow
-	showEmbarquerSheet: boolean;
-	embarquerOrigin: NamedLocation | null;
-	embarquerDestination: NamedLocation | null;
-	handleEmbarquerFromSearch: (destination: NamedLocation) => void;
-	handleLongPressEmbarquer: (location: Location | null) => void;
-	handleSpotEmbarquer: (spot: Spot) => void;
-	handleEmbarquerStart: (
+	// NavigationSetup flow
+	showNavigationSetupSheet: boolean;
+	navigationSetupOrigin: NamedLocation | null;
+	navigationSetupDestination: NamedLocation | null;
+	handleNavigationSetupFromSearch: (destination: NamedLocation) => void;
+	handleLongPressNavigationSetup: (location: Location | null) => void;
+	handleSpotNavigationSetup: (spot: Spot) => void;
+	handleNavigationSetupStart: (
 		start: NamedLocation,
 		destination: NamedLocation
 	) => Promise<void>;
-	handleEmbarquerClose: () => void;
+	handleNavigationSetupClose: () => void;
 	// Driver direction
 	isDriverDirectionSheetOpen: boolean;
 	hasDriverComparison: boolean;
@@ -253,48 +253,51 @@ export const useHomeSessionState = ({
 		setJourneyStartTime(new Date());
 	}, []);
 
-	// === Embarquer Flow State ===
-	const [showEmbarquerSheet, setShowEmbarquerSheet] = useState(false);
-	const [embarquerOrigin, setEmbarquerOrigin] = useState<NamedLocation | null>(
-		null
-	);
-	const [embarquerDestination, setEmbarquerDestination] =
+	// === NavigationSetup Flow State ===
+	const [showNavigationSetupSheet, setShowNavigationSetupSheet] =
+		useState(false);
+	const [navigationSetupOrigin, setNavigationSetupOrigin] =
+		useState<NamedLocation | null>(null);
+	const [navigationSetupDestination, setNavigationSetupDestination] =
 		useState<NamedLocation | null>(null);
 
-	const clearEmbarquerState = useCallback(() => {
-		setShowEmbarquerSheet(false);
-		setEmbarquerOrigin(null);
-		setEmbarquerDestination(null);
+	const clearNavigationSetupState = useCallback(() => {
+		setShowNavigationSetupSheet(false);
+		setNavigationSetupOrigin(null);
+		setNavigationSetupDestination(null);
 	}, []);
 
-	const handleEmbarquerFromSearch = useCallback(
+	const handleNavigationSetupFromSearch = useCallback(
 		(destination: NamedLocation) => {
-			setEmbarquerOrigin(null);
-			setEmbarquerDestination(destination);
-			setShowEmbarquerSheet(true);
+			setNavigationSetupOrigin(null);
+			setNavigationSetupDestination(destination);
+			setShowNavigationSetupSheet(true);
 		},
 		[]
 	);
 
-	const handleLongPressEmbarquer = useCallback((location: Location | null) => {
-		if (!location) return;
+	const handleLongPressNavigationSetup = useCallback(
+		(location: Location | null) => {
+			if (!location) return;
 
-		setEmbarquerOrigin(null);
-		setEmbarquerDestination({
-			location,
-			name: 'Position sélectionnée',
-		});
-		setShowEmbarquerSheet(true);
-	}, []);
+			setNavigationSetupOrigin(null);
+			setNavigationSetupDestination({
+				location,
+				name: 'Position sélectionnée',
+			});
+			setShowNavigationSetupSheet(true);
+		},
+		[]
+	);
 
-	const handleSpotEmbarquer = useCallback(
+	const handleSpotNavigationSetup = useCallback(
 		(spot: Spot) => {
 			onDeselectSpot();
-			setEmbarquerOrigin({
+			setNavigationSetupOrigin({
 				location: spot.coordinates,
 				name: spot.roadName,
 			});
-			setShowEmbarquerSheet(true);
+			setShowNavigationSetupSheet(true);
 		},
 		[onDeselectSpot]
 	);
@@ -351,9 +354,9 @@ export const useHomeSessionState = ({
 		]
 	);
 
-	const handleEmbarquerStart = useCallback(
+	const handleNavigationSetupStart = useCallback(
 		async (start: NamedLocation, destination: NamedLocation) => {
-			clearEmbarquerState();
+			clearNavigationSetupState();
 
 			if (!isAuthenticated) {
 				Alert.alert(
@@ -385,7 +388,7 @@ export const useHomeSessionState = ({
 			});
 		},
 		[
-			clearEmbarquerState,
+			clearNavigationSetupState,
 			isAuthenticated,
 			rootNavigation,
 			startNavigationSession,
@@ -438,15 +441,15 @@ export const useHomeSessionState = ({
 		handleSaveJourney,
 		handleDiscardJourney,
 		handleMarkStop,
-		// Embarquer flow
-		showEmbarquerSheet,
-		embarquerOrigin,
-		embarquerDestination,
-		handleEmbarquerFromSearch,
-		handleLongPressEmbarquer,
-		handleSpotEmbarquer,
-		handleEmbarquerStart,
-		handleEmbarquerClose: clearEmbarquerState,
+		// NavigationSetup flow
+		showNavigationSetupSheet,
+		navigationSetupOrigin,
+		navigationSetupDestination,
+		handleNavigationSetupFromSearch,
+		handleLongPressNavigationSetup,
+		handleSpotNavigationSetup,
+		handleNavigationSetupStart,
+		handleNavigationSetupClose: clearNavigationSetupState,
 		// Driver direction
 		isDriverDirectionSheetOpen,
 		hasDriverComparison: navigation.driverRoute !== null,

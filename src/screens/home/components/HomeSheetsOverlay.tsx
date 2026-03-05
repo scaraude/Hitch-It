@@ -8,8 +8,8 @@ import { SPACING } from '../../../constants';
 import { useTranslation } from '../../../i18n';
 import {
 	DriverDirectionSheet,
-	EmbarquerSheet,
 	NavigationCompleteSheet,
+	EmbarquerSheet as NavigationSetupSheet,
 } from '../../../navigation/components';
 import {
 	SpotDetailsSheet,
@@ -41,7 +41,7 @@ export const HomeSheetsOverlay: React.FC = () => {
 	const shouldShowSpotHitchButton =
 		!!selectedSpot &&
 		!spot.isShowingForm &&
-		!session.showEmbarquerSheet &&
+		!session.showNavigationSetupSheet &&
 		!session.isDriverDirectionSheetOpen &&
 		!session.showCompletionSheet;
 
@@ -49,11 +49,11 @@ export const HomeSheetsOverlay: React.FC = () => {
 		spot.confirmSpotPlacement(map.mapRegion);
 	}, [map.mapRegion, spot.confirmSpotPlacement]);
 
-	const handleEmbarquerStart = useCallback(
+	const handleNavigationSetupStart = useCallback(
 		(start: NamedLocation, destination: NamedLocation) => {
-			void session.handleEmbarquerStart(start, destination);
+			void session.handleNavigationSetupStart(start, destination);
 		},
-		[session.handleEmbarquerStart]
+		[session.handleNavigationSetupStart]
 	);
 
 	const handleSaveJourney = useCallback(() => {
@@ -95,13 +95,13 @@ export const HomeSheetsOverlay: React.FC = () => {
 				/>
 			)}
 
-			{session.showEmbarquerSheet && (
-				<EmbarquerSheet
-					initialStart={session.embarquerOrigin ?? undefined}
-					initialDestination={session.embarquerDestination ?? undefined}
+			{session.showNavigationSetupSheet && (
+				<NavigationSetupSheet
+					initialStart={session.navigationSetupOrigin ?? undefined}
+					initialDestination={session.navigationSetupDestination ?? undefined}
 					currentPosition={userLocation}
-					onStart={handleEmbarquerStart}
-					onClose={session.handleEmbarquerClose}
+					onStart={handleNavigationSetupStart}
+					onClose={session.handleNavigationSetupClose}
 				/>
 			)}
 
@@ -125,12 +125,12 @@ export const HomeSheetsOverlay: React.FC = () => {
 			{shouldShowSpotHitchButton && selectedSpot && (
 				<ActionButton
 					label={t('navigation.hitchIt')}
-					onPress={() => session.handleSpotEmbarquer(selectedSpot)}
+					onPress={() => session.handleSpotNavigationSetup(selectedSpot)}
 					bottomOffset={insets.bottom + SPOT_HITCH_BOTTOM_OFFSET}
 					variant="large"
 					withContainer
 					accessibilityLabel={t('spots.hitchFromSpot')}
-					testID="spot-embarquer-button"
+					testID="spot-navigation-setup-button"
 				/>
 			)}
 
