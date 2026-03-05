@@ -31,6 +31,9 @@ const SHEET_SNAP_POINTS = ['56%', '96%'] as const;
 const SHEET_INITIAL_INDEX = 0;
 const SHEET_EXPANDED_INDEX = 1;
 
+const resolveDestinationsLabel = (destinations: string[]): string =>
+	destinations.length > 0 ? destinations.join(', ') : EMPTY_DESTINATIONS;
+
 const openExternalUrl = async (
 	url: string,
 	failureMessage: string
@@ -62,10 +65,7 @@ export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 	const snapPoints = useMemo(() => [...SHEET_SNAP_POINTS], []);
 	const directionHeading = DIRECTION_HEADING_DEGREES[spot.direction];
 	const spotTitle = getSpotCoordinatesTitle(spot);
-	const destinationsLabel =
-		spot.destinations.length > 0
-			? spot.destinations.join(', ')
-			: EMPTY_DESTINATIONS;
+	const destinationsLabel = resolveDestinationsLabel(spot.destinations);
 	const { waitingTimeLabel, waitingRecordsLabel } = useMemo(
 		() => getWaitingTimeLabels(comments),
 		[comments]
@@ -80,19 +80,19 @@ export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 		onClose();
 	}, [onClose]);
 
-	const handleOpenStreetView = () => {
+	const handleOpenStreetView = useCallback(() => {
 		void openExternalUrl(
 			buildGoogleStreetViewUrl(spot),
 			"Impossible d'ouvrir Street View pour ce spot."
 		);
-	};
+	}, [spot]);
 
-	const handleOpenItinerary = () => {
+	const handleOpenItinerary = useCallback(() => {
 		void openExternalUrl(
 			buildGoogleItineraryUrl(spot),
 			"Impossible d'ouvrir Google Itinerary pour ce spot."
 		);
-	};
+	}, [spot]);
 	const commentComposer: SpotDetailsCommentComposerModel = {
 		...commentComposerState,
 		isSubmitting,
