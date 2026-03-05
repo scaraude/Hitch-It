@@ -4,6 +4,14 @@ dotenv.config();
 
 module.exports = ({ config }) => ({
 	...config,
+	android: {
+		...config.android,
+		config: {
+			googleMaps: {
+				apiKey: process.env.GOOGLE_MAPS_API_KEY,
+			},
+		},
+	},
 	extra: {
 		...config.extra,
 		supabaseUrl: process.env.SUPABASE_URL,

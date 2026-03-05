@@ -1,0 +1,34 @@
+{
+  "cli": {
+    "version": ">= 18.1.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": {
+        "SUPABASE_URL": "https://nyniwfqrvlztwhnexheu.supabase.co",
+        "SUPABASE_ANON_KEY": "sb_publishable_6eDsT5fPHHMBRVCQlp3fFQ_lYiDf0iX"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "env": {
+        "SUPABASE_URL": "https://nyniwfqrvlztwhnexheu.supabase.co",
+        "SUPABASE_ANON_KEY": "sb_publishable_6eDsT5fPHHMBRVCQlp3fFQ_lYiDf0iX"
+      }
+    },
+    "production": {
+      "autoIncrement": true,
+      "env": {
+        "SUPABASE_URL": "https://nyniwfqrvlztwhnexheu.supabase.co",
+        "SUPABASE_ANON_KEY": "sb_publishable_6eDsT5fPHHMBRVCQlp3fFQ_lYiDf0iX",
+        "GOOGLE_MAPS_API_KEY": "YOUR_GOOGLE_MAPS_API_KEY_HERE"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}
