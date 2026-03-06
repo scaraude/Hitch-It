@@ -41,78 +41,82 @@ export const HomeMapLayer: React.FC = () => {
 
 	return (
 		<View style={styles.mapContainer}>
-			{locationLoading ? (
-				<LoadingSpinner message={t('map.gettingLocation')} />
-			) : (
-				<>
-					<MapViewComponent
-						ref={mapViewRef}
-						initialRegion={currentRegion}
-						markers={map.visibleSpots}
-						onRegionChange={map.handleRegionChange}
-						onHeadingChange={map.handleHeadingChange}
-						onMarkerPress={map.handleMarkerPress}
-						onLongPress={map.handleLongPress}
-						onPress={map.handleMapPress}
-					>
-						{nav.navigation.destinationMarker && (
-							<DestinationMarker
-								location={nav.navigation.destinationMarker.location}
-								name={nav.navigation.destinationMarker.name}
-							/>
-						)}
+			<MapViewComponent
+				ref={mapViewRef}
+				initialRegion={currentRegion}
+				markers={map.visibleSpots}
+				onRegionChange={map.handleRegionChange}
+				onHeadingChange={map.handleHeadingChange}
+				onMarkerPress={map.handleMarkerPress}
+				onLongPress={map.handleLongPress}
+				onPress={map.handleMapPress}
+			>
+				{nav.navigation.destinationMarker && (
+					<DestinationMarker
+						location={nav.navigation.destinationMarker.location}
+						name={nav.navigation.destinationMarker.name}
+					/>
+				)}
 
-						{search.searchDestination &&
-							!nav.navigation.isActive &&
-							!session.showNavigationSetupSheet && (
-								<Marker
-									coordinate={search.searchDestination.location}
-									pinColor={COLORS.error}
-									tracksViewChanges={false}
-								/>
-							)}
-
-						{nav.navigation.driverRoute && (
-							<RoutePolyline
-								route={nav.navigation.driverRoute}
-								strokeColor={COLORS.primary}
-								strokeWidth={3}
-								zIndex={1}
-							/>
-						)}
-
-						{nav.navigation.route && (
-							<>
-								<RoutePolyline
-									coordinates={passedRoutePolyline}
-									strokeColor={COLORS.navigationRoutePassed}
-									strokeWidth={5}
-									zIndex={2}
-								/>
-								<RoutePolyline
-									coordinates={remainingRoutePolyline}
-									strokeColor={COLORS.secondary}
-									strokeWidth={5}
-									zIndex={3}
-								/>
-							</>
-						)}
-
-						{map.longPressMarker && (
-							<Marker
-								coordinate={map.longPressMarker}
-								pinColor={COLORS.error}
-								tracksViewChanges={false}
-							/>
-						)}
-					</MapViewComponent>
-
-					{spot.isPlacingSpot && (
-						<View style={styles.centerMarker}>
-							<View style={styles.markerPin} />
-						</View>
+				{search.searchDestination &&
+					!nav.navigation.isActive &&
+					!session.showNavigationSetupSheet && (
+						<Marker
+							coordinate={search.searchDestination.location}
+							pinColor={COLORS.error}
+							tracksViewChanges={false}
+						/>
 					)}
-				</>
+
+				{nav.navigation.driverRoute && (
+					<RoutePolyline
+						route={nav.navigation.driverRoute}
+						strokeColor={COLORS.primary}
+						strokeWidth={3}
+						zIndex={1}
+					/>
+				)}
+
+				{nav.navigation.route && (
+					<>
+						<RoutePolyline
+							coordinates={passedRoutePolyline}
+							strokeColor={COLORS.navigationRoutePassed}
+							strokeWidth={5}
+							zIndex={2}
+						/>
+						<RoutePolyline
+							coordinates={remainingRoutePolyline}
+							strokeColor={COLORS.secondary}
+							strokeWidth={5}
+							zIndex={3}
+						/>
+					</>
+				)}
+
+				{map.longPressMarker && (
+					<Marker
+						coordinate={map.longPressMarker}
+						pinColor={COLORS.error}
+						tracksViewChanges={false}
+					/>
+				)}
+			</MapViewComponent>
+
+			{locationLoading && (
+				<View style={styles.locationLoadingOverlay} pointerEvents="none">
+					<LoadingSpinner
+						variant="inline"
+						size="small"
+						message={t('map.gettingLocation')}
+					/>
+				</View>
+			)}
+
+			{spot.isPlacingSpot && (
+				<View style={styles.centerMarker}>
+					<View style={styles.markerPin} />
+				</View>
 			)}
 		</View>
 	);

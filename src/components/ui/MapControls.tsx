@@ -65,7 +65,7 @@ export const MapControls: React.FC<MapControlsProps> = ({
 			{/* Compass - only visible when rotated */}
 			{isRotated && (
 				<MapControlButton
-					icon={<CompassIcon heading={mapHeading} animated />}
+					icon={<CompassIcon heading={-mapHeading} animated />}
 					onPress={onResetHeading}
 					accessibilityLabel={t('map.resetHeading')}
 					size="medium"
