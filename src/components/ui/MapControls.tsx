@@ -1,6 +1,6 @@
 import type React from 'react';
 import { StyleSheet, View } from 'react-native';
-import Svg, { Circle, Path } from 'react-native-svg';
+import AntDesign from '@expo/vector-icons/AntDesign';
 import { COLORS, SPACING } from '../../constants';
 import { useTranslation } from '../../i18n';
 import { CompassIcon } from './CompassIcon';
@@ -20,34 +20,6 @@ interface MapControlsProps {
 }
 
 const LOCATE_ICON_COLOR = '#626262';
-
-const LocateIcon: React.FC<{ active?: boolean }> = ({ active }) => (
-	<Svg width={22} height={22} viewBox="0 0 24 24">
-		{/* Crosshair */}
-		<Path
-			d="M12 2v3M12 19v3M2 12h3M19 12h3"
-			stroke={active ? COLORS.background : LOCATE_ICON_COLOR}
-			strokeWidth={2}
-			strokeLinecap="round"
-		/>
-		{/* Center circle */}
-		<Circle
-			cx={12}
-			cy={12}
-			r={4}
-			fill={active ? COLORS.background : LOCATE_ICON_COLOR}
-		/>
-		{/* Outer ring */}
-		<Circle
-			cx={12}
-			cy={12}
-			r={7}
-			fill="none"
-			stroke={active ? COLORS.background : LOCATE_ICON_COLOR}
-			strokeWidth={1.5}
-		/>
-	</Svg>
-);
 
 export const MapControls: React.FC<MapControlsProps> = ({
 	mapHeading = 0,
@@ -76,7 +48,13 @@ export const MapControls: React.FC<MapControlsProps> = ({
 
 			{/* Locate user button */}
 			<MapControlButton
-				icon={<LocateIcon active={isFollowingUser} />}
+				icon={
+					<AntDesign
+						name="aim"
+						size={22}
+						color={isFollowingUser ? COLORS.background : LOCATE_ICON_COLOR}
+					/>
+				}
 				onPress={onLocateUser}
 				accessibilityLabel={t('map.locateUser')}
 				size="medium"
