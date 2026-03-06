@@ -292,6 +292,7 @@ def map_to_spot_schema(df: pd.DataFrame) -> tuple[list[dict], list[dict]]:
     """Convert dataframe to Spot and comment schemas."""
     spots = []
     comments = []
+    empty_road_name = ""
 
     for i, row in df.iterrows():
         # Reverse geocode if enabled (with rate limiting)
@@ -299,13 +300,10 @@ def map_to_spot_schema(df: pd.DataFrame) -> tuple[list[dict], list[dict]]:
             road_name = reverse_geocode(row["lat"], row["lon"])
             time.sleep(CONFIG["geocoding_delay_sec"])
         else:
-            road_name = "Imported spot"
+            road_name = empty_road_name
 
-        # Build destinations from dest_lat/lon if available
+        # Keep destinations empty: do not import raw destination coordinates.
         destinations = []
-        if pd.notna(row.get("dest_lat")) and pd.notna(row.get("dest_lon")):
-            # Could reverse geocode destination too, for now just note coords
-            destinations = [f"→ {row['dest_lat']:.2f}, {row['dest_lon']:.2f}"]
 
         spot_id = str(uuid.uuid4())
         created_at = (
