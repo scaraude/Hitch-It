@@ -9,14 +9,16 @@
       "distribution": "internal",
       "env": {
         "SUPABASE_URL": "https://nyniwfqrvlztwhnexheu.supabase.co",
-        "SUPABASE_ANON_KEY": "sb_publishable_6eDsT5fPHHMBRVCQlp3fFQ_lYiDf0iX"
+        "SUPABASE_ANON_KEY": "sb_publishable_6eDsT5fPHHMBRVCQlp3fFQ_lYiDf0iX",
+        "EXPO_PUBLIC_ORS_API_KEY": "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6ImU1OWU5NGI2NjI3YTQ1ZWQ4Zjc2ODFiMWViOWQzMGI1IiwiaCI6Im11cm11cjY0In0="
       }
     },
     "preview": {
       "distribution": "internal",
       "env": {
         "SUPABASE_URL": "https://nyniwfqrvlztwhnexheu.supabase.co",
-        "SUPABASE_ANON_KEY": "sb_publishable_6eDsT5fPHHMBRVCQlp3fFQ_lYiDf0iX"
+        "SUPABASE_ANON_KEY": "sb_publishable_6eDsT5fPHHMBRVCQlp3fFQ_lYiDf0iX",
+        "EXPO_PUBLIC_ORS_API_KEY": "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6ImU1OWU5NGI2NjI3YTQ1ZWQ4Zjc2ODFiMWViOWQzMGI1IiwiaCI6Im11cm11cjY0In0="
       }
     },
     "production": {
@@ -24,7 +26,8 @@
       "env": {
         "SUPABASE_URL": "https://nyniwfqrvlztwhnexheu.supabase.co",
         "SUPABASE_ANON_KEY": "sb_publishable_6eDsT5fPHHMBRVCQlp3fFQ_lYiDf0iX",
-        "GOOGLE_MAPS_API_KEY": "AIzaSyDWIKQUgScStGGkQksEjDaGSndPLLLxsng"
+        "GOOGLE_MAPS_API_KEY": "AIzaSyDWIKQUgScStGGkQksEjDaGSndPLLLxsng",
+        "EXPO_PUBLIC_ORS_API_KEY": "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6ImU1OWU5NGI2NjI3YTQ1ZWQ4Zjc2ODFiMWViOWQzMGI1IiwiaCI6Im11cm11cjY0In0="
       }
     }
   },
