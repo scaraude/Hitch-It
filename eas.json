@@ -24,6 +24,7 @@
       "env": {
         "SUPABASE_URL": "https://nyniwfqrvlztwhnexheu.supabase.co",
         "SUPABASE_ANON_KEY": "sb_publishable_6eDsT5fPHHMBRVCQlp3fFQ_lYiDf0iX",
+        "GOOGLE_MAPS_API_KEY": "AIzaSyDWIKQUgScStGGkQksEjDaGSndPLLLxsng"
       }
     }
   },
