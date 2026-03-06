@@ -28,16 +28,16 @@ export const CompassIcon: React.FC<CompassIconProps> = ({
 	animated = false,
 	style,
 }) => {
-	const rotateAnim = useRef(new Animated.Value(-heading)).current;
+	const rotateAnim = useRef(new Animated.Value(heading)).current;
 
 	useEffect(() => {
 		if (!animated) {
-			rotateAnim.setValue(-heading);
+			rotateAnim.setValue(heading);
 			return;
 		}
 
 		Animated.spring(rotateAnim, {
-			toValue: -heading,
+			toValue: heading,
 			useNativeDriver: true,
 			speed: COMPASS_ANIMATION_SPEED,
 			bounciness: COMPASS_ANIMATION_BOUNCINESS,
