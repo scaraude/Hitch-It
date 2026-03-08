@@ -17,5 +17,6 @@ module.exports = ({ config }) => ({
 		...config.extra,
 		supabaseUrl: process.env.SUPABASE_URL,
 		supabaseAnonKey: process.env.SUPABASE_ANON_KEY,
+		orsApiKey: process.env.EXPO_PUBLIC_ORS_API_KEY || process.env.ORS_API_KEY,
 	},
 });

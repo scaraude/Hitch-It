@@ -1,10 +1,21 @@
+import Constants from 'expo-constants';
 import { logger } from '../../utils/logger';
 import { decodePolyline } from '../../utils/polylineCodec';
 import type { NavigationRoute, RouteId, RoutePoint } from '../types';
 
 const ORS_API_URL =
 	'https://api.openrouteservice.org/v2/directions/driving-car';
-const ORS_API_KEY = process.env.EXPO_PUBLIC_ORS_API_KEY;
+
+const runtimeOrsApiKey =
+	(Constants.expoConfig?.extra?.orsApiKey as string | undefined) ??
+	(Constants.manifest2?.extra?.expoClient?.extra?.orsApiKey as
+		| string
+		| undefined);
+
+const ORS_API_KEY =
+	process.env.EXPO_PUBLIC_ORS_API_KEY ||
+	process.env.ORS_API_KEY ||
+	runtimeOrsApiKey;
 
 interface ORSResponse {
 	routes: Array<{
