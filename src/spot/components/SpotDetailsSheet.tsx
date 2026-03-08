@@ -105,6 +105,9 @@ export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 			snapPoints={snapPoints}
 			enableDynamicSizing={false}
 			enablePanDownToClose
+			keyboardBehavior="interactive"
+			keyboardBlurBehavior="restore"
+			enableBlurKeyboardOnGesture
 			onChange={handleSheetChange}
 			onClose={handleSheetClose}
 			style={styles.sheetContainer}
@@ -117,6 +120,7 @@ export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 		>
 			<BottomSheetScrollView
 				style={styles.content}
+				keyboardShouldPersistTaps="handled"
 				contentContainerStyle={[
 					styles.contentContainer,
 					{ paddingBottom: insets.bottom + SPACING.xl },

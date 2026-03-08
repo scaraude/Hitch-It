@@ -76,8 +76,9 @@ export const HomeSheetsOverlay: React.FC = () => {
 			{spot.isShowingForm && (
 				<KeyboardAvoidingView
 					style={homeStyles.nonMapOverlay}
-					behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-					keyboardVerticalOffset={0}
+					enabled={Platform.OS === 'ios'}
+					behavior="padding"
+					keyboardVerticalOffset={insets.bottom}
 					pointerEvents="box-none"
 				>
 					<SpotForm
