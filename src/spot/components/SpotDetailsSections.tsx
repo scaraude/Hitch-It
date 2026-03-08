@@ -20,19 +20,6 @@ export const SpotDetailsHeaderSection: React.FC<
 			<Text style={styles.title}>{spotTitle}</Text>
 			<View style={styles.topActions}>
 				<Pressable
-					style={[styles.topActionButton, styles.topActionButtonDisabled]}
-					accessibilityRole="button"
-					accessibilityLabel={A11Y_LABELS.favoriteComingSoon}
-					accessibilityState={{ disabled: true }}
-					disabled
-				>
-					<Ionicons
-						name="heart-outline"
-						size={SIZES.iconMd}
-						color={COLORS.secondary}
-					/>
-				</Pressable>
-				<Pressable
 					style={styles.topActionButton}
 					onPress={onOpenStreetView}
 					accessibilityRole="button"
