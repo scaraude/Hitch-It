@@ -62,6 +62,8 @@ export default {
 		noAccount: '¿No tienes cuenta? ',
 		signUp: 'Registrarse',
 		usernameMinLength: 'El nombre de usuario debe tener al menos 3 caracteres',
+		usernameInvalidFormat:
+			'El nombre de usuario solo puede contener letras, números, puntos, guiones bajos y guiones (sin espacios)',
 		invalidEmail: 'Por favor ingresa un correo válido',
 		passwordMinLength: 'La contraseña debe tener al menos 6 caracteres',
 		createAccount: 'Crear cuenta',

@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../auth';
+import { hasValidUsernameFormat } from '../auth/utils/usernameValidation';
 import { COLORS, SPACING } from '../constants';
 import { SIZES } from '../constants/sizes';
 import { useTranslation } from '../i18n';
@@ -39,6 +40,11 @@ export default function SignUpScreen() {
 
 		if (username.trim().length < 3) {
 			setError(t('auth.usernameMinLength'));
+			return;
+		}
+
+		if (!hasValidUsernameFormat(username.trim())) {
+			setError(t('auth.usernameInvalidFormat'));
 			return;
 		}
 
