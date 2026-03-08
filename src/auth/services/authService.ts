@@ -7,6 +7,7 @@ import type {
 	User,
 	UserId,
 } from '../types';
+import { hasValidUsernameFormat } from '../utils/usernameValidation';
 
 const logger = createLogger(LogContext.App);
 
@@ -26,6 +27,13 @@ export async function signUp(
 	const { username, email, password } = credentials;
 
 	try {
+		if (!hasValidUsernameFormat(username)) {
+			return {
+				error:
+					'Username can only contain letters, numbers, dots, underscores, and hyphens (no spaces).',
+			};
+		}
+
 		// First, check if username is already taken
 		const { data: existingProfile } = await supabase
 			.from('profiles')

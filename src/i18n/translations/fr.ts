@@ -63,6 +63,8 @@ export default {
 		signUp: "S'inscrire",
 		usernameMinLength:
 			"Le nom d'utilisateur doit contenir au moins 3 caractères",
+		usernameInvalidFormat:
+			"Le nom d'utilisateur peut uniquement contenir des lettres, chiffres, points, underscores et tirets (sans espace)",
 		invalidEmail: 'Veuillez entrer un email valide',
 		passwordMinLength: 'Le mot de passe doit contenir au moins 6 caractères',
 		createAccount: 'Créer un compte',
