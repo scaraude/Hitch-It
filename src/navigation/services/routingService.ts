@@ -12,10 +12,7 @@ const runtimeOrsApiKey =
 		| string
 		| undefined);
 
-const ORS_API_KEY =
-	process.env.EXPO_PUBLIC_ORS_API_KEY ||
-	process.env.ORS_API_KEY ||
-	runtimeOrsApiKey;
+const ORS_API_KEY = process.env.EXPO_PUBLIC_ORS_API_KEY || runtimeOrsApiKey;
 
 interface ORSResponse {
 	routes: Array<{
