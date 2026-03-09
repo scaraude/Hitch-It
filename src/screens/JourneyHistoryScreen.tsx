@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
 	ActivityIndicator,
 	FlatList,
@@ -16,7 +16,6 @@ import { COLORS, SPACING } from '../constants';
 import { SIZES } from '../constants/sizes';
 import { useTranslation } from '../i18n';
 import { JourneyCard } from '../journey/components/JourneyCard';
-import { useJourneyStats } from '../journey/hooks/useJourneyStats';
 import * as journeyRepository from '../journey/services/journeyRepository';
 import type { Journey, JourneyId, UserId } from '../journey/types';
 import { JourneyStatus } from '../journey/types';
@@ -33,7 +32,28 @@ export default function JourneyHistoryScreen() {
 
 	const [journeys, setJourneys] = useState<Journey[]>([]);
 	const [isLoadingJourneys, setIsLoadingJourneys] = useState(true);
-	const stats = useJourneyStats(user?.id as UserId | null);
+
+	const stats = useMemo(() => {
+		const totalJourneys = journeys.length;
+		const totalDistanceKm = Math.round(
+			journeys.reduce((sum, journey) => sum + (journey.totalDistanceKm ?? 0), 0)
+		);
+
+		const totalVehicles = journeys.reduce((vehicles, journey) => {
+			if (journey.points?.length > 0) {
+				vehicles += journey.points?.length;
+			} else {
+				vehicles += 1; // Assume at least 1 vehicle if points are missing
+			}
+			return vehicles;
+		}, 0);
+
+		return {
+			totalJourneys,
+			totalDistanceKm,
+			totalVehicles,
+		};
+	}, [journeys]);
 
 	const loadJourneys = useCallback(async () => {
 		if (!user?.id) {
@@ -105,10 +125,6 @@ export default function JourneyHistoryScreen() {
 						<Text style={styles.statValue}>{stats.totalVehicles}</Text>
 						<Text style={styles.statLabel}>{t('journey.vehiclesLabel')}</Text>
 					</View>
-					<View style={styles.statItem}>
-						<Text style={styles.statValue}>{stats.totalCountries}</Text>
-						<Text style={styles.statLabel}>{t('journey.countriesLabel')}</Text>
-					</View>
 				</View>
 			</View>
 
@@ -137,7 +153,7 @@ export default function JourneyHistoryScreen() {
 		</View>
 	);
 
-	if (stats.isLoading || isLoadingJourneys) {
+	if (isLoadingJourneys) {
 		return (
 			<SafeAreaView style={styles.container}>
 				<View style={styles.header}>
