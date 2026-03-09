@@ -188,6 +188,8 @@ export default {
 		addSpot: 'Agregar spot',
 		addASpot: 'Agregar un spot',
 		newSpot: 'Nuevo Spot',
+		requiredFieldsHint:
+			'* Campos obligatorios.',
 		roadNameLabel: 'Nombre de la carretera *',
 		roadNamePlaceholder: 'Ej: A6, D907, Ruta de Lyon...',
 		direction: 'Dirección',

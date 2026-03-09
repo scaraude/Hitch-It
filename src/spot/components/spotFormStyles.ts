@@ -18,6 +18,11 @@ export const spotFormStyles = StyleSheet.create({
 		fontSize: SIZES.font2Xl,
 		fontWeight: 'bold',
 		color: COLORS.text,
+		marginBottom: SPACING.xs,
+	},
+	helperText: {
+		fontSize: SIZES.fontSm,
+		color: COLORS.textSecondary,
 		marginBottom: SPACING.lg,
 	},
 	label: {
