@@ -234,7 +234,7 @@ export default {
 	navigation: {
 		home: 'Home',
 		search: 'Search',
-		history: 'History',
+		history: 'My trips',
 		profile: 'Profile',
 		logIn: 'Log in',
 		compareDriverDirection: 'Compare driver direction',
