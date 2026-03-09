@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import { FontAwesome6, Ionicons } from '@expo/vector-icons';
 import type React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -6,12 +6,12 @@ import { COLORS, SIZES, SPACING } from '../../constants';
 import { useTranslation } from '../../i18n';
 
 type TabId = 'home' | 'search' | 'add' | 'history' | 'profile';
-type IconName = React.ComponentProps<typeof Ionicons>['name'];
+type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
 interface TabConfig {
 	id: TabId;
-	icon: IconName;
-	activeIcon: IconName;
+	icon: IoniconName;
+	activeIcon: IoniconName;
 }
 
 const TABS: TabConfig[] = [
@@ -105,13 +105,23 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
 								accessibilityState={{ selected: isActive }}
 								testID={`bottom-nav-${tab.id}`}
 							>
-								<Ionicons
-									name={isActive ? tab.activeIcon : tab.icon}
-									size={SIZES.iconMd}
-									color={isActive ? PRIMARY_BLUE : TEXT_GRAY}
-									pointerEvents="none"
-									style={styles.tabIcon}
-								/>
+								{tab.id === 'history' ? (
+									<FontAwesome6
+										name="route"
+										size={SIZES.iconMd}
+										color={isActive ? PRIMARY_BLUE : TEXT_GRAY}
+										pointerEvents="none"
+										style={styles.tabIcon}
+									/>
+								) : (
+									<Ionicons
+										name={isActive ? tab.activeIcon : tab.icon}
+										size={SIZES.iconMd}
+										color={isActive ? PRIMARY_BLUE : TEXT_GRAY}
+										pointerEvents="none"
+										style={styles.tabIcon}
+									/>
+								)}
 								<Text
 									style={[styles.tabLabel, isActive && styles.tabLabelActive]}
 								>

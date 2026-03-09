@@ -238,7 +238,7 @@ export default {
 	navigation: {
 		home: 'Startseite',
 		search: 'Suchen',
-		history: 'Verlauf',
+		history: 'Meine Reisen',
 		profile: 'Profil',
 		logIn: 'Anmelden',
 		compareDriverDirection: 'Fahrerrichtung vergleichen',

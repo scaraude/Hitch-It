@@ -237,7 +237,7 @@ export default {
 	navigation: {
 		home: 'Accueil',
 		search: 'Rechercher',
-		history: 'Historique',
+		history: 'Mes voyages',
 		profile: 'Profil',
 		logIn: 'Se connecter',
 		compareDriverDirection: 'Comparer direction conducteur',

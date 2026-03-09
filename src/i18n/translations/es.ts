@@ -236,7 +236,7 @@ export default {
 	navigation: {
 		home: 'Inicio',
 		search: 'Buscar',
-		history: 'Historial',
+		history: 'Mis viajes',
 		profile: 'Perfil',
 		logIn: 'Iniciar sesión',
 		compareDriverDirection: 'Comparar dirección del conductor',
