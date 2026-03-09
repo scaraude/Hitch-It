@@ -30,6 +30,7 @@ interface HomeStateContextValue {
 	userLocation: ReturnType<typeof useLocation>['userLocation'];
 	currentRegion: ReturnType<typeof useLocation>['currentRegion'];
 	locationLoading: ReturnType<typeof useLocation>['locationLoading'];
+	getCurrentLocation: ReturnType<typeof useLocation>['getCurrentLocation'];
 	// Refs
 	mapViewRef: React.RefObject<MapViewRef | null>;
 	// Grouped state
@@ -52,7 +53,8 @@ export const HomeStateProvider: React.FC<HomeStateProviderProps> = ({
 	children,
 	onRegionChange,
 }) => {
-	const { userLocation, currentRegion, locationLoading } = useLocation();
+	const { userLocation, currentRegion, locationLoading, getCurrentLocation } =
+		useLocation();
 	const { isAuthenticated } = useAuth();
 	const spot = useSpotContext();
 	const nav = useNavigation();
@@ -109,12 +111,14 @@ export const HomeStateProvider: React.FC<HomeStateProviderProps> = ({
 		currentRegion,
 		onRegionChange,
 		userLocation,
+		getCurrentLocation,
 	});
 
 	const value: HomeStateContextValue = {
 		userLocation,
 		currentRegion,
 		locationLoading,
+		getCurrentLocation,
 		mapViewRef,
 		session,
 		search,
@@ -140,6 +144,7 @@ export const useHomeLocation = () => {
 		userLocation: ctx.userLocation,
 		currentRegion: ctx.currentRegion,
 		locationLoading: ctx.locationLoading,
+		getCurrentLocation: ctx.getCurrentLocation,
 	};
 };
 
