@@ -21,8 +21,10 @@
         "NSLocationWhenInUseUsageDescription": "This app needs access to location to show your position on the map and help you find nearby hitchhiking spots.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "This app needs access to location to show your position on the map and help you find nearby hitchhiking spots.",
         "UIBackgroundModes": [
+          "location",
           "location"
-        ]
+        ],
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
