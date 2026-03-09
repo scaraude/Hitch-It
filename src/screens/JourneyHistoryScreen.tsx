@@ -38,15 +38,20 @@ export default function JourneyHistoryScreen() {
 		const totalDistanceKm = Math.round(
 			journeys.reduce((sum, journey) => sum + (journey.totalDistanceKm ?? 0), 0)
 		);
-		// TODO: Implement proper metadata-based counting when available
-		const totalVehicles = totalJourneys;
-		const totalCountries = totalJourneys > 0 ? 1 : 0;
+
+		const totalVehicles = journeys.reduce((vehicles, journey) => {
+			if (journey.points?.length > 0) {
+				vehicles += journey.points?.length;
+			} else {
+				vehicles += 1; // Assume at least 1 vehicle if points are missing
+			}
+			return vehicles;
+		}, 0);
 
 		return {
 			totalJourneys,
 			totalDistanceKm,
 			totalVehicles,
-			totalCountries,
 		};
 	}, [journeys]);
 
@@ -119,10 +124,6 @@ export default function JourneyHistoryScreen() {
 					<View style={styles.statItem}>
 						<Text style={styles.statValue}>{stats.totalVehicles}</Text>
 						<Text style={styles.statLabel}>{t('journey.vehiclesLabel')}</Text>
-					</View>
-					<View style={styles.statItem}>
-						<Text style={styles.statValue}>{stats.totalCountries}</Text>
-						<Text style={styles.statLabel}>{t('journey.countriesLabel')}</Text>
 					</View>
 				</View>
 			</View>
