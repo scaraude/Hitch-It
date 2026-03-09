@@ -16,6 +16,7 @@ export const DestinationInput: React.FC<DestinationInputProps> = ({
 	onAdd,
 	placeholder = 'Ex: Paris, Lyon...',
 }) => {
+	const isAddDisabled = value.trim().length === 0;
 	return (
 		<View style={styles.container}>
 			<TextInput
@@ -30,11 +31,13 @@ export const DestinationInput: React.FC<DestinationInputProps> = ({
 				testID="destination-input"
 			/>
 			<Pressable
-				style={styles.addButton}
+				style={[styles.addButton, isAddDisabled && styles.addButtonDisabled]}
 				onPress={onAdd}
+				disabled={isAddDisabled}
 				accessibilityLabel={A11Y_LABELS.addDestination}
 				accessibilityHint={A11Y_LABELS.addDestinationHint}
 				accessibilityRole="button"
+				accessibilityState={{ disabled: isAddDisabled }}
 				testID="destination-add-button"
 			>
 				<Text style={styles.addButtonText}>+</Text>
@@ -42,6 +45,8 @@ export const DestinationInput: React.FC<DestinationInputProps> = ({
 		</View>
 	);
 };
+
+const DISABLED_BUTTON_OPACITY = 0.5;
 
 const styles = StyleSheet.create({
 	container: {
@@ -66,6 +71,9 @@ const styles = StyleSheet.create({
 		backgroundColor: COLORS.primary,
 		alignItems: 'center',
 		justifyContent: 'center',
+	},
+	addButtonDisabled: {
+		opacity: DISABLED_BUTTON_OPACITY,
 	},
 	addButtonText: {
 		fontSize: SIZES.font2Xl,
