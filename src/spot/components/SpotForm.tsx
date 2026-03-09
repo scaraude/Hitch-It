@@ -7,9 +7,21 @@ import { A11Y_LABELS } from '../../constants/accessibility';
 import { useTranslation } from '../../i18n';
 import { DIRECTIONS } from '../constants';
 import { useSpotForm } from '../hooks';
+import { Direction } from '../types';
 import { spotFormStyles as styles } from './spotFormStyles';
 import type { SpotFormProps } from './spotFormTypes';
 import { DestinationChip, DestinationInput } from './ui';
+
+const DIRECTION_TRANSLATION_KEY: Record<Direction, string> = {
+	[Direction.North]: 'spots.directionNorth',
+	[Direction.NorthEast]: 'spots.directionNorthEast',
+	[Direction.East]: 'spots.directionEast',
+	[Direction.SouthEast]: 'spots.directionSouthEast',
+	[Direction.South]: 'spots.directionSouth',
+	[Direction.SouthWest]: 'spots.directionSouthWest',
+	[Direction.West]: 'spots.directionWest',
+	[Direction.NorthWest]: 'spots.directionNorthWest',
+};
 
 export const SpotForm: React.FC<SpotFormProps> = ({ onSubmit, onCancel }) => {
 	const { t } = useTranslation();
@@ -59,28 +71,32 @@ export const SpotForm: React.FC<SpotFormProps> = ({ onSubmit, onCancel }) => {
 					{/* Direction */}
 					<Text style={styles.label}>{t('spots.directionLabel')}</Text>
 					<View style={styles.directionGrid}>
-						{DIRECTIONS.map(dir => (
-							<Pressable
-								key={dir}
-								style={[
-									styles.directionButton,
-									direction === dir && styles.directionButtonSelected,
-								]}
-								onPress={() => onDirectionChange(dir)}
-								accessibilityLabel={`${A11Y_LABELS.direction} : ${dir}`}
-								accessibilityRole="button"
-								accessibilityState={{ selected: direction === dir }}
-							>
-								<Text
+						{DIRECTIONS.map(dir => {
+							const directionLabel = t(DIRECTION_TRANSLATION_KEY[dir]);
+
+							return (
+								<Pressable
+									key={dir}
 									style={[
-										styles.directionText,
-										direction === dir && styles.directionTextSelected,
+										styles.directionButton,
+										direction === dir && styles.directionButtonSelected,
 									]}
+									onPress={() => onDirectionChange(dir)}
+									accessibilityLabel={`${A11Y_LABELS.direction} : ${directionLabel}`}
+									accessibilityRole="button"
+									accessibilityState={{ selected: direction === dir }}
 								>
-									{dir}
-								</Text>
-							</Pressable>
-						))}
+									<Text
+										style={[
+											styles.directionText,
+											direction === dir && styles.directionTextSelected,
+										]}
+									>
+										{directionLabel}
+									</Text>
+								</Pressable>
+							);
+						})}
 					</View>
 
 					{/* Destinations */}
