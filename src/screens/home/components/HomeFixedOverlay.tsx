@@ -12,6 +12,7 @@ import {
 	SearchBarOverlay,
 } from '../../../components';
 import { useTranslation } from '../../../i18n';
+import { useJourney } from '../../../journey/context';
 import { NavigationHeader } from '../../../navigation/components';
 import { useNavigationProgress } from '../../../navigation/hooks';
 import type { RootStackParamList } from '../../../navigation/types';
@@ -37,6 +38,7 @@ export const HomeFixedOverlay: React.FC = () => {
 	const rootNavigation = useNavigation<NavigationProp>();
 	const { isAuthenticated } = useAuth();
 	const { t } = useTranslation();
+	const { isRecording } = useJourney();
 
 	const { userLocation } = useHomeLocation();
 	const nav = useHomeNav();
@@ -125,6 +127,18 @@ export const HomeFixedOverlay: React.FC = () => {
 		<View style={styles.nonMapOverlay} pointerEvents="box-none">
 			{isNavigationActive && navigationRoute && (
 				<>
+					{isRecording && (
+						<View
+							style={[styles.recordingBadge, { top: insets.top + 12 }]}
+							pointerEvents="none"
+						>
+							<View style={styles.recordingDot} />
+							<Text style={styles.recordingBadgeText}>
+								{t('navigation.recording')}
+							</Text>
+						</View>
+					)}
+
 					<Pressable
 						style={({ pressed }) => [
 							styles.compareDriverDirectionButton,

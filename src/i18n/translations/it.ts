@@ -260,6 +260,7 @@ export default {
 		destinationLabel: 'Destinazione',
 		destinationPlaceholder: 'Dove vai?',
 		go: 'Vai',
+		recording: 'Registrazione',
 		compareDriverDirectionTitle: "Confronta con direzione dell'autista",
 		compareDriverDirectionSubtitle:
 			"Inserisci la destinazione dell'autista per visualizzare il percorso comune.",

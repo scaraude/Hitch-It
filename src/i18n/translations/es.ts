@@ -260,6 +260,7 @@ export default {
 		destinationLabel: 'Destino',
 		destinationPlaceholder: '¿A dónde vas?',
 		go: 'Ir',
+		recording: 'Grabando',
 		compareDriverDirectionTitle: 'Comparar con dirección del conductor',
 		compareDriverDirectionSubtitle:
 			'Ingresa el destino del conductor para mostrar la ruta común.',
