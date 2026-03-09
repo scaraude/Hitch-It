@@ -259,6 +259,7 @@ export default {
 		startPointPlaceholder: 'Da dove parti?',
 		destinationLabel: 'Destinazione',
 		destinationPlaceholder: 'Dove vai?',
+		useCurrentLocation: 'La mia posizione attuale',
 		go: 'Vai',
 		compareDriverDirectionTitle: "Confronta con direzione dell'autista",
 		compareDriverDirectionSubtitle:

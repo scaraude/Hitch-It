@@ -261,6 +261,7 @@ export default {
 		startPointPlaceholder: 'Wo starten Sie?',
 		destinationLabel: 'Ziel',
 		destinationPlaceholder: 'Wohin gehen Sie?',
+		useCurrentLocation: 'Mein aktueller Standort',
 		go: 'Los',
 		compareDriverDirectionTitle: 'Mit Fahrerrichtung vergleichen',
 		compareDriverDirectionSubtitle:

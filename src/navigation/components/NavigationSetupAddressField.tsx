@@ -86,7 +86,7 @@ export const NavigationSetupAddressField: React.FC<
 							!hasCurrentPosition && styles.positionButtonTextDisabled,
 						]}
 					>
-						{t('common.currentPosition')}
+						{t('navigation.useCurrentLocation')}
 					</Text>
 				</Pressable>
 			) : null}
