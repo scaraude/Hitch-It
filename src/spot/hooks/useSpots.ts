@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useAuth } from '../../auth';
 import { createComment } from '../../comment/services';
 import { generateCommentId } from '../../comment/utils';
 import { toastUtils } from '../../components/ui';
 import { COLORS } from '../../constants';
+import { useTranslation } from '../../i18n/useTranslation';
 import type { MapBounds, MapRegion } from '../../types';
 import { logger } from '../../utils';
 import { createSpot, getSpotsInBounds } from '../services';
@@ -35,6 +37,8 @@ export const useSpots = (
 	bounds: MapBounds | null,
 	zoomLevel: number
 ): UseSpotsReturn => {
+	const { user, isAuthenticated } = useAuth();
+	const { t } = useTranslation();
 	const [fullSpots, setFullSpots] = useState<Spot[]>([]);
 	const [isPlacingSpot, setIsPlacingSpot] = useState(false);
 	const [isShowingForm, setIsShowingForm] = useState(false);
@@ -85,10 +89,7 @@ export const useSpots = (
 			} catch (error) {
 				logger.spot.error('Failed to load spots', error);
 				if (isMounted) {
-					toastUtils.error(
-						'Chargement échoué',
-						'Impossible de charger les spots.'
-					);
+					toastUtils.error(t('spots.loadError'), t('spots.loadErrorMessage'));
 				}
 			}
 		};
@@ -98,9 +99,14 @@ export const useSpots = (
 		return () => {
 			isMounted = false;
 		};
-	}, [bounds, zoomLevel]);
+	}, [bounds, t, zoomLevel]);
 
 	const startPlacingSpot = () => {
+		if (!isAuthenticated || !user) {
+			logger.spot.warn('Unauthenticated user attempted to create a spot');
+			toastUtils.error(t('spots.authRequired'), t('spots.authRequiredMessage'));
+			return;
+		}
 		logger.spot.info('User started placing spot');
 		setIsPlacingSpot(true);
 	};
@@ -124,6 +130,26 @@ export const useSpots = (
 			logger.spot.warn('Submit spot form called without pending location');
 			return;
 		}
+		if (!isAuthenticated || !user) {
+			logger.spot.warn('Unauthenticated user attempted to create a spot');
+			toastUtils.error(t('spots.createError'), t('spots.authRequiredMessage'));
+			return;
+		}
+
+		const authorUsername = user.username.trim();
+		if (!authorUsername) {
+			logger.spot.error(
+				'Authenticated user has no username, blocking spot creation',
+				{
+					userId: user.id,
+				}
+			);
+			toastUtils.error(
+				t('spots.createError'),
+				t('spots.usernameUnavailableMessage')
+			);
+			return;
+		}
 
 		const now = new Date();
 		const newSpot: Spot = {
@@ -134,7 +160,7 @@ export const useSpots = (
 			destinations: formData.destinations,
 			createdAt: now,
 			updatedAt: now,
-			createdBy: 'CurrentUser',
+			createdBy: authorUsername,
 		};
 		const newComment = {
 			id: generateCommentId(),
@@ -143,7 +169,7 @@ export const useSpots = (
 			comment: formData.comment.trim(),
 			createdAt: now,
 			updatedAt: now,
-			createdBy: 'CurrentUser',
+			createdBy: authorUsername,
 		};
 
 		logger.spot.info('Submitting spot form', {
@@ -164,25 +190,24 @@ export const useSpots = (
 				try {
 					await createComment(newComment);
 					toastUtils.success(
-						'Spot créé',
-						`Nouveau spot sur ${formData.roadName}`
+						t('spots.createSuccess'),
+						t('spots.createSuccessMessage', {
+							roadName: formData.roadName,
+						})
 					);
 				} catch (error) {
 					logger.spot.error('Spot created but comment creation failed', error, {
 						spotId: newSpot.id,
 					});
 					toastUtils.info(
-						'Spot créé',
-						"Le spot est enregistré, mais le commentaire n'a pas pu être ajouté."
+						t('spots.createSuccess'),
+						t('spots.createSuccessCommentFailedMessage')
 					);
 				}
 			})
 			.catch(error => {
 				logger.spot.error('Failed to create spot in database', error);
-				toastUtils.error(
-					'Création impossible',
-					"Le spot n'a pas pu être enregistré."
-				);
+				toastUtils.error(t('spots.createError'), t('spots.createErrorMessage'));
 			});
 	};
 
