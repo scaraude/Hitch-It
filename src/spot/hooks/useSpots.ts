@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useAuth } from '../../auth';
 import { createComment } from '../../comment/services';
 import { generateCommentId } from '../../comment/utils';
 import { toastUtils } from '../../components/ui';
@@ -35,6 +36,7 @@ export const useSpots = (
 	bounds: MapBounds | null,
 	zoomLevel: number
 ): UseSpotsReturn => {
+	const { user, isAuthenticated } = useAuth();
 	const [fullSpots, setFullSpots] = useState<Spot[]>([]);
 	const [isPlacingSpot, setIsPlacingSpot] = useState(false);
 	const [isShowingForm, setIsShowingForm] = useState(false);
@@ -101,6 +103,14 @@ export const useSpots = (
 	}, [bounds, zoomLevel]);
 
 	const startPlacingSpot = () => {
+		if (!isAuthenticated || !user) {
+			logger.spot.warn('Unauthenticated user attempted to create a spot');
+			toastUtils.error(
+				'Connexion requise',
+				'Seuls les utilisateurs connectés peuvent créer un spot.'
+			);
+			return;
+		}
 		logger.spot.info('User started placing spot');
 		setIsPlacingSpot(true);
 	};
@@ -124,6 +134,26 @@ export const useSpots = (
 			logger.spot.warn('Submit spot form called without pending location');
 			return;
 		}
+		if (!isAuthenticated || !user) {
+			logger.spot.warn('Unauthenticated user attempted to create a spot');
+			toastUtils.error(
+				'Création impossible',
+				'Vous devez être connecté pour créer un spot.'
+			);
+			return;
+		}
+
+		const authorUsername = user.username.trim();
+		if (!authorUsername) {
+			logger.spot.error('Authenticated user has no username, blocking spot creation', {
+				userId: user.id,
+			});
+			toastUtils.error(
+				'Création impossible',
+				'Votre nom utilisateur est indisponible. Reconnectez-vous et réessayez.'
+			);
+			return;
+		}
 
 		const now = new Date();
 		const newSpot: Spot = {
@@ -134,7 +164,7 @@ export const useSpots = (
 			destinations: formData.destinations,
 			createdAt: now,
 			updatedAt: now,
-			createdBy: 'CurrentUser',
+			createdBy: authorUsername,
 		};
 		const newComment = {
 			id: generateCommentId(),
@@ -143,7 +173,7 @@ export const useSpots = (
 			comment: formData.comment.trim(),
 			createdAt: now,
 			updatedAt: now,
-			createdBy: 'CurrentUser',
+			createdBy: authorUsername,
 		};
 
 		logger.spot.info('Submitting spot form', {
