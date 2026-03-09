@@ -54,14 +54,6 @@ export const spotFormStyles = StyleSheet.create({
 		backgroundColor: COLORS.primary,
 		borderColor: COLORS.primary,
 	},
-	directionText: {
-		fontSize: SIZES.fontXs,
-		color: COLORS.text,
-		fontWeight: '500',
-	},
-	directionTextSelected: {
-		color: COLORS.background,
-	},
 	destinationList: {
 		flexDirection: 'row',
 		flexWrap: 'wrap',

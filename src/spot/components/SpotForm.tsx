@@ -5,23 +5,11 @@ import { bottomSheetStyles } from '../../components/ui';
 import { COLORS } from '../../constants';
 import { A11Y_LABELS } from '../../constants/accessibility';
 import { useTranslation } from '../../i18n';
-import { DIRECTIONS } from '../constants';
+import { DIRECTIONS, DIRECTION_TRANSLATION_KEY } from '../constants';
 import { useSpotForm } from '../hooks';
-import { Direction } from '../types';
 import { spotFormStyles as styles } from './spotFormStyles';
 import type { SpotFormProps } from './spotFormTypes';
-import { DestinationChip, DestinationInput } from './ui';
-
-const DIRECTION_TRANSLATION_KEY: Record<Direction, string> = {
-	[Direction.North]: 'spots.directionNorth',
-	[Direction.NorthEast]: 'spots.directionNorthEast',
-	[Direction.East]: 'spots.directionEast',
-	[Direction.SouthEast]: 'spots.directionSouthEast',
-	[Direction.South]: 'spots.directionSouth',
-	[Direction.SouthWest]: 'spots.directionSouthWest',
-	[Direction.West]: 'spots.directionWest',
-	[Direction.NorthWest]: 'spots.directionNorthWest',
-};
+import { DestinationChip, DestinationInput, DirectionDisplay } from './ui';
 
 export const SpotForm: React.FC<SpotFormProps> = ({ onSubmit, onCancel }) => {
 	const { t } = useTranslation();
@@ -86,14 +74,13 @@ export const SpotForm: React.FC<SpotFormProps> = ({ onSubmit, onCancel }) => {
 									accessibilityRole="button"
 									accessibilityState={{ selected: direction === dir }}
 								>
-									<Text
-										style={[
-											styles.directionText,
-											direction === dir && styles.directionTextSelected,
-										]}
-									>
-										{directionLabel}
-									</Text>
+									<DirectionDisplay
+										direction={dir}
+										variant="compact"
+										labelColor={
+											direction === dir ? COLORS.background : COLORS.text
+										}
+									/>
 								</Pressable>
 							);
 						})}
