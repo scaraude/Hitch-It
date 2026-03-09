@@ -11,6 +11,7 @@ export interface DirectionDisplayProps {
 	direction: Direction;
 	showEmoji?: boolean;
 	variant?: DirectionDisplayVariant;
+	labelColor?: string;
 }
 
 const styles = StyleSheet.create({
@@ -48,6 +49,7 @@ export const DirectionDisplay: React.FC<DirectionDisplayProps> = ({
 	direction,
 	showEmoji = true,
 	variant = 'full',
+	labelColor = COLORS.text,
 }) => {
 	const { t } = useTranslation();
 	const label = t(DIRECTION_TRANSLATION_KEY[direction]);
@@ -60,7 +62,14 @@ export const DirectionDisplay: React.FC<DirectionDisplayProps> = ({
 					{DIRECTION_CONFIG[direction].emoji}
 				</Text>
 			) : null}
-			<Text numberOfLines={1} style={[styles.label, isCompact ? styles.compactLabel : styles.fullLabel]}>
+			<Text
+				numberOfLines={1}
+				style={[
+					styles.label,
+					isCompact ? styles.compactLabel : styles.fullLabel,
+					{ color: labelColor },
+				]}
+			>
 				{label}
 			</Text>
 		</View>
