@@ -132,7 +132,7 @@ export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 				/>
 				<SpotDetailsSummarySection
 					directionHeading={directionHeading}
-					directionLabel={spot.direction}
+					direction={spot.direction}
 					waitingTimeLabel={waitingTimeLabel}
 					waitingRecordsLabel={waitingRecordsLabel}
 					destinationsLabel={destinationsLabel}

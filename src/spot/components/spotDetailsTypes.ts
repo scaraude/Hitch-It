@@ -1,5 +1,5 @@
 import type { Comment, CommentAppreciation } from '../../comment/types';
-import type { Spot } from '../types';
+import type { Direction, Spot } from '../types';
 
 export interface SpotDetailsSheetProps {
 	spot: Spot;
@@ -15,7 +15,7 @@ export interface SpotDetailsHeaderSectionProps {
 
 export interface SpotDetailsSummarySectionProps {
 	directionHeading: number;
-	directionLabel: string;
+	direction: Direction;
 	waitingTimeLabel: string;
 	waitingRecordsLabel: string;
 	destinationsLabel: string;

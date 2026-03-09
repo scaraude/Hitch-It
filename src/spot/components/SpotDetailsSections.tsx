@@ -5,6 +5,7 @@ import { CompassIcon } from '../../components/ui';
 import { COLORS, SIZES } from '../../constants';
 import { A11Y_LABELS } from '../../constants/accessibility';
 import { useTranslation } from '../../i18n';
+import { DirectionDisplay } from './ui';
 import { EMPTY_MAIN_ROAD } from './spotDetailsSheetHelpers';
 import { spotDetailsSheetStyles as styles } from './spotDetailsSheetStyles';
 import type {
@@ -54,7 +55,7 @@ export const SpotDetailsSummarySection: React.FC<
 	SpotDetailsSummarySectionProps
 > = ({
 	directionHeading,
-	directionLabel,
+	direction,
 	waitingTimeLabel,
 	waitingRecordsLabel,
 	destinationsLabel,
@@ -68,7 +69,7 @@ export const SpotDetailsSummarySection: React.FC<
 					<Text style={styles.label}>{t('spots.direction')}</Text>
 					<View style={styles.directionRow}>
 						<CompassIcon heading={directionHeading} size={SIZES.iconMd} />
-						<Text style={styles.value}>{directionLabel}</Text>
+						<DirectionDisplay direction={direction} showEmoji={false} />
 					</View>
 				</View>
 
