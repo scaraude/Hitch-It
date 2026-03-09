@@ -201,6 +201,18 @@ export default {
 		ratingLabel: 'Valutazione *',
 		commentLabel: 'Commento *',
 		commentPlaceholder: 'Descrivi la tua esperienza in questo spot...',
+		loadError: 'Caricamento non riuscito',
+		loadErrorMessage: 'Impossibile caricare gli spot.',
+		authRequired: 'Accesso richiesto',
+		authRequiredMessage: 'Solo gli utenti autenticati possono creare uno spot.',
+		createSuccess: 'Spot creato',
+		createSuccessMessage: 'Nuovo spot su {{roadName}}',
+		createSuccessCommentFailedMessage:
+			'Lo spot è stato salvato, ma non è stato possibile aggiungere il commento.',
+		createError: 'Creazione non riuscita',
+		createErrorMessage: 'Non è stato possibile salvare lo spot.',
+		usernameUnavailableMessage:
+			'Il tuo nome utente non è disponibile. Accedi di nuovo e riprova.',
 	},
 
 	// Map

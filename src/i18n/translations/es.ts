@@ -201,6 +201,18 @@ export default {
 		ratingLabel: 'Valoración *',
 		commentLabel: 'Comentario *',
 		commentPlaceholder: 'Describe tu experiencia en este spot...',
+		loadError: 'Carga fallida',
+		loadErrorMessage: 'No se pudieron cargar los spots.',
+		authRequired: 'Inicio de sesión requerido',
+		authRequiredMessage: 'Solo los usuarios conectados pueden crear un spot.',
+		createSuccess: 'Spot creado',
+		createSuccessMessage: 'Nuevo spot en {{roadName}}',
+		createSuccessCommentFailedMessage:
+			'El spot se guardó, pero no se pudo agregar el comentario.',
+		createError: 'Creación fallida',
+		createErrorMessage: 'No se pudo guardar el spot.',
+		usernameUnavailableMessage:
+			'Tu nombre de usuario no está disponible. Vuelve a iniciar sesión e inténtalo de nuevo.',
 	},
 
 	// Map

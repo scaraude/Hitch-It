@@ -202,6 +202,19 @@ export default {
 		ratingLabel: 'Appréciation *',
 		commentLabel: 'Commentaire *',
 		commentPlaceholder: 'Décris ton expérience sur ce spot...',
+		loadError: 'Chargement échoué',
+		loadErrorMessage: 'Impossible de charger les spots.',
+		authRequired: 'Connexion requise',
+		authRequiredMessage:
+			'Seuls les utilisateurs connectés peuvent créer un spot.',
+		createSuccess: 'Spot créé',
+		createSuccessMessage: 'Nouveau spot sur {{roadName}}',
+		createSuccessCommentFailedMessage:
+			"Le spot est enregistré, mais le commentaire n'a pas pu être ajouté.",
+		createError: 'Création impossible',
+		createErrorMessage: "Le spot n'a pas pu être enregistré.",
+		usernameUnavailableMessage:
+			"Votre nom d'utilisateur est indisponible. Reconnectez-vous et réessayez.",
 	},
 
 	// Map

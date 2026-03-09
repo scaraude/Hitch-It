@@ -199,6 +199,18 @@ export default {
 		ratingLabel: 'Rating *',
 		commentLabel: 'Comment *',
 		commentPlaceholder: 'Describe your experience at this spot...',
+		loadError: 'Loading failed',
+		loadErrorMessage: 'Unable to load spots.',
+		authRequired: 'Authentication required',
+		authRequiredMessage: 'Only signed-in users can create a spot.',
+		createSuccess: 'Spot created',
+		createSuccessMessage: 'New spot on {{roadName}}',
+		createSuccessCommentFailedMessage:
+			'The spot was saved, but the comment could not be added.',
+		createError: 'Creation failed',
+		createErrorMessage: 'The spot could not be saved.',
+		usernameUnavailableMessage:
+			'Your username is unavailable. Please sign in again and try again.',
 	},
 
 	// Map
