@@ -151,6 +151,7 @@ export const useHomeMapState = ({
 	const followUserTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
 		null
 	);
+	const hasAutoLocatedOnLaunchRef = useRef(false);
 
 	const handleHeadingChange = useCallback((heading: number) => {
 		setMapHeading(heading);
@@ -161,7 +162,7 @@ export const useHomeMapState = ({
 		setMapHeading(0);
 	}, [mapViewRef]);
 
-	const handleLocateUser = useCallback(() => {
+	const centerMapOnUser = useCallback(() => {
 		if (!userLocation) return;
 
 		const region: MapRegion = {
@@ -183,6 +184,19 @@ export const useHomeMapState = ({
 			followUserTimeoutRef.current = null;
 		}, 3000);
 	}, [mapViewRef, userLocation]);
+
+	const handleLocateUser = useCallback(() => {
+		centerMapOnUser();
+	}, [centerMapOnUser]);
+
+	useEffect(() => {
+		if (!userLocation || hasAutoLocatedOnLaunchRef.current) {
+			return;
+		}
+
+		hasAutoLocatedOnLaunchRef.current = true;
+		centerMapOnUser();
+	}, [centerMapOnUser, userLocation]);
 
 	useEffect(() => {
 		return () => {
