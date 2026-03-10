@@ -1,5 +1,5 @@
 import type React from 'react';
-import { View } from 'react-native';
+import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import { Marker } from 'react-native-maps';
 import { LoadingSpinner, MapViewComponent } from '../../../components';
 import { COLORS } from '../../../constants';
@@ -112,6 +112,36 @@ export const HomeMapLayer: React.FC = () => {
 					/>
 				</View>
 			)}
+
+			{!nav.navigation.isActive &&
+				(spot.areSpotsHiddenByZoom || spot.isLoadingSpots) && (
+					<Pressable
+						style={({ pressed }) => [
+							styles.showSpotsButton,
+							pressed &&
+								!spot.isLoadingSpots &&
+								styles.showSpotsButtonPressed,
+						]}
+						onPress={spot.showSpotsAtCurrentZoom}
+						disabled={spot.isLoadingSpots}
+						accessibilityRole="button"
+						accessibilityLabel={t('spots.showSpotsCta')}
+						testID="show-hidden-spots-button"
+					>
+						{spot.isLoadingSpots ? (
+							<ActivityIndicator
+								size="small"
+								color={COLORS.textLight}
+								style={styles.showSpotsButtonSpinner}
+							/>
+						) : null}
+						<Text style={styles.showSpotsButtonText}>
+							{spot.isLoadingSpots
+								? t('spots.showSpotsLoadingCta')
+								: t('spots.showSpotsCta')}
+						</Text>
+					</Pressable>
+				)}
 
 			{spot.isPlacingSpot && (
 				<View style={styles.centerMarker}>

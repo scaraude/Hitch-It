@@ -16,6 +16,33 @@ export const homeScreenStyles = StyleSheet.create({
 		right: SPACING.md,
 		alignItems: 'center',
 	},
+	showSpotsButton: {
+		position: 'absolute',
+		top: SPACING.xl + SPACING.md,
+		right: SPACING.md,
+		flexDirection: 'row',
+		alignItems: 'center',
+		paddingHorizontal: SPACING.md,
+		paddingVertical: SPACING.sm,
+		borderRadius: SPACING.xl,
+		backgroundColor: COLORS.primary,
+		shadowColor: COLORS.text,
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.15,
+		shadowRadius: 6,
+		elevation: 3,
+	},
+	showSpotsButtonPressed: {
+		opacity: 0.85,
+	},
+	showSpotsButtonSpinner: {
+		marginRight: SPACING.xs,
+	},
+	showSpotsButtonText: {
+		color: COLORS.textLight,
+		fontSize: 13,
+		fontWeight: '700',
+	},
 	nonMapOverlay: {
 		...StyleSheet.absoluteFillObject,
 	},
