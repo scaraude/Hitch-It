@@ -87,6 +87,13 @@ export const NavigationSetupSheet: React.FC<NavigationSetupSheetProps> = ({
 				<View style={styles.form}>
 					<NavigationSetupAddressField
 						label={t('navigation.startPointLabel')}
+						icon={
+							<Ionicons
+								name="radio-button-on"
+								size={SIZES.iconSm}
+								color={COLORS.primary}
+							/>
+						}
 						placeholder={t('navigation.startPointPlaceholder')}
 						value={startText}
 						onChangeText={onStartTextChange}
@@ -119,6 +126,13 @@ export const NavigationSetupSheet: React.FC<NavigationSetupSheetProps> = ({
 
 					<NavigationSetupAddressField
 						label={t('navigation.destinationLabel')}
+						icon={
+							<Ionicons
+								name="flag"
+								size={SIZES.iconSm}
+								color={COLORS.error}
+							/>
+						}
 						placeholder={t('navigation.destinationPlaceholder')}
 						value={destinationText}
 						onChangeText={onDestinationTextChange}
