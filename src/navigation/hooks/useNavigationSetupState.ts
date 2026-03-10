@@ -72,6 +72,52 @@ export const useNavigationSetupState = ({
 	const hasCurrentPosition = currentPosition !== null;
 
 	useEffect(() => {
+		if (!initialStart) {
+			return;
+		}
+
+		setStartText(initialStart.name);
+		setStartLocation(initialStart.location);
+		setIsStartFromCurrentPosition(false);
+		startSelectionRef.current = false;
+	}, [initialStart]);
+
+	useEffect(() => {
+		if (!initialDestination) {
+			return;
+		}
+
+		setDestinationText(initialDestination.name);
+		setDestinationLocation(initialDestination.location);
+		setIsDestinationFromCurrentPosition(false);
+		destinationSelectionRef.current = false;
+	}, [initialDestination]);
+
+	useEffect(() => {
+		if (initialStart !== undefined || currentPosition === null) {
+			return;
+		}
+
+		const shouldUseCurrentPositionAsDefault =
+			(startLocation === null && startText.trim().length === 0) ||
+			isStartFromCurrentPosition;
+		if (!shouldUseCurrentPositionAsDefault) {
+			return;
+		}
+
+		setStartLocation(currentPosition);
+		setStartText(currentPositionLabel);
+		setIsStartFromCurrentPosition(true);
+	}, [
+		currentPosition,
+		currentPositionLabel,
+		initialStart,
+		isStartFromCurrentPosition,
+		startLocation,
+		startText,
+	]);
+
+	useEffect(() => {
 		Animated.parallel([
 			Animated.timing(slideValue, {
 				toValue: 0,
