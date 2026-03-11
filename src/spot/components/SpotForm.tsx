@@ -5,7 +5,7 @@ import { bottomSheetStyles } from '../../components/ui';
 import { COLORS } from '../../constants';
 import { A11Y_LABELS } from '../../constants/accessibility';
 import { useTranslation } from '../../i18n';
-import { DIRECTIONS, DIRECTION_TRANSLATION_KEY } from '../constants';
+import { DIRECTION_TRANSLATION_KEY, DIRECTIONS } from '../constants';
 import { useSpotForm } from '../hooks';
 import { spotFormStyles as styles } from './spotFormStyles';
 import type { SpotFormProps } from './spotFormTypes';
@@ -42,6 +42,7 @@ export const SpotForm: React.FC<SpotFormProps> = ({ onSubmit, onCancel }) => {
 					showsVerticalScrollIndicator={false}
 				>
 					<Text style={styles.title}>{t('spots.newSpot')}</Text>
+					<Text style={styles.helperText}>{t('spots.requiredFieldsHint')}</Text>
 
 					{/* Road Name */}
 					<Text style={styles.label}>{t('spots.roadNameLabel')}</Text>
