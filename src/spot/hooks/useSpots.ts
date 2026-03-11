@@ -16,9 +16,12 @@ export interface UseSpotsReturn {
 	spots: SpotMarkerData[];
 	fullSpots: Spot[];
 	selectedSpot: Spot | null;
+	isLoadingSpots: boolean;
+	areSpotsHiddenByZoom: boolean;
 	isPlacingSpot: boolean;
 	isShowingForm: boolean;
 	pendingLocation: Location | null;
+	showSpotsAtCurrentZoom: () => void;
 	startPlacingSpot: () => void;
 	confirmSpotPlacement: (region: MapRegion) => void;
 	cancelSpotPlacement: () => void;
@@ -40,10 +43,13 @@ export const useSpots = (
 	const { user, isAuthenticated } = useAuth();
 	const { t } = useTranslation();
 	const [fullSpots, setFullSpots] = useState<Spot[]>([]);
+	const [isLoadingSpots, setIsLoadingSpots] = useState(false);
 	const [isPlacingSpot, setIsPlacingSpot] = useState(false);
 	const [isShowingForm, setIsShowingForm] = useState(false);
 	const [pendingLocation, setPendingLocation] = useState<Location | null>(null);
 	const [selectedSpot, setSelectedSpot] = useState<Spot | null>(null);
+	const [hasZoomOverride, setHasZoomOverride] = useState(false);
+	const areSpotsHiddenByZoom = zoomLevel < MIN_ZOOM_LEVEL && !hasZoomOverride;
 
 	const spotMarkers: SpotMarkerData[] = useMemo(
 		() =>
@@ -61,8 +67,9 @@ export const useSpots = (
 	);
 
 	useEffect(() => {
-		if (zoomLevel < MIN_ZOOM_LEVEL) {
+		if (areSpotsHiddenByZoom) {
 			setFullSpots([]);
+			setIsLoadingSpots(false);
 			logger.spot.debug('Zoom level too low, clearing spots', { zoomLevel });
 			return;
 		}
@@ -74,6 +81,7 @@ export const useSpots = (
 		let isMounted = true;
 
 		const loadSpotsInView = async () => {
+			setIsLoadingSpots(true);
 			logger.spot.info('Loading spots for viewport', {
 				zoomLevel,
 				bounds,
@@ -89,7 +97,14 @@ export const useSpots = (
 			} catch (error) {
 				logger.spot.error('Failed to load spots', error);
 				if (isMounted) {
+					if (zoomLevel < MIN_ZOOM_LEVEL) {
+						setHasZoomOverride(false);
+					}
 					toastUtils.error(t('spots.loadError'), t('spots.loadErrorMessage'));
+				}
+			} finally {
+				if (isMounted) {
+					setIsLoadingSpots(false);
 				}
 			}
 		};
@@ -99,7 +114,22 @@ export const useSpots = (
 		return () => {
 			isMounted = false;
 		};
-	}, [bounds, t, zoomLevel]);
+	}, [areSpotsHiddenByZoom, bounds, t, zoomLevel]);
+
+	useEffect(() => {
+		if (zoomLevel >= MIN_ZOOM_LEVEL && hasZoomOverride) {
+			setHasZoomOverride(false);
+		}
+	}, [hasZoomOverride, zoomLevel]);
+
+	const showSpotsAtCurrentZoom = () => {
+		if (!bounds || isLoadingSpots || !areSpotsHiddenByZoom) {
+			return;
+		}
+
+		setHasZoomOverride(true);
+		setIsLoadingSpots(true);
+	};
 
 	const startPlacingSpot = () => {
 		if (!isAuthenticated || !user) {
@@ -247,9 +277,12 @@ export const useSpots = (
 		spots: spotMarkers,
 		fullSpots,
 		selectedSpot,
+		isLoadingSpots,
+		areSpotsHiddenByZoom,
 		isPlacingSpot,
 		isShowingForm,
 		pendingLocation,
+		showSpotsAtCurrentZoom,
 		startPlacingSpot,
 		confirmSpotPlacement,
 		cancelSpotPlacement,

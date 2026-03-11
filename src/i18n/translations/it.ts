@@ -215,6 +215,8 @@ export default {
 		commentPlaceholder: 'Descrivi la tua esperienza in questo spot...',
 		loadError: 'Caricamento non riuscito',
 		loadErrorMessage: 'Impossibile caricare gli spot.',
+		showSpotsCta: 'Mostra spot',
+		showSpotsLoadingCta: 'Caricamento spot...',
 		authRequired: 'Accesso richiesto',
 		authRequiredMessage: 'Solo gli utenti autenticati possono creare uno spot.',
 		createSuccess: 'Spot creato',

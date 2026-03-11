@@ -19,6 +19,7 @@ import {
 	useHomeSpot,
 } from '../context/HomeStateContext';
 import { homeScreenStyles as styles } from '../homeScreenStyles';
+import { ShowHiddenSpotsButton } from './ShowHiddenSpotsButton';
 
 export const HomeMapLayer: React.FC = () => {
 	const { userLocation, currentRegion, locationLoading } = useHomeLocation();
@@ -112,6 +113,15 @@ export const HomeMapLayer: React.FC = () => {
 					/>
 				</View>
 			)}
+
+			<ShowHiddenSpotsButton
+				isVisible={
+					!nav.navigation.isActive &&
+					(spot.areSpotsHiddenByZoom || spot.isLoadingSpots)
+				}
+				isLoading={spot.isLoadingSpots}
+				onPress={spot.showSpotsAtCurrentZoom}
+			/>
 
 			{spot.isPlacingSpot && (
 				<View style={styles.centerMarker}>

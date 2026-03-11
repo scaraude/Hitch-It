@@ -216,6 +216,8 @@ export default {
 		commentPlaceholder: 'Beschreibe deine Erfahrung an diesem Spot...',
 		loadError: 'Laden fehlgeschlagen',
 		loadErrorMessage: 'Spots konnten nicht geladen werden.',
+		showSpotsCta: 'Spots anzeigen',
+		showSpotsLoadingCta: 'Spots werden geladen...',
 		authRequired: 'Anmeldung erforderlich',
 		authRequiredMessage: 'Nur angemeldete Nutzer können einen Spot erstellen.',
 		createSuccess: 'Spot erstellt',

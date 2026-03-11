@@ -216,6 +216,8 @@ export default {
 		commentPlaceholder: 'Décris ton expérience sur ce spot...',
 		loadError: 'Chargement échoué',
 		loadErrorMessage: 'Impossible de charger les spots.',
+		showSpotsCta: 'Afficher les spots',
+		showSpotsLoadingCta: 'Chargement des spots...',
 		authRequired: 'Connexion requise',
 		authRequiredMessage:
 			'Seuls les utilisateurs connectés peuvent créer un spot.',

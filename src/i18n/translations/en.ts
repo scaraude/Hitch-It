@@ -213,6 +213,8 @@ export default {
 		commentPlaceholder: 'Describe your experience at this spot...',
 		loadError: 'Loading failed',
 		loadErrorMessage: 'Unable to load spots.',
+		showSpotsCta: 'Show spots',
+		showSpotsLoadingCta: 'Loading spots...',
 		authRequired: 'Authentication required',
 		authRequiredMessage: 'Only signed-in users can create a spot.',
 		createSuccess: 'Spot created',
