@@ -25,6 +25,7 @@ import {
 	useHomeSpot,
 } from '../context/HomeStateContext';
 import { homeScreenStyles as styles } from '../homeScreenStyles';
+import { RecordingBadge } from './RecordingBadge';
 
 type HomeTabId = 'home' | 'search' | 'add' | 'history' | 'profile';
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -127,17 +128,10 @@ export const HomeFixedOverlay: React.FC = () => {
 		<View style={styles.nonMapOverlay} pointerEvents="box-none">
 			{isNavigationActive && navigationRoute && (
 				<>
-					{isRecording && (
-						<View
-							style={[styles.recordingBadge, { top: insets.top + 12 }]}
-							pointerEvents="none"
-						>
-							<View style={styles.recordingDot} />
-							<Text style={styles.recordingBadgeText}>
-								{t('navigation.recording')}
-							</Text>
-						</View>
-					)}
+					<RecordingBadge
+						isVisible={isRecording}
+						safeAreaTopInset={insets.top}
+					/>
 
 					<Pressable
 						style={({ pressed }) => [
