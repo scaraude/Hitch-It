@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import type React from 'react';
+import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
 import { Pressable, Text, View } from 'react-native';
 import { AddressInput } from '../../components';
@@ -10,6 +11,7 @@ import { navigationSetupSheetStyles as styles } from './navigationSetupSheetStyl
 
 interface NavigationSetupAddressFieldProps {
 	label: string;
+	icon: ReactNode;
 	placeholder: string;
 	value: string;
 	onChangeText: (text: string) => void;
@@ -29,6 +31,7 @@ export const NavigationSetupAddressField: React.FC<
 	NavigationSetupAddressFieldProps
 > = ({
 	label,
+	icon,
 	placeholder,
 	value,
 	onChangeText,
@@ -50,6 +53,7 @@ export const NavigationSetupAddressField: React.FC<
 			<View style={inputLayerStyle}>
 				<AddressInput
 					label={label}
+					icon={icon}
 					placeholder={placeholder}
 					value={value}
 					onChangeText={onChangeText}

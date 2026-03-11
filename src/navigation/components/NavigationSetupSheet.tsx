@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import type React from 'react';
 import {
 	Animated,
@@ -87,6 +88,13 @@ export const NavigationSetupSheet: React.FC<NavigationSetupSheetProps> = ({
 				<View style={styles.form}>
 					<NavigationSetupAddressField
 						label={t('navigation.startPointLabel')}
+						icon={
+							<MaterialCommunityIcons
+								name="map-marker-outline"
+								size={SIZES.iconSm}
+								color={COLORS.text}
+							/>
+						}
 						placeholder={t('navigation.startPointPlaceholder')}
 						value={startText}
 						onChangeText={onStartTextChange}
@@ -119,6 +127,13 @@ export const NavigationSetupSheet: React.FC<NavigationSetupSheetProps> = ({
 
 					<NavigationSetupAddressField
 						label={t('navigation.destinationLabel')}
+						icon={
+							<Ionicons
+								name="flag"
+								size={SIZES.iconSm}
+								color={COLORS.error}
+							/>
+						}
 						placeholder={t('navigation.destinationPlaceholder')}
 						value={destinationText}
 						onChangeText={onDestinationTextChange}

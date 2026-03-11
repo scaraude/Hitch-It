@@ -1,5 +1,6 @@
 import * as Haptics from 'expo-haptics';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import {
 	ActivityIndicator,
 	Animated,
@@ -24,7 +25,7 @@ interface AddressInputProps {
 	onChangeText: (text: string) => void;
 	onLocationSelected: (location: Location, name: string) => void;
 	label?: string;
-	icon?: string;
+	icon?: ReactNode;
 	autoFocus?: boolean;
 	testID?: string;
 	showEmptyState?: boolean;
@@ -106,7 +107,7 @@ export function AddressInput({
 		<View style={[styles.container, containerStyle]}>
 			{label && <Text style={styles.label}>{label}</Text>}
 			<View style={[styles.inputContainer, inputContainerStyle]}>
-				<Text style={styles.icon}>{icon}</Text>
+				{icon ? <View style={styles.icon}>{icon}</View> : null}
 				<TextInput
 					style={styles.input}
 					value={value}
@@ -206,7 +207,8 @@ const styles = StyleSheet.create({
 		gap: SPACING.sm,
 	},
 	icon: {
-		fontSize: SIZES.fontMd,
+		alignItems: 'center',
+		justifyContent: 'center',
 	},
 	input: {
 		flex: 1,
