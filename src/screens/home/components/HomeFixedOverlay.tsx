@@ -185,7 +185,7 @@ export const HomeFixedOverlay: React.FC = () => {
 					mapHeading={map.mapHeading}
 					isFollowingUser={map.isFollowingUser}
 					onResetHeading={map.handleResetHeading}
-					onLocateUser={map.handleLocateUser}
+					onLocateUser={map.centerMapOnUser}
 					bottomOffset={controlsBottomOffset}
 				/>
 			)}

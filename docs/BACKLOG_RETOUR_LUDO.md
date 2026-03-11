@@ -70,11 +70,7 @@
 
 ## 📋 TODO - Navigation / wording / icons
 
-- [ ] Quand un utilisateur entre un texte brut dans `NavigationSetupSheet` sans cliquer une suggestion,
-      la 1re suggestion doit être prise en compte pour pouvoir lancer la navigation.
-  - Bug actuel: navigation bloquée si aucune suggestion n'est explicitement sélectionnée.
-- [ ] Bug iPhone: quand un utilisateur saisit manuellement deux adresses (origine + destination)
-      sans cliquer de suggestion, puis clique "Start", la navigation ne démarre pas.
+- [ ] Vérifier bug Laureen: bouton "Go" désactivé dans `NavigationSetupSheet` (conditions d'activation à valider et corriger).
 - [ ] Dans `NavigationSetupSheet`, remplacer le texte "Use my current location" par "Ma position actuelle" (FR) + traduire les autres langues.
 - [ ] Dans `NavigationSetupSheet`, remplacer les icônes Ionicons "location-outline" par des icônes de point d'origine/destination plus claires.
 
