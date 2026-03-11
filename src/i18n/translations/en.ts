@@ -262,6 +262,7 @@ export default {
 		destinationLabel: 'Destination',
 		destinationPlaceholder: 'Where are you going?',
 		go: 'go',
+		recording: 'Recording',
 		compareDriverDirectionTitle: 'Compare with driver direction',
 		compareDriverDirectionSubtitle:
 			"Enter the driver's destination to display the common route.",

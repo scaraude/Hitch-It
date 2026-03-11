@@ -265,6 +265,7 @@ export default {
 		destinationLabel: 'Ziel',
 		destinationPlaceholder: 'Wohin gehen Sie?',
 		go: 'Los',
+		recording: 'Aufzeichnung',
 		compareDriverDirectionTitle: 'Mit Fahrerrichtung vergleichen',
 		compareDriverDirectionSubtitle:
 			'Geben Sie das Ziel des Fahrers ein, um die gemeinsame Route anzuzeigen.',

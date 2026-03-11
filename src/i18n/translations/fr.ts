@@ -266,6 +266,7 @@ export default {
 		destinationLabel: 'Destination',
 		destinationPlaceholder: 'Où allez-vous ?',
 		go: 'go',
+		recording: 'Enregistrement',
 		compareDriverDirectionTitle: 'Comparer avec la direction du conducteur',
 		compareDriverDirectionSubtitle:
 			'Entrez la destination du conducteur pour afficher le trajet commun.',

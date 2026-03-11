@@ -46,6 +46,30 @@ export const homeScreenStyles = StyleSheet.create({
 	nonMapOverlay: {
 		...StyleSheet.absoluteFillObject,
 	},
+	recordingBadge: {
+		position: 'absolute',
+		alignSelf: 'center',
+		flexDirection: 'row',
+		alignItems: 'center',
+		gap: SPACING.xs,
+		paddingHorizontal: SPACING.sm,
+		paddingVertical: SPACING.xs,
+		backgroundColor: COLORS.background,
+		borderRadius: 999,
+		borderWidth: 1,
+		borderColor: COLORS.error,
+	},
+	recordingDot: {
+		width: 8,
+		height: 8,
+		borderRadius: 999,
+		backgroundColor: COLORS.error,
+	},
+	recordingBadgeText: {
+		color: COLORS.error,
+		fontSize: 12,
+		fontWeight: '700',
+	},
 	centerMarker: {
 		position: 'absolute',
 		left: '50%',
