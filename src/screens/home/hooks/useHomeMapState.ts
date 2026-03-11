@@ -50,7 +50,7 @@ export interface UseHomeMapStateReturn {
 	isFollowingUser: boolean;
 	handleHeadingChange: (heading: number) => void;
 	handleResetHeading: () => void;
-	handleLocateUser: () => void;
+	centerMapOnUser: () => void;
 	// Navigation map data
 	visibleSpots: SpotMarkerData[];
 }
@@ -153,6 +153,7 @@ export const useHomeMapState = ({
 	const followUserTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
 		null
 	);
+	const hasAutoLocatedOnLaunchRef = useRef(false);
 
 	const handleHeadingChange = useCallback((heading: number) => {
 		setMapHeading(heading);
@@ -163,7 +164,7 @@ export const useHomeMapState = ({
 		setMapHeading(0);
 	}, [mapViewRef]);
 
-	const handleLocateUser = useCallback(() => {
+	const centerMapOnUser = useCallback(() => {
 		if (!userLocation) {
 			void getCurrentLocation();
 			return;
@@ -188,6 +189,15 @@ export const useHomeMapState = ({
 			followUserTimeoutRef.current = null;
 		}, 3000);
 	}, [getCurrentLocation, mapViewRef, userLocation]);
+
+	useEffect(() => {
+		if (!userLocation || hasAutoLocatedOnLaunchRef.current) {
+			return;
+		}
+
+		hasAutoLocatedOnLaunchRef.current = true;
+		centerMapOnUser();
+	}, [centerMapOnUser, userLocation]);
 
 	useEffect(() => {
 		return () => {
@@ -222,17 +232,17 @@ export const useHomeMapState = ({
 		() =>
 			isNavigationActive
 				? (driverRoute
-						? commonSpotsOnRoute.filter(
-								({ closestRoutePointIndex }) =>
-									closestRoutePointIndex >= progressRoutePointIndex
-							)
-						: visibleSpotsOnRoute
-					).map(({ spot }) => ({
-						id: spot.id as string,
-						coordinates: spot.coordinates,
-						title: spot.roadName,
-						description: spot.direction,
-					}))
+					? commonSpotsOnRoute.filter(
+						({ closestRoutePointIndex }) =>
+							closestRoutePointIndex >= progressRoutePointIndex
+					)
+					: visibleSpotsOnRoute
+				).map(({ spot }) => ({
+					id: spot.id as string,
+					coordinates: spot.coordinates,
+					title: spot.roadName,
+					description: spot.direction,
+				}))
 				: spots,
 		[
 			commonSpotsOnRoute,
@@ -308,7 +318,7 @@ export const useHomeMapState = ({
 		isFollowingUser,
 		handleHeadingChange,
 		handleResetHeading,
-		handleLocateUser,
+		centerMapOnUser,
 		visibleSpots,
 	};
 };
