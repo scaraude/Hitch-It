@@ -33,6 +33,7 @@ interface UseHomeMapStateArgs {
 	currentRegion: MapRegion;
 	onRegionChange: (region: MapRegion) => void;
 	userLocation: Location | null;
+	getCurrentLocation: () => Promise<void>;
 }
 
 export interface UseHomeMapStateReturn {
@@ -75,6 +76,7 @@ export const useHomeMapState = ({
 	currentRegion,
 	onRegionChange,
 	userLocation,
+	getCurrentLocation,
 }: UseHomeMapStateArgs): UseHomeMapStateReturn => {
 	// === Map Region & Long Press ===
 	const [mapRegion, setMapRegion] = useState<MapRegion>(currentRegion);
@@ -163,7 +165,10 @@ export const useHomeMapState = ({
 	}, [mapViewRef]);
 
 	const centerMapOnUser = useCallback(() => {
-		if (!userLocation) return;
+		if (!userLocation) {
+			void getCurrentLocation();
+			return;
+		}
 
 		const region: MapRegion = {
 			latitude: userLocation.latitude,
@@ -183,7 +188,7 @@ export const useHomeMapState = ({
 			setIsFollowingUser(false);
 			followUserTimeoutRef.current = null;
 		}, 3000);
-	}, [mapViewRef, userLocation]);
+	}, [getCurrentLocation, mapViewRef, userLocation]);
 
 	useEffect(() => {
 		if (!userLocation || hasAutoLocatedOnLaunchRef.current) {
