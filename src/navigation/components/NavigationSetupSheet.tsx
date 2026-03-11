@@ -89,7 +89,7 @@ export const NavigationSetupSheet: React.FC<NavigationSetupSheetProps> = ({
 						label={t('navigation.startPointLabel')}
 						icon={
 							<Ionicons
-								name="radio-button-on"
+								name="ellipse"
 								size={SIZES.iconSm}
 								color={COLORS.primary}
 							/>
