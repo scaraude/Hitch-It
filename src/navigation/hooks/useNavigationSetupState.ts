@@ -65,6 +65,7 @@ export const useNavigationSetupState = ({
 	] = useState(false);
 	const startSelectionRef = useRef(false);
 	const destinationSelectionRef = useRef(false);
+	const hasUserInteractedWithStartRef = useRef(false);
 	const slideValue = useRef(new Animated.Value(SHEET_SLIDE_OFFSET)).current;
 	const opacityValue = useRef(new Animated.Value(0)).current;
 
@@ -86,7 +87,22 @@ export const useNavigationSetupState = ({
 		]).start();
 	}, [opacityValue, slideValue]);
 
+	useEffect(() => {
+		if (initialStart !== undefined) {
+			return;
+		}
+
+		if (currentPosition === null || hasUserInteractedWithStartRef.current) {
+			return;
+		}
+
+		setIsStartFromCurrentPosition(true);
+		setStartLocation(currentPosition);
+		setStartText(currentPositionLabel);
+	}, [currentPosition, currentPositionLabel, initialStart]);
+
 	const handleStartLocationSelected = (location: Location, name: string) => {
+		hasUserInteractedWithStartRef.current = true;
 		startSelectionRef.current = true;
 		setStartLocation(location);
 		setStartText(name);
@@ -99,6 +115,7 @@ export const useNavigationSetupState = ({
 	};
 
 	const handleStartTextChange = (text: string) => {
+		hasUserInteractedWithStartRef.current = true;
 		setIsStartFromCurrentPosition(false);
 		setStartText(text);
 
@@ -127,6 +144,7 @@ export const useNavigationSetupState = ({
 			return;
 		}
 
+		hasUserInteractedWithStartRef.current = true;
 		setIsStartFromCurrentPosition(true);
 		setStartLocation(currentPosition);
 		setStartText(currentPositionLabel);
@@ -145,6 +163,7 @@ export const useNavigationSetupState = ({
 	};
 
 	const handleSwapLocations = () => {
+		hasUserInteractedWithStartRef.current = true;
 		setStartText(destinationText);
 		setStartLocation(destinationLocation);
 		setDestinationText(startText);
