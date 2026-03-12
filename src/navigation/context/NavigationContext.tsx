@@ -3,6 +3,7 @@ import { createContext, useCallback, useContext, useState } from 'react';
 import { getSpotsInBounds } from '../../spot/services';
 import { polylineToBounds } from '../../utils';
 import { logger } from '../../utils/logger';
+import { getNavigationModePolicy } from '../navigationModePolicy';
 import { findSpotsAlongRoute } from '../services/routeSpotMatcher';
 import { calculateRoute, type RoutingError } from '../services/routingService';
 import {
@@ -120,14 +121,15 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({
 				// Continue navigation even if spots fail to load
 			}
 
-			setNavigation({
+			setNavigation(previous => ({
+				...previous,
 				isActive: true,
 				route: result.route,
 				spotsOnRoute,
 				driverRoute: null,
 				commonSpotsOnRoute: [],
 				destinationMarker: null,
-			});
+			}));
 
 			logger.navigation.info('Navigation started', {
 				destinationName: result.route.destinationName,
@@ -177,6 +179,20 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({
 			driverDestinationLocation: RoutePoint,
 			driverDestinationName: string
 		): Promise<NavigationActionResult> => {
+			const activeModePolicy = getNavigationModePolicy(navigation.activeMode);
+
+			if (!activeModePolicy.driverDirectionComparisonEnabled) {
+				logger.navigation.info(
+					'Driver direction comparison blocked by navigation mode policy',
+					{ activeMode: navigation.activeMode }
+				);
+				return {
+					success: false,
+					error: 'invalid_coordinates',
+					message: 'Mode actuel sans comparaison de direction',
+				};
+			}
+
 			if (!navigation.isActive || !navigation.route) {
 				logger.navigation.warn(
 					'Cannot compare with driver direction: navigation inactive'
@@ -242,7 +258,12 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({
 
 			return { success: true };
 		},
-		[navigation.isActive, navigation.route, navigation.spotsOnRoute]
+		[
+			navigation.activeMode,
+			navigation.isActive,
+			navigation.route,
+			navigation.spotsOnRoute,
+		]
 	);
 
 	const value: NavigationContextValue = {

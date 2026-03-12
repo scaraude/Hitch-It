@@ -5,6 +5,7 @@ import type { MapViewRef } from '../../../components';
 import { useLocation } from '../../../hooks';
 import { useJourney } from '../../../journey/context';
 import { useNavigation } from '../../../navigation/context/NavigationContext';
+import { getNavigationModePolicy } from '../../../navigation/navigationModePolicy';
 import { useSpotContext } from '../../../spot/context';
 import type { MapRegion } from '../../../types';
 import {
@@ -60,9 +61,13 @@ export const HomeStateProvider: React.FC<HomeStateProviderProps> = ({
 	const nav = useNavigation();
 	const journey = useJourney();
 	const mapViewRef = useRef<MapViewRef>(null);
+	const navigationModePolicy = getNavigationModePolicy(
+		nav.navigation.activeMode
+	);
 
 	const session = useHomeSessionState({
 		navigation: nav.navigation,
+		navigationModePolicy,
 		isAuthenticated,
 		hasActiveJourney: journey.activeJourney !== null,
 		userLocation,
