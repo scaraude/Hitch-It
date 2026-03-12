@@ -1,5 +1,9 @@
 import type { JourneyId } from '../journey/types';
 import type { Spot } from '../spot/types';
+import {
+	DEFAULT_NAVIGATION_MODE,
+	type NavigationMode,
+} from './navigationModePolicy';
 
 /**
  * Root navigation stack parameter list
@@ -60,6 +64,7 @@ export interface DestinationMarker {
 }
 
 export interface NavigationState {
+	activeMode: NavigationMode;
 	isActive: boolean;
 	route: NavigationRoute | null;
 	spotsOnRoute: SpotOnRoute[];
@@ -69,6 +74,7 @@ export interface NavigationState {
 }
 
 export const INITIAL_NAVIGATION_STATE: NavigationState = {
+	activeMode: DEFAULT_NAVIGATION_MODE,
 	isActive: false,
 	route: null,
 	spotsOnRoute: [],

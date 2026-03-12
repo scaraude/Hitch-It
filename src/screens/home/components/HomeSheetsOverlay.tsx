@@ -11,6 +11,7 @@ import {
 	NavigationCompleteSheet,
 	EmbarquerSheet as NavigationSetupSheet,
 } from '../../../navigation/components';
+import { getNavigationModePolicy } from '../../../navigation/navigationModePolicy';
 import {
 	SpotDetailsSheet,
 	SpotForm,
@@ -19,6 +20,7 @@ import {
 import {
 	useHomeLocation,
 	useHomeMap,
+	useHomeNav,
 	useHomeSession,
 	useHomeSpot,
 } from '../context/HomeStateContext';
@@ -32,11 +34,15 @@ export const HomeSheetsOverlay: React.FC = () => {
 	const spot = useHomeSpot();
 	const session = useHomeSession();
 	const map = useHomeMap();
+	const nav = useHomeNav();
 	const { t } = useTranslation();
 
 	const insets = useSafeAreaInsets();
 
 	const { selectedSpot } = spot;
+	const activeNavigationModePolicy = getNavigationModePolicy(
+		nav.navigation.activeMode
+	);
 
 	const shouldShowSpotHitchButton =
 		!!selectedSpot &&
@@ -105,12 +111,13 @@ export const HomeSheetsOverlay: React.FC = () => {
 				/>
 			)}
 
-			{session.isDriverDirectionSheetOpen && (
-				<DriverDirectionSheet
-					onCompare={session.handleDriverDirectionCompare}
-					onClose={session.closeDriverDirectionSheet}
-				/>
-			)}
+			{activeNavigationModePolicy.driverDirectionComparisonEnabled &&
+				session.isDriverDirectionSheetOpen && (
+					<DriverDirectionSheet
+						onCompare={session.handleDriverDirectionCompare}
+						onClose={session.closeDriverDirectionSheet}
+					/>
+				)}
 
 			{session.showCompletionSheet && session.completionRoute && (
 				<NavigationCompleteSheet

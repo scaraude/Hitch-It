@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Alert } from 'react-native';
 import { toastUtils } from '../../../components/ui';
 import { useArrivalDetection } from '../../../navigation/hooks';
+import type { NavigationModePolicy } from '../../../navigation/navigationModePolicy';
 import type {
 	NavigationRoute,
 	NavigationState,
@@ -27,6 +28,7 @@ interface NavigationStartResult {
 
 interface UseHomeSessionStateArgs {
 	navigation: NavigationState;
+	navigationModePolicy: NavigationModePolicy;
 	isAuthenticated: boolean;
 	hasActiveJourney: boolean;
 	userLocation: Location | null;
@@ -84,6 +86,7 @@ export interface UseHomeSessionStateReturn {
 
 export const useHomeSessionState = ({
 	navigation,
+	navigationModePolicy,
 	isAuthenticated,
 	hasActiveJourney,
 	userLocation,
@@ -400,8 +403,12 @@ export const useHomeSessionState = ({
 		useState(false);
 
 	const openDriverDirectionSheet = useCallback(() => {
+		if (!navigationModePolicy.driverDirectionComparisonEnabled) {
+			return;
+		}
+
 		setIsDriverDirectionSheetOpen(true);
-	}, []);
+	}, [navigationModePolicy.driverDirectionComparisonEnabled]);
 
 	const closeDriverDirectionSheet = useCallback(() => {
 		setIsDriverDirectionSheetOpen(false);
@@ -409,6 +416,10 @@ export const useHomeSessionState = ({
 
 	const handleDriverDirectionCompare = useCallback(
 		async (driverDestination: NamedLocation) => {
+			if (!navigationModePolicy.driverDirectionComparisonEnabled) {
+				return;
+			}
+
 			const result = await compareWithDriverDirection(
 				driverDestination.location,
 				driverDestination.name
@@ -424,7 +435,10 @@ export const useHomeSessionState = ({
 			});
 			setIsDriverDirectionSheetOpen(false);
 		},
-		[compareWithDriverDirection]
+		[
+			compareWithDriverDirection,
+			navigationModePolicy.driverDirectionComparisonEnabled,
+		]
 	);
 
 	const handleDriverDirectionClear = useCallback(() => {

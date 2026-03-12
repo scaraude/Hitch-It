@@ -15,6 +15,7 @@ import { useTranslation } from '../../../i18n';
 import { useJourney } from '../../../journey/context';
 import { NavigationHeader } from '../../../navigation/components';
 import { useNavigationProgress } from '../../../navigation/hooks';
+import { getNavigationModePolicy } from '../../../navigation/navigationModePolicy';
 import type { RootStackParamList } from '../../../navigation/types';
 import {
 	useHomeLocation,
@@ -59,6 +60,9 @@ export const HomeFixedOverlay: React.FC = () => {
 
 	const isNavigationActive = nav.navigation.isActive;
 	const navigationRoute = nav.navigation.route;
+	const activeNavigationModePolicy = getNavigationModePolicy(
+		nav.navigation.activeMode
+	);
 
 	const controlsBottomOffset = isNavigationActive
 		? MAP_CONTROLS_OFFSET_WITH_NAVIGATION + insets.bottom
@@ -97,6 +101,8 @@ export const HomeFixedOverlay: React.FC = () => {
 	const driverDirectionLabel = session.hasDriverComparison
 		? t('navigation.clearComparison')
 		: t('navigation.compareDriverDirection');
+	const shouldShowDriverComparisonAction =
+		activeNavigationModePolicy.driverDirectionComparisonEnabled;
 
 	const handleTabPress = useCallback(
 		(tabId: HomeTabId) => {
@@ -133,23 +139,26 @@ export const HomeFixedOverlay: React.FC = () => {
 						safeAreaTopInset={insets.top}
 					/>
 
-					<Pressable
-						style={({ pressed }) => [
-							styles.compareDriverDirectionButton,
-							{
-								bottom: NAVIGATION_COMPARE_BUTTON_BOTTOM_OFFSET + insets.bottom,
-							},
-							pressed && styles.compareDriverDirectionButtonPressed,
-						]}
-						onPress={handleDriverDirectionPress}
-						accessibilityRole="button"
-						accessibilityLabel={driverDirectionLabel}
-						testID="compare-driver-direction-button"
-					>
-						<Text style={styles.compareDriverDirectionButtonText}>
-							{driverDirectionLabel}
-						</Text>
-					</Pressable>
+					{shouldShowDriverComparisonAction && (
+						<Pressable
+							style={({ pressed }) => [
+								styles.compareDriverDirectionButton,
+								{
+									bottom:
+										NAVIGATION_COMPARE_BUTTON_BOTTOM_OFFSET + insets.bottom,
+								},
+								pressed && styles.compareDriverDirectionButtonPressed,
+							]}
+							onPress={handleDriverDirectionPress}
+							accessibilityRole="button"
+							accessibilityLabel={driverDirectionLabel}
+							testID="compare-driver-direction-button"
+						>
+							<Text style={styles.compareDriverDirectionButtonText}>
+								{driverDirectionLabel}
+							</Text>
+						</Pressable>
+					)}
 
 					<Pressable
 						style={({ pressed }) => [
