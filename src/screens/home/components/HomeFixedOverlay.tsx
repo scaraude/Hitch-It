@@ -133,41 +133,43 @@ export const HomeFixedOverlay: React.FC = () => {
 						safeAreaTopInset={insets.top}
 					/>
 
-					<Pressable
-						style={({ pressed }) => [
-							styles.compareDriverDirectionButton,
-							{
-								bottom: NAVIGATION_COMPARE_BUTTON_BOTTOM_OFFSET + insets.bottom,
-							},
-							pressed && styles.compareDriverDirectionButtonPressed,
-						]}
-						onPress={handleDriverDirectionPress}
-						accessibilityRole="button"
-						accessibilityLabel={driverDirectionLabel}
-						testID="compare-driver-direction-button"
-					>
-						<Text style={styles.compareDriverDirectionButtonText}>
-							{driverDirectionLabel}
-						</Text>
-					</Pressable>
-
-					<Pressable
-						style={({ pressed }) => [
-							styles.markStopButton,
-							{
-								bottom: NAVIGATION_COMPARE_BUTTON_BOTTOM_OFFSET + insets.bottom,
-							},
-							pressed && styles.markStopButtonPressed,
-						]}
-						onPress={session.handleMarkStop}
-						accessibilityRole="button"
-						accessibilityLabel={t('navigation.markStop')}
-						testID="mark-stop-button"
-					>
-						<Text style={styles.markStopButtonText}>
-							{t('navigation.markStop')}
-						</Text>
-					</Pressable>
+					{isRecording ? (
+						<Pressable
+							style={({ pressed }) => [
+								styles.markStopButton,
+								{
+									bottom: NAVIGATION_COMPARE_BUTTON_BOTTOM_OFFSET + insets.bottom,
+								},
+								pressed && styles.markStopButtonPressed,
+							]}
+							onPress={session.handleMarkStop}
+							accessibilityRole="button"
+							accessibilityLabel={t('navigation.markStop')}
+							testID="mark-stop-button"
+						>
+							<Text style={styles.markStopButtonText}>
+								{t('navigation.markStop')}
+							</Text>
+						</Pressable>
+					) : (
+						<Pressable
+							style={({ pressed }) => [
+								styles.compareDriverDirectionButton,
+								{
+									bottom: NAVIGATION_COMPARE_BUTTON_BOTTOM_OFFSET + insets.bottom,
+								},
+								pressed && styles.compareDriverDirectionButtonPressed,
+							]}
+							onPress={handleDriverDirectionPress}
+							accessibilityRole="button"
+							accessibilityLabel={driverDirectionLabel}
+							testID="compare-driver-direction-button"
+						>
+							<Text style={styles.compareDriverDirectionButtonText}>
+								{driverDirectionLabel}
+							</Text>
+						</Pressable>
+					)}
 
 					<NavigationHeader
 						destinationName={navigationRoute.destinationName}
