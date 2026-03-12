@@ -7,7 +7,7 @@ import { COLORS } from '../../constants';
 import { useTranslation } from '../../i18n/useTranslation';
 import type { MapBounds, MapRegion } from '../../types';
 import { logger } from '../../utils';
-import { createSpot, getSpotsInBounds } from '../services';
+import { createSpot, deleteSpot, getSpotsInBounds } from '../services';
 import type { SpotFormData } from '../spotFormTypes';
 import type { Location, Spot, SpotMarkerData } from '../types';
 import { generateSpotId } from '../utils';
@@ -30,11 +30,16 @@ export interface UseSpotsReturn {
 	selectSpot: (spotId: string) => void;
 	selectSpotEntity: (spot: Spot) => void;
 	deselectSpot: () => void;
+	canDeleteSpot: (spot: Spot) => boolean;
+	deleteSpotById: (spotId: string) => Promise<void>;
 }
 
 const MIN_ZOOM_LEVEL = 8;
 const DEFAULT_SPOT_MARKER_COLOR = COLORS.secondary;
 const SELECTED_SPOT_MARKER_COLOR = COLORS.error;
+
+const normalizeUsername = (username: string): string =>
+	username.trim().toLowerCase();
 
 export const useSpots = (
 	bounds: MapBounds | null,
@@ -268,6 +273,51 @@ export const useSpots = (
 		setSelectedSpot(spot);
 	};
 
+	const canDeleteSpot = (spot: Spot): boolean => {
+		if (!isAuthenticated || !user) {
+			return false;
+		}
+
+		return (
+			normalizeUsername(user.username) === normalizeUsername(spot.createdBy)
+		);
+	};
+
+	const deleteSpotById = async (spotId: string): Promise<void> => {
+		const spotToDelete = fullSpots.find(spot => spot.id === spotId);
+		if (!spotToDelete) {
+			logger.spot.warn('Spot not found for deletion', { spotId });
+			return;
+		}
+
+		if (!canDeleteSpot(spotToDelete)) {
+			logger.spot.warn('User attempted to delete spot without ownership', {
+				spotId,
+				spotOwner: spotToDelete.createdBy,
+				currentUser: user?.username ?? null,
+			});
+			toastUtils.error(
+				t('spots.deleteForbidden'),
+				t('spots.deleteForbiddenMessage')
+			);
+			return;
+		}
+
+		try {
+			await deleteSpot(spotId);
+			setFullSpots(previous => previous.filter(spot => spot.id !== spotId));
+			setSelectedSpot(previous => (previous?.id === spotId ? null : previous));
+			toastUtils.success(
+				t('spots.deleteSuccess'),
+				t('spots.deleteSuccessMessage')
+			);
+		} catch (error) {
+			logger.spot.error('Failed to delete owned spot', error, { spotId });
+			toastUtils.error(t('spots.deleteError'), t('spots.deleteErrorMessage'));
+			throw error;
+		}
+	};
+
 	const deselectSpot = () => {
 		logger.spot.info('Spot deselected');
 		setSelectedSpot(null);
@@ -291,5 +341,7 @@ export const useSpots = (
 		selectSpot,
 		selectSpotEntity,
 		deselectSpot,
+		canDeleteSpot,
+		deleteSpotById,
 	};
 };

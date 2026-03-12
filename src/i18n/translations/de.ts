@@ -182,6 +182,16 @@ export default {
 		add: 'Spot hinzufügen',
 		edit: 'Spot bearbeiten',
 		delete: 'Spot löschen',
+		deleteConfirmTitle: 'Diesen Spot löschen?',
+		deleteConfirmMessage: 'Diese Aktion kann nicht rückgängig gemacht werden.',
+		deleteSuccess: 'Spot gelöscht',
+		deleteSuccessMessage: 'Dein Spot wurde erfolgreich gelöscht.',
+		deleteError: 'Löschen fehlgeschlagen',
+		deleteErrorMessage:
+			'Dieser Spot konnte nicht gelöscht werden. Bitte versuche es erneut.',
+		deleteForbidden: 'Aktion nicht erlaubt',
+		deleteForbiddenMessage:
+			'Du kannst nur Spots löschen, die du erstellt hast.',
 		details: 'Spot-Details',
 		name: 'Name',
 		description: 'Beschreibung',
