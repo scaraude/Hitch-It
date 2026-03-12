@@ -2,7 +2,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type React from 'react';
 import { useCallback } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Alert, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../../auth';
 import {
@@ -74,8 +74,29 @@ export const HomeFixedOverlay: React.FC = () => {
 			search.shouldShowSearchNavigationSetup);
 
 	const handleStopNavigation = useCallback(() => {
-		void search.handleStopNavigationAndOpenSearch();
-	}, [search.handleStopNavigationAndOpenSearch]);
+		Alert.alert(t('navigation.complete'), t('navigation.saveJourneyQuestion'), [
+			{
+				text: t('common.cancel'),
+				style: 'cancel',
+			},
+			{
+				text: t('common.noThanks'),
+				onPress: () => {
+					void session.handleDiscardJourney();
+				},
+			},
+			{
+				text: t('common.yesSave'),
+				onPress: () => {
+					void search.handleStopNavigationAndOpenSearch();
+				},
+			},
+		]);
+	}, [
+		search.handleStopNavigationAndOpenSearch,
+		session.handleDiscardJourney,
+		t,
+	]);
 
 	const handleLongPressNavigationSetup = useCallback(() => {
 		session.handleLongPressNavigationSetup(map.longPressMarker);
