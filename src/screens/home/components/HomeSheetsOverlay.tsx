@@ -92,6 +92,8 @@ export const HomeSheetsOverlay: React.FC = () => {
 					key={selectedSpot.id as string}
 					spot={selectedSpot}
 					onClose={spot.deselectSpot}
+					onDeleteSpot={spot.deleteSpotById}
+					canDeleteSpot={spot.canDeleteSpot(selectedSpot)}
 				/>
 			)}
 
