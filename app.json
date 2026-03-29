@@ -2,6 +2,7 @@
   "expo": {
     "name": "Hitch It",
     "slug": "hitch-it",
+    "scheme": "hitchit",
     "version": "1.0.3",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -11,19 +12,11 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.hitchit.app",
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "This app needs access to location to show your position on the map and help you find nearby hitchhiking spots.",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "This app needs access to location to show your position on the map and help you find nearby hitchhiking spots.",
-        "UIBackgroundModes": [
-          "location",
-          "location"
-        ],
         "ITSAppUsesNonExemptEncryption": false
       }
     },

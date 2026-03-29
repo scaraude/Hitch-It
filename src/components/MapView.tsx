@@ -124,8 +124,8 @@ const MapViewComponent = forwardRef<MapViewRef, MapViewComponentProps>(
 					const pinColor = marker.color || MAP_CONFIG.defaultMarkerColor;
 					return (
 						<Marker
-							key={`${marker.id}-${pinColor}`}
-							identifier={`${marker.id}-${pinColor}`}
+							key={marker.id}
+							identifier={marker.id}
 							coordinate={marker.coordinates}
 							pinColor={pinColor}
 							tracksViewChanges={false}

@@ -94,3 +94,7 @@ spots.json
 spots_clustered.json
 
 scripts/__pycache__
+
+# plateforms build artifacts
+ios/
+android/
