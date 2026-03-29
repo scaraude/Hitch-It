@@ -22,7 +22,6 @@ import {
 	type JourneyId,
 	type JourneyPoint,
 	type JourneyPointId,
-	JourneyPointType,
 	type JourneyRoutePoint,
 	JourneyStatus,
 	type LocationUpdate,
@@ -77,9 +76,7 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 	}, []);
 
 	// Calculate stops count from journey
-	const stopsCount =
-		activeJourney?.points.filter(p => p.type === JourneyPointType.Stop)
-			.length ?? 0;
+	const stopsCount = activeJourney?.points.length ?? 0;
 
 	const updateJourneyStatus = useCallback(
 		(
@@ -259,11 +256,8 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 			await saveJourney(completedJourney);
 			hasPersistedJourneyRef.current = true;
 
-			const stopPoints = completedJourney.points.filter(
-				point => point.type === JourneyPointType.Stop
-			);
-			if (stopPoints.length > 0) {
-				await saveJourneyPoints(stopPoints);
+			if (completedJourney.points.length > 0) {
+				await saveJourneyPoints(completedJourney.points);
 			}
 		} catch (error) {
 			logger.journey.error('Failed to persist completed journey', error, {
@@ -356,7 +350,6 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 		const stopPoint: JourneyPoint = {
 			id: Crypto.randomUUID() as JourneyPointId,
 			journeyId: journey.id,
-			type: JourneyPointType.Stop,
 			latitude: location.latitude,
 			longitude: location.longitude,
 			timestamp: new Date(),

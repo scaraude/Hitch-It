@@ -23,26 +23,14 @@ export enum JourneyStatus {
 }
 
 /**
- * Point type - what kind of recorded point
- */
-export enum JourneyPointType {
-	Location = 'Location', // Regular GPS point (auto-recorded)
-	Stop = 'Stop', // User manually marked a stop
-}
-
-/**
- * A recorded point in the journey
- * Can be a regular location update or a user-marked stop
+ * A stop recorded in the journey timeline.
  */
 export interface JourneyPoint {
 	id: JourneyPointId;
 	journeyId: JourneyId;
-	type: JourneyPointType;
 	latitude: number;
 	longitude: number;
 	timestamp: Date;
-
-	// Only for Stop type - enrichment (added post-trip in F12)
 	spotId?: SpotId;
 	waitTimeMinutes?: number;
 	notes?: string;
