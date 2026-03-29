@@ -4,6 +4,8 @@ import type { Direction, Spot } from '../types';
 export interface SpotDetailsSheetProps {
 	spot: Spot;
 	onClose: () => void;
+	onDeleteSpot: (spotId: string) => Promise<void>;
+	canDeleteSpot: boolean;
 }
 
 export interface SpotDetailsHeaderSectionProps {
@@ -11,6 +13,8 @@ export interface SpotDetailsHeaderSectionProps {
 	streetViewIcon: number;
 	onOpenStreetView: () => void;
 	onOpenItinerary: () => void;
+	canDeleteSpot: boolean;
+	onDeleteSpot: () => void;
 }
 
 export interface SpotDetailsSummarySectionProps {

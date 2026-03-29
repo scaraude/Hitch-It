@@ -5,17 +5,26 @@ import { CompassIcon } from '../../components/ui';
 import { COLORS, SIZES } from '../../constants';
 import { A11Y_LABELS } from '../../constants/accessibility';
 import { useTranslation } from '../../i18n';
-import { DirectionDisplay } from './ui';
 import { EMPTY_MAIN_ROAD } from './spotDetailsSheetHelpers';
 import { spotDetailsSheetStyles as styles } from './spotDetailsSheetStyles';
 import type {
 	SpotDetailsHeaderSectionProps,
 	SpotDetailsSummarySectionProps,
 } from './spotDetailsTypes';
+import { DirectionDisplay } from './ui';
 
 export const SpotDetailsHeaderSection: React.FC<
 	SpotDetailsHeaderSectionProps
-> = ({ spotTitle, streetViewIcon, onOpenStreetView, onOpenItinerary }) => {
+> = ({
+	spotTitle,
+	streetViewIcon,
+	onOpenStreetView,
+	onOpenItinerary,
+	canDeleteSpot,
+	onDeleteSpot,
+}) => {
+	const { t } = useTranslation();
+
 	return (
 		<View style={styles.titleRow}>
 			<Text style={styles.title}>{spotTitle}</Text>
@@ -46,6 +55,21 @@ export const SpotDetailsHeaderSection: React.FC<
 						color={COLORS.background}
 					/>
 				</Pressable>
+				{canDeleteSpot && (
+					<Pressable
+						style={[styles.topActionButton, styles.dangerTopActionButton]}
+						onPress={onDeleteSpot}
+						accessibilityRole="button"
+						accessibilityLabel={t('spots.delete')}
+						testID="spot-details-delete"
+					>
+						<Ionicons
+							name="trash-outline"
+							size={SIZES.iconMd}
+							color={COLORS.background}
+						/>
+					</Pressable>
+				)}
 			</View>
 		</View>
 	);

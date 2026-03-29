@@ -76,6 +76,9 @@ export const spotDetailsSheetStyles = StyleSheet.create({
 	primaryTopActionButton: {
 		backgroundColor: COLORS.secondary,
 	},
+	dangerTopActionButton: {
+		backgroundColor: COLORS.error,
+	},
 	streetViewIcon: {
 		width: SIZES.iconMd,
 		height: SIZES.iconMd,

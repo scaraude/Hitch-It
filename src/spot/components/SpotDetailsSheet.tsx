@@ -1,11 +1,12 @@
 import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import type React from 'react';
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { Linking } from 'react-native';
+import { Alert, Linking } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSpotComments } from '../../comment/hooks';
 import { toastUtils } from '../../components/ui';
 import { SPACING } from '../../constants';
+import { useTranslation } from '../../i18n';
 import { DIRECTION_HEADING_DEGREES } from '../constants';
 import { useSpotDetailsCommentComposer } from '../hooks';
 import { SpotDetailsCommentsSection } from './SpotDetailsCommentsSection';
@@ -53,8 +54,11 @@ const openExternalUrl = async (
 export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 	spot,
 	onClose,
+	onDeleteSpot,
+	canDeleteSpot,
 }) => {
 	const insets = useSafeAreaInsets();
+	const { t } = useTranslation();
 	const bottomSheetRef = useRef<BottomSheet>(null);
 	const [isDrawerExpanded, setIsDrawerExpanded] = useState(false);
 	const { comments, isLoading, isSubmitting, submitComment } = useSpotComments(
@@ -93,6 +97,29 @@ export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 			"Impossible d'ouvrir Google Itinerary pour ce spot."
 		);
 	}, [spot]);
+
+	const handleDeleteSpot = useCallback(() => {
+		Alert.alert(
+			t('spots.deleteConfirmTitle'),
+			t('spots.deleteConfirmMessage'),
+			[
+				{
+					text: t('common.cancel'),
+					style: 'cancel',
+				},
+				{
+					text: t('common.delete'),
+					style: 'destructive',
+					onPress: () => {
+						void onDeleteSpot(spot.id as string).then(() => {
+							onClose();
+						});
+					},
+				},
+			]
+		);
+	}, [onClose, onDeleteSpot, spot.id, t]);
+
 	const commentComposer: SpotDetailsCommentComposerModel = {
 		...commentComposerState,
 		isSubmitting,
@@ -129,6 +156,8 @@ export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 					streetViewIcon={STREET_VIEW_ICON}
 					onOpenStreetView={handleOpenStreetView}
 					onOpenItinerary={handleOpenItinerary}
+					canDeleteSpot={canDeleteSpot}
+					onDeleteSpot={handleDeleteSpot}
 				/>
 				<SpotDetailsSummarySection
 					directionHeading={directionHeading}
