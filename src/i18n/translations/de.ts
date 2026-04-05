@@ -96,6 +96,8 @@ export default {
 		loadError: 'Laden fehlgeschlagen',
 		loadErrorMessage:
 			'Kommentare für diesen Spot konnten nicht geladen werden.',
+		appreciationRequired: 'Wertschätzung erforderlich',
+		appreciationRequiredMessage: 'Wähle eine Wertschätzung für deinen Kommentar aus.',
 		commentRequired: 'Kommentar erforderlich',
 		commentRequiredMessage:
 			'Fügen Sie einen Kommentar hinzu, bevor Sie absenden.',

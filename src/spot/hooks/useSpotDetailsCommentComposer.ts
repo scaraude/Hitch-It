@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import type { CommentAppreciation } from '../../comment/types';
 import { toastUtils } from '../../components/ui';
+import { useTranslation } from '../../i18n/useTranslation';
 import type { SpotDetailsCommentComposerState } from '../components/spotDetailsTypes';
 
 interface SubmitCommentInput {
@@ -15,6 +16,7 @@ interface UseSpotDetailsCommentComposerParams {
 export const useSpotDetailsCommentComposer = ({
 	submitComment,
 }: UseSpotDetailsCommentComposerParams): SpotDetailsCommentComposerState => {
+	const { t } = useTranslation();
 	const [isWritingComment, setIsWritingComment] = useState(false);
 	const [draftAppreciation, setDraftAppreciation] = useState<
 		CommentAppreciation | undefined
@@ -34,8 +36,8 @@ export const useSpotDetailsCommentComposer = ({
 	const handleSubmitComment = useCallback(async () => {
 		if (draftAppreciation === undefined) {
 			toastUtils.error(
-				'Appréciation requise',
-				'Sélectionne une appréciation pour ton commentaire.'
+				t('comment.appreciationRequired'),
+				t('comment.appreciationRequiredMessage')
 			);
 			return;
 		}

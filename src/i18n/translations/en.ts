@@ -93,6 +93,8 @@ export default {
 		appreciationBad: 'Bad',
 		loadError: 'Loading failed',
 		loadErrorMessage: 'Unable to load comments for this spot.',
+		appreciationRequired: 'Appreciation required',
+		appreciationRequiredMessage: 'Select an appreciation for your comment.',
 		commentRequired: 'Comment required',
 		commentRequiredMessage: 'Add a comment before submitting.',
 		commentAdded: 'Comment added',
