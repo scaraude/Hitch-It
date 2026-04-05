@@ -91,6 +91,9 @@ export default {
 		commentLabel: 'Commentaire *',
 		commentPlaceholder: 'Décris ton expérience sur ce spot...',
 		noCommentsYet: 'Aucun commentaire pour le moment',
+		authRequired: 'Connexion requise',
+		authRequiredMessage:
+			'Seuls les utilisateurs connectés peuvent ajouter un commentaire.',
 		appreciationExcellent: 'Excellent',
 		appreciationGood: 'Bon',
 		appreciationBad: 'Mauvais',

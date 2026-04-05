@@ -1,3 +1,5 @@
+import type { UserId } from '../auth/types';
+
 // Branded UUID type
 export type SpotId = string & { readonly brand: unique symbol };
 
@@ -33,5 +35,6 @@ export interface Spot {
 	coordinates: Location;
 	createdAt: Date;
 	updatedAt: Date;
-	createdBy: string;
+	createdByUserId: UserId;
+	createdByUsername: string;
 }

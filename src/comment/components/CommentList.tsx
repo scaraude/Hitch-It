@@ -28,7 +28,7 @@ export const CommentList: React.FC<CommentListProps> = ({ comments }) => {
 					<View key={comment.id} style={styles.card}>
 						<View style={styles.cardHeader}>
 							<View style={styles.authorContainer}>
-								<Text style={styles.author}>{comment.createdBy}</Text>
+								<Text style={styles.author}>{comment.createdByUsername}</Text>
 								<Text style={styles.metadata}>
 									{formatDate(comment.createdAt)}
 								</Text>

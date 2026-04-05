@@ -1,3 +1,4 @@
+import type { UserId } from '@/journey/types';
 import { supabase } from '@/lib/supabaseClient';
 import type { SpotId } from '@/spot/types';
 import { logger } from '@/utils';
@@ -11,6 +12,7 @@ type CommentRow = {
 	comment: string;
 	wait_time_minutes?: number | null;
 	created_by: string;
+	created_by_user_id: string;
 	created_at: string;
 	updated_at: string;
 };
@@ -65,7 +67,8 @@ const mapRowToComment = (row: CommentRow): Comment => ({
 	waitingTimeMinutes: parseWaitingTimeMinutes(row.wait_time_minutes, row.id),
 	createdAt: new Date(row.created_at),
 	updatedAt: new Date(row.updated_at),
-	createdBy: row.created_by,
+	createdByUserId: row.created_by_user_id as UserId,
+	createdByUsername: row.created_by,
 });
 
 export const getCommentsBySpotId = async (
@@ -115,7 +118,8 @@ export const createComment = async (comment: Comment): Promise<void> => {
 			spot_id: comment.spotId,
 			appreciation: comment.appreciation,
 			comment: comment.comment,
-			created_by: comment.createdBy,
+			created_by: comment.createdByUsername,
+			created_by_user_id: comment.createdByUserId,
 			created_at: comment.createdAt.toISOString(),
 			updated_at: comment.updatedAt.toISOString(),
 		});

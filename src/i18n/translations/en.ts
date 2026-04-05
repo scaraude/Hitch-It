@@ -88,6 +88,8 @@ export default {
 		commentLabel: 'Comment *',
 		commentPlaceholder: 'Describe your experience at this spot...',
 		noCommentsYet: 'No comments yet',
+		authRequired: 'Authentication required',
+		authRequiredMessage: 'Only signed-in users can add a comment.',
 		appreciationExcellent: 'Excellent',
 		appreciationGood: 'Good',
 		appreciationBad: 'Bad',

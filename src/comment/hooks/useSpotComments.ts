@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useAuth } from '../../auth';
 import { toastUtils } from '../../components/ui';
 import { useTranslation } from '../../i18n/useTranslation';
 import type { SpotId } from '../../spot/types';
@@ -10,7 +11,6 @@ import { generateCommentId } from '../utils';
 interface CreateCommentInput {
 	appreciation: CommentAppreciation;
 	comment: string;
-	createdBy?: string;
 }
 
 interface UseSpotCommentsReturn {
@@ -21,9 +21,8 @@ interface UseSpotCommentsReturn {
 	submitComment: (input: CreateCommentInput) => Promise<boolean>;
 }
 
-const DEFAULT_CREATED_BY = 'CurrentUser';
-
 export const useSpotComments = (spotId: SpotId): UseSpotCommentsReturn => {
+	const { user, isAuthenticated } = useAuth();
 	const { t } = useTranslation();
 	const [comments, setComments] = useState<Comment[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
@@ -45,12 +44,29 @@ export const useSpotComments = (spotId: SpotId): UseSpotCommentsReturn => {
 	}, [spotId, t]);
 
 	const submitComment = useCallback(
-		async ({ appreciation, comment, createdBy }: CreateCommentInput) => {
+		async ({ appreciation, comment }: CreateCommentInput) => {
 			const trimmedComment = comment.trim();
 			if (!trimmedComment) {
 				toastUtils.error(
 					t('comment.commentRequired'),
 					t('comment.commentRequiredMessage')
+				);
+				return false;
+			}
+
+			if (!isAuthenticated || !user) {
+				toastUtils.error(
+					t('comment.authRequired'),
+					t('comment.authRequiredMessage')
+				);
+				return false;
+			}
+
+			const authorUsername = user.username.trim();
+			if (!authorUsername) {
+				toastUtils.error(
+					t('comment.addError'),
+					t('spots.usernameUnavailableMessage')
 				);
 				return false;
 			}
@@ -63,7 +79,8 @@ export const useSpotComments = (spotId: SpotId): UseSpotCommentsReturn => {
 				comment: trimmedComment,
 				createdAt: now,
 				updatedAt: now,
-				createdBy: createdBy ?? DEFAULT_CREATED_BY,
+				createdByUserId: user.id,
+				createdByUsername: authorUsername,
 			};
 
 			setIsSubmitting(true);
@@ -82,7 +99,7 @@ export const useSpotComments = (spotId: SpotId): UseSpotCommentsReturn => {
 				setIsSubmitting(false);
 			}
 		},
-		[spotId, t]
+		[isAuthenticated, spotId, t, user]
 	);
 
 	useEffect(() => {

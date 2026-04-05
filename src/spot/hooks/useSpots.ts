@@ -38,9 +38,6 @@ const MIN_ZOOM_LEVEL = 8;
 const DEFAULT_SPOT_MARKER_COLOR = COLORS.secondary;
 const SELECTED_SPOT_MARKER_COLOR = COLORS.error;
 
-const normalizeUsername = (username: string): string =>
-	username.trim().toLowerCase();
-
 export const useSpots = (
 	bounds: MapBounds | null,
 	zoomLevel: number
@@ -195,7 +192,8 @@ export const useSpots = (
 			destinations: formData.destinations,
 			createdAt: now,
 			updatedAt: now,
-			createdBy: authorUsername,
+			createdByUserId: user.id,
+			createdByUsername: authorUsername,
 		};
 		const newComment = {
 			id: generateCommentId(),
@@ -204,7 +202,8 @@ export const useSpots = (
 			comment: formData.comment.trim(),
 			createdAt: now,
 			updatedAt: now,
-			createdBy: authorUsername,
+			createdByUserId: user.id,
+			createdByUsername: authorUsername,
 		};
 
 		logger.spot.info('Submitting spot form', {
@@ -278,9 +277,7 @@ export const useSpots = (
 			return false;
 		}
 
-		return (
-			normalizeUsername(user.username) === normalizeUsername(spot.createdBy)
-		);
+		return user.id === spot.createdByUserId;
 	};
 
 	const deleteSpotById = async (spotId: string): Promise<void> => {
@@ -293,8 +290,8 @@ export const useSpots = (
 		if (!canDeleteSpot(spotToDelete)) {
 			logger.spot.warn('User attempted to delete spot without ownership', {
 				spotId,
-				spotOwner: spotToDelete.createdBy,
-				currentUser: user?.username ?? null,
+				spotOwnerId: spotToDelete.createdByUserId,
+				currentUserId: user?.id ?? null,
 			});
 			toastUtils.error(
 				t('spots.deleteForbidden'),

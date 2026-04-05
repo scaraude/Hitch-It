@@ -1,3 +1,4 @@
+import type { UserId } from '../auth/types';
 import type { SpotId } from '../spot/types';
 
 export type CommentId = string & { readonly brand: unique symbol };
@@ -16,5 +17,6 @@ export interface Comment {
 	waitingTimeMinutes?: number;
 	createdAt: Date;
 	updatedAt: Date;
-	createdBy: string;
+	createdByUserId: UserId;
+	createdByUsername: string;
 }
