@@ -187,7 +187,6 @@ export const useSpots = (
 			createdAt: now,
 			updatedAt: now,
 			createdByUserId: user.id,
-			authorUsername: user.username.trim() || null,
 		};
 
 		logger.spot.info('Submitting spot form', {
