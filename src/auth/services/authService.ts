@@ -1,13 +1,20 @@
 import { supabase } from '../../lib/supabaseClient';
 import { createLogger, LogContext } from '../../utils/logger';
+import { AUTH_REDIRECT_URLS } from '../constants';
 import type {
 	AuthActionResult,
+	AuthDeepLinkParseResult,
+	AuthDeepLinkVerificationResult,
 	LoginCredentials,
 	SignUpCredentials,
 	User,
 	UserId,
 } from '../types';
 import { hasValidUsernameFormat } from '../utils/usernameValidation';
+import {
+	parseAuthDeepLinkUrl,
+	verifyAuthDeepLink,
+} from './authDeepLinkService';
 
 const logger = createLogger(LogContext.App);
 
@@ -64,6 +71,7 @@ export async function signUp(
 			email,
 			password,
 			options: {
+				emailRedirectTo: AUTH_REDIRECT_URLS.confirmEmail,
 				data: {
 					username,
 				},
@@ -170,6 +178,9 @@ export async function resendConfirmationEmail(
 		const { error } = await supabase.auth.resend({
 			type: 'signup',
 			email,
+			options: {
+				emailRedirectTo: AUTH_REDIRECT_URLS.confirmEmail,
+			},
 		});
 
 		if (error) {
@@ -193,7 +204,7 @@ export async function sendPasswordResetEmail(
 ): Promise<AuthActionResult> {
 	try {
 		const { error } = await supabase.auth.resetPasswordForEmail(email, {
-			redirectTo: 'hitchit://reset-password',
+			redirectTo: AUTH_REDIRECT_URLS.resetPassword,
 		});
 
 		if (error) {
@@ -207,6 +218,16 @@ export async function sendPasswordResetEmail(
 		logger.error('Password reset email error', error);
 		return { error: 'An unexpected error occurred' };
 	}
+}
+
+export async function handleAuthDeepLink(
+	url: string
+): Promise<AuthDeepLinkVerificationResult | null> {
+	return verifyAuthDeepLink(url);
+}
+
+export function parseAuthDeepLink(url: string): AuthDeepLinkParseResult | null {
+	return parseAuthDeepLinkUrl(url);
 }
 
 /**
