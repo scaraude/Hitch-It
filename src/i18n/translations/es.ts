@@ -90,6 +90,9 @@ export default {
 		commentLabel: 'Comentario *',
 		commentPlaceholder: 'Describe tu experiencia en este spot...',
 		noCommentsYet: 'Aún no hay comentarios',
+		authRequired: 'Inicio de sesión requerido',
+		authRequiredMessage:
+			'Solo los usuarios conectados pueden agregar un comentario.',
 		appreciationExcellent: 'Excelente',
 		appreciationGood: 'Bueno',
 		appreciationBad: 'Malo',
@@ -102,6 +105,7 @@ export default {
 		commentAdded: 'Comentario agregado',
 		addError: 'No se pudo agregar',
 		addErrorMessage: 'El comentario no pudo ser guardado.',
+		unknownAuthor: 'Usuario desconocido',
 	},
 
 	// Profile
@@ -234,8 +238,6 @@ export default {
 			'El spot se guardó, pero no se pudo agregar el comentario.',
 		createError: 'Creación fallida',
 		createErrorMessage: 'No se pudo guardar el spot.',
-		usernameUnavailableMessage:
-			'Tu nombre de usuario no está disponible. Vuelve a iniciar sesión e inténtalo de nuevo.',
 	},
 
 	// Map

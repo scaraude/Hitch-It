@@ -88,6 +88,8 @@ export default {
 		commentLabel: 'Comment *',
 		commentPlaceholder: 'Describe your experience at this spot...',
 		noCommentsYet: 'No comments yet',
+		authRequired: 'Authentication required',
+		authRequiredMessage: 'Only signed-in users can add a comment.',
 		appreciationExcellent: 'Excellent',
 		appreciationGood: 'Good',
 		appreciationBad: 'Bad',
@@ -100,6 +102,7 @@ export default {
 		commentAdded: 'Comment added',
 		addError: 'Unable to add',
 		addErrorMessage: 'The comment could not be saved.',
+		unknownAuthor: 'Unknown user',
 	},
 
 	// Profile
@@ -232,8 +235,6 @@ export default {
 			'The spot was saved, but the comment could not be added.',
 		createError: 'Creation failed',
 		createErrorMessage: 'The spot could not be saved.',
-		usernameUnavailableMessage:
-			'Your username is unavailable. Please sign in again and try again.',
 	},
 
 	// Map

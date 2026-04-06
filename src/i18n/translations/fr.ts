@@ -91,6 +91,9 @@ export default {
 		commentLabel: 'Commentaire *',
 		commentPlaceholder: 'Décris ton expérience sur ce spot...',
 		noCommentsYet: 'Aucun commentaire pour le moment',
+		authRequired: 'Connexion requise',
+		authRequiredMessage:
+			'Seuls les utilisateurs connectés peuvent ajouter un commentaire.',
 		appreciationExcellent: 'Excellent',
 		appreciationGood: 'Bon',
 		appreciationBad: 'Mauvais',
@@ -103,6 +106,7 @@ export default {
 		commentAdded: 'Commentaire ajouté',
 		addError: 'Ajout impossible',
 		addErrorMessage: "Le commentaire n'a pas pu être enregistré.",
+		unknownAuthor: 'Utilisateur inconnu',
 	},
 
 	// Profile
@@ -237,8 +241,6 @@ export default {
 			"Le spot est enregistré, mais le commentaire n'a pas pu être ajouté.",
 		createError: 'Création impossible',
 		createErrorMessage: "Le spot n'a pas pu être enregistré.",
-		usernameUnavailableMessage:
-			"Votre nom d'utilisateur est indisponible. Reconnectez-vous et réessayez.",
 	},
 
 	// Map
