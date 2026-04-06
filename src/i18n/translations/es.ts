@@ -103,6 +103,7 @@ export default {
 		commentAdded: 'Comentario agregado',
 		addError: 'No se pudo agregar',
 		addErrorMessage: 'El comentario no pudo ser guardado.',
+		unknownAuthor: 'Usuario desconocido',
 	},
 
 	// Profile
@@ -235,8 +236,6 @@ export default {
 			'El spot se guardó, pero no se pudo agregar el comentario.',
 		createError: 'Creación fallida',
 		createErrorMessage: 'No se pudo guardar el spot.',
-		usernameUnavailableMessage:
-			'Tu nombre de usuario no está disponible. Vuelve a iniciar sesión e inténtalo de nuevo.',
 	},
 
 	// Map

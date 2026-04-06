@@ -62,15 +62,6 @@ export const useSpotComments = (spotId: SpotId): UseSpotCommentsReturn => {
 				return false;
 			}
 
-			const authorUsername = user.username.trim();
-			if (!authorUsername) {
-				toastUtils.error(
-					t('comment.addError'),
-					t('spots.usernameUnavailableMessage')
-				);
-				return false;
-			}
-
 			const now = new Date();
 			const newComment: Comment = {
 				id: generateCommentId(),
@@ -80,7 +71,7 @@ export const useSpotComments = (spotId: SpotId): UseSpotCommentsReturn => {
 				createdAt: now,
 				updatedAt: now,
 				createdByUserId: user.id,
-				createdByUsername: authorUsername,
+				authorUsername: user.username.trim() || null,
 			};
 
 			setIsSubmitting(true);

@@ -105,6 +105,7 @@ export default {
 		commentAdded: 'Kommentar hinzugefügt',
 		addError: 'Hinzufügen nicht möglich',
 		addErrorMessage: 'Der Kommentar konnte nicht gespeichert werden.',
+		unknownAuthor: 'Unbekannter Nutzer',
 	},
 
 	// Profile
@@ -239,8 +240,6 @@ export default {
 			'Der Spot wurde gespeichert, aber der Kommentar konnte nicht hinzugefügt werden.',
 		createError: 'Erstellen fehlgeschlagen',
 		createErrorMessage: 'Der Spot konnte nicht gespeichert werden.',
-		usernameUnavailableMessage:
-			'Dein Benutzername ist nicht verfügbar. Bitte melde dich erneut an und versuche es noch einmal.',
 	},
 
 	// Map

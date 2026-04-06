@@ -168,21 +168,6 @@ export const useSpots = (
 			return;
 		}
 
-		const authorUsername = user.username.trim();
-		if (!authorUsername) {
-			logger.spot.error(
-				'Authenticated user has no username, blocking spot creation',
-				{
-					userId: user.id,
-				}
-			);
-			toastUtils.error(
-				t('spots.createError'),
-				t('spots.usernameUnavailableMessage')
-			);
-			return;
-		}
-
 		const now = new Date();
 		const newSpot: Spot = {
 			id: generateSpotId(),
@@ -193,7 +178,6 @@ export const useSpots = (
 			createdAt: now,
 			updatedAt: now,
 			createdByUserId: user.id,
-			createdByUsername: authorUsername,
 		};
 		const newComment = {
 			id: generateCommentId(),
@@ -203,7 +187,7 @@ export const useSpots = (
 			createdAt: now,
 			updatedAt: now,
 			createdByUserId: user.id,
-			createdByUsername: authorUsername,
+			authorUsername: user.username.trim() || null,
 		};
 
 		logger.spot.info('Submitting spot form', {

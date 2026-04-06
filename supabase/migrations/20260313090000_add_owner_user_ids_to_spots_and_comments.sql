@@ -1,58 +1,13 @@
+DELETE FROM public.comments;
+DELETE FROM public.spots;
+
 ALTER TABLE public.spots
+DROP COLUMN IF EXISTS created_by,
 ADD COLUMN IF NOT EXISTS created_by_user_id UUID;
 
 ALTER TABLE public.comments
+DROP COLUMN IF EXISTS created_by,
 ADD COLUMN IF NOT EXISTS created_by_user_id UUID;
-
-UPDATE public.spots AS spots
-SET created_by_user_id = CASE
-  WHEN spots.created_by ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
-    THEN spots.created_by::UUID
-  ELSE profiles.id
-END
-FROM public.profiles AS profiles
-WHERE spots.created_by_user_id IS NULL
-  AND lower(trim(spots.created_by)) = lower(trim(profiles.username));
-
-UPDATE public.spots AS spots
-SET created_by_user_id = spots.created_by::UUID
-WHERE spots.created_by_user_id IS NULL
-  AND spots.created_by ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$';
-
-UPDATE public.comments AS comments
-SET created_by_user_id = CASE
-  WHEN comments.created_by ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
-    THEN comments.created_by::UUID
-  ELSE profiles.id
-END
-FROM public.profiles AS profiles
-WHERE comments.created_by_user_id IS NULL
-  AND lower(trim(comments.created_by)) = lower(trim(profiles.username));
-
-UPDATE public.comments AS comments
-SET created_by_user_id = comments.created_by::UUID
-WHERE comments.created_by_user_id IS NULL
-  AND comments.created_by ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$';
-
-DO $$
-BEGIN
-  IF EXISTS (
-    SELECT 1
-    FROM public.spots
-    WHERE created_by_user_id IS NULL
-  ) THEN
-    RAISE EXCEPTION 'Unable to backfill spots.created_by_user_id for all rows';
-  END IF;
-
-  IF EXISTS (
-    SELECT 1
-    FROM public.comments
-    WHERE created_by_user_id IS NULL
-  ) THEN
-    RAISE EXCEPTION 'Unable to backfill comments.created_by_user_id for all rows';
-  END IF;
-END $$;
-
 ALTER TABLE public.spots
 ALTER COLUMN created_by_user_id SET NOT NULL;
 

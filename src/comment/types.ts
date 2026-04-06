@@ -18,5 +18,5 @@ export interface Comment {
 	createdAt: Date;
 	updatedAt: Date;
 	createdByUserId: UserId;
-	createdByUsername: string;
+	authorUsername?: string | null;
 }

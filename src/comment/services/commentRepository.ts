@@ -1,4 +1,4 @@
-import type { UserId } from '@/journey/types';
+import type { UserId } from '@/auth/types';
 import { supabase } from '@/lib/supabaseClient';
 import type { SpotId } from '@/spot/types';
 import { logger } from '@/utils';
@@ -11,10 +11,12 @@ type CommentRow = {
 	appreciation: string;
 	comment: string;
 	wait_time_minutes?: number | null;
-	created_by: string;
 	created_by_user_id: string;
 	created_at: string;
 	updated_at: string;
+	author?: Array<{
+		username: string;
+	}> | null;
 };
 
 const commentAppreciationValues = new Set(Object.values(CommentAppreciation));
@@ -68,7 +70,7 @@ const mapRowToComment = (row: CommentRow): Comment => ({
 	createdAt: new Date(row.created_at),
 	updatedAt: new Date(row.updated_at),
 	createdByUserId: row.created_by_user_id as UserId,
-	createdByUsername: row.created_by,
+	authorUsername: row.author?.[0]?.username ?? null,
 });
 
 export const getCommentsBySpotId = async (
@@ -79,7 +81,9 @@ export const getCommentsBySpotId = async (
 	try {
 		const { data, error } = await supabase
 			.from('comments')
-			.select('*')
+			.select(
+				'id, spot_id, appreciation, comment, wait_time_minutes, created_by_user_id, created_at, updated_at, author:profiles!comments_created_by_user_id_fkey(username)'
+			)
 			.eq('spot_id', spotId)
 			.order('created_at', { ascending: false });
 
@@ -118,7 +122,6 @@ export const createComment = async (comment: Comment): Promise<void> => {
 			spot_id: comment.spotId,
 			appreciation: comment.appreciation,
 			comment: comment.comment,
-			created_by: comment.createdByUsername,
 			created_by_user_id: comment.createdByUserId,
 			created_at: comment.createdAt.toISOString(),
 			updated_at: comment.updatedAt.toISOString(),

@@ -103,6 +103,7 @@ export default {
 		commentAdded: 'Commento aggiunto',
 		addError: 'Impossibile aggiungere',
 		addErrorMessage: 'Il commento non può essere salvato.',
+		unknownAuthor: 'Utente sconosciuto',
 	},
 
 	// Profile
@@ -235,8 +236,6 @@ export default {
 			'Lo spot è stato salvato, ma non è stato possibile aggiungere il commento.',
 		createError: 'Creazione non riuscita',
 		createErrorMessage: 'Non è stato possibile salvare lo spot.',
-		usernameUnavailableMessage:
-			'Il tuo nome utente non è disponibile. Accedi di nuovo e riprova.',
 	},
 
 	// Map

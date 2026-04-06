@@ -36,5 +36,4 @@ export interface Spot {
 	createdAt: Date;
 	updatedAt: Date;
 	createdByUserId: UserId;
-	createdByUsername: string;
 }
