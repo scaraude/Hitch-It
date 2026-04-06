@@ -95,6 +95,8 @@ export default {
 		appreciationBad: 'Cattivo',
 		loadError: 'Caricamento fallito',
 		loadErrorMessage: 'Impossibile caricare i commenti per questo spot.',
+		appreciationRequired: 'Apprezzamento richiesto',
+		appreciationRequiredMessage: 'Seleziona un apprezzamento per il tuo commento.',
 		commentRequired: 'Commento richiesto',
 		commentRequiredMessage: 'Aggiungi un commento prima di inviare.',
 		commentAdded: 'Commento aggiunto',
