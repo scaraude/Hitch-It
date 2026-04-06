@@ -91,6 +91,20 @@ export default {
 		passwordResetSuccess:
 			'Your password has been updated. You can now sign in.',
 		updatePassword: 'Update password',
+		confirmEmailPendingTitle: 'Confirm your email',
+		confirmEmailPendingSubtitle:
+			'Open the link from your email on this device to finish creating your account.',
+		confirmEmailSuccessTitle: 'Email confirmed',
+		confirmEmailSuccessSubtitle:
+			'Your account is ready. You can continue in the app now.',
+		confirmEmailErrorTitle: 'Confirmation failed',
+		confirmEmailErrorSubtitle:
+			'This confirmation link is invalid, expired, or already used.',
+		confirmEmailInvalidLink:
+			'This confirmation link is invalid, expired, or already used.',
+		confirmEmailSentTo: "We've sent a confirmation link to{'\\n'}",
+		continueToApp: 'Continue to the app',
+		backToLogin: 'Back to login',
 	},
 
 	comment: {

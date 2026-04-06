@@ -7,6 +7,7 @@ import type React from 'react';
 import { useEffect } from 'react';
 import { useAuth } from '../auth';
 import {
+	ConfirmEmailScreen,
 	ForgotPasswordScreen,
 	HomeScreen,
 	JourneyDetailScreen,
@@ -41,6 +42,13 @@ export const RootNavigator: React.FC = () => {
 		) {
 			navigationRef.navigate('ResetPassword');
 		}
+		if (
+			authDeepLinkState.intent === 'confirm-email' &&
+			(authDeepLinkState.status === 'verified' ||
+				authDeepLinkState.status === 'error')
+		) {
+			navigationRef.navigate('ConfirmEmail');
+		}
 	}, [authDeepLinkState.intent, authDeepLinkState.status]);
 
 	return (
@@ -54,6 +62,13 @@ export const RootNavigator: React.FC = () => {
 				) {
 					navigationRef.navigate('ResetPassword');
 				}
+				if (
+					authDeepLinkState.intent === 'confirm-email' &&
+					(authDeepLinkState.status === 'verified' ||
+						authDeepLinkState.status === 'error')
+				) {
+					navigationRef.navigate('ConfirmEmail');
+				}
 			}}
 		>
 			<Stack.Navigator
@@ -64,9 +79,10 @@ export const RootNavigator: React.FC = () => {
 				<Stack.Screen name="Home" component={HomeScreen} />
 				<Stack.Screen name="Login" component={LoginScreen} />
 				<Stack.Screen name="SignUp" component={SignUpScreen} />
+				<Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
+				<Stack.Screen name="ConfirmEmail" component={ConfirmEmailScreen} />
 				<Stack.Screen name="Profile" component={ProfileScreen} />
 				<Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
-				<Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
 				<Stack.Screen name="JourneyHistory" component={JourneyHistoryScreen} />
 				<Stack.Screen name="JourneyDetail" component={JourneyDetailScreen} />
 				<Stack.Screen
