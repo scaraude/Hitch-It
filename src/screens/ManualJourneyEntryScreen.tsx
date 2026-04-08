@@ -16,7 +16,7 @@ import type {
 	JourneyPointId,
 	UserId,
 } from '../journey/types';
-import { JourneyPointType, JourneyStatus } from '../journey/types';
+import { JourneyStatus } from '../journey/types';
 import { calculateRouteWithWaypoints } from '../navigation/services/routingService';
 import type { RootStackParamList, RoutePoint } from '../navigation/types';
 import type { Location } from '../types';
@@ -138,7 +138,6 @@ export default function ManualJourneyEntryScreen() {
 			stopPoints.push({
 				id: Crypto.randomUUID() as JourneyPointId,
 				journeyId,
-				type: JourneyPointType.Stop,
 				latitude: flow.startLocation.latitude,
 				longitude: flow.startLocation.longitude,
 				timestamp: now,
@@ -154,7 +153,6 @@ export default function ManualJourneyEntryScreen() {
 				stopPoints.push({
 					id: Crypto.randomUUID() as JourneyPointId,
 					journeyId,
-					type: JourneyPointType.Stop,
 					latitude: stop.location.latitude,
 					longitude: stop.location.longitude,
 					timestamp: stopTime,
@@ -167,7 +165,6 @@ export default function ManualJourneyEntryScreen() {
 			stopPoints.push({
 				id: Crypto.randomUUID() as JourneyPointId,
 				journeyId,
-				type: JourneyPointType.Stop,
 				latitude: flow.endLocation.latitude,
 				longitude: flow.endLocation.longitude,
 				timestamp: endTime,
