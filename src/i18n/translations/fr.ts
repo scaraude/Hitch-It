@@ -94,6 +94,20 @@ export default {
 		passwordResetSuccess:
 			'Votre mot de passe a été mis à jour. Vous pouvez maintenant vous connecter.',
 		updatePassword: 'Mettre à jour le mot de passe',
+		confirmEmailPendingTitle: 'Confirme ton email',
+		confirmEmailPendingSubtitle:
+			'Ouvre le lien reçu par email sur cet appareil pour terminer la création du compte.',
+		confirmEmailSuccessTitle: 'Email confirmé',
+		confirmEmailSuccessSubtitle:
+			'Ton compte est prêt. Tu peux continuer dans l’application.',
+		confirmEmailErrorTitle: 'Confirmation impossible',
+		confirmEmailErrorSubtitle:
+			'Ce lien de confirmation est invalide, expiré ou déjà utilisé.',
+		confirmEmailInvalidLink:
+			'Ce lien de confirmation est invalide, expiré ou déjà utilisé.',
+		confirmEmailSentTo: "Nous avons envoyé un lien de confirmation à{'\\n'}",
+		continueToApp: "Continuer dans l'application",
+		backToLogin: 'Retour à la connexion',
 	},
 
 	comment: {
@@ -110,7 +124,8 @@ export default {
 		loadError: 'Chargement échoué',
 		loadErrorMessage: 'Impossible de charger les commentaires de ce spot.',
 		appreciationRequired: 'Appréciation requise',
-		appreciationRequiredMessage: 'Sélectionne une appréciation pour ton commentaire.',
+		appreciationRequiredMessage:
+			'Sélectionne une appréciation pour ton commentaire.',
 		commentRequired: 'Commentaire requis',
 		commentRequiredMessage: 'Ajoute un commentaire avant de valider.',
 		commentAdded: 'Commentaire ajouté',

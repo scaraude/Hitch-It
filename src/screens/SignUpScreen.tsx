@@ -72,7 +72,9 @@ export default function SignUpScreen() {
 		if (result.error) {
 			setError(result.error);
 		} else {
-			navigation.navigate('Home');
+			navigation.navigate('ConfirmEmail', {
+				email: email.trim().toLowerCase(),
+			});
 		}
 	};
 

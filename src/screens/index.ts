@@ -1,3 +1,4 @@
+export { default as ConfirmEmailScreen } from './ConfirmEmailScreen';
 export { default as ForgotPasswordScreen } from './ForgotPasswordScreen';
 export { default as HomeScreen } from './HomeScreen';
 export { default as JourneyDetailScreen } from './JourneyDetailScreen';
