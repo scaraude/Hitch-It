@@ -84,6 +84,16 @@ export default {
 		emailAddressPlaceholder: 'Adresse email',
 		sendResetLink: 'Envoyer le lien de réinitialisation',
 		rememberPassword: 'Vous vous souvenez de votre mot de passe ? ',
+		chooseNewPassword: 'Choisissez un nouveau mot de passe',
+		chooseNewPasswordSubtitle:
+			'Saisissez votre nouveau mot de passe pour terminer la réinitialisation.',
+		newPasswordPlaceholder: 'Nouveau mot de passe',
+		confirmNewPasswordPlaceholder: 'Confirmer le nouveau mot de passe',
+		passwordsDoNotMatch: 'Les mots de passe ne correspondent pas',
+		invalidResetLink: 'Ce lien de réinitialisation est invalide ou expiré.',
+		passwordResetSuccess:
+			'Votre mot de passe a été mis à jour. Vous pouvez maintenant vous connecter.',
+		updatePassword: 'Mettre à jour le mot de passe',
 	},
 
 	comment: {

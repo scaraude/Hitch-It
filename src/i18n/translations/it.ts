@@ -83,6 +83,16 @@ export default {
 		emailAddressPlaceholder: 'Indirizzo email',
 		sendResetLink: 'Invia link di reimpostazione',
 		rememberPassword: 'Ricordi la password? ',
+		chooseNewPassword: 'Scegli una nuova password',
+		chooseNewPasswordSubtitle:
+			'Inserisci la nuova password per completare il reset.',
+		newPasswordPlaceholder: 'Nuova password',
+		confirmNewPasswordPlaceholder: 'Conferma nuova password',
+		passwordsDoNotMatch: 'Le password non corrispondono',
+		invalidResetLink: 'Questo link di reimpostazione non è valido o è scaduto.',
+		passwordResetSuccess:
+			'La tua password è stata aggiornata. Ora puoi accedere.',
+		updatePassword: 'Aggiorna password',
 	},
 
 	comment: {

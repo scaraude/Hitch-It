@@ -83,6 +83,17 @@ export default {
 		emailAddressPlaceholder: 'Dirección de correo',
 		sendResetLink: 'Enviar enlace de restablecimiento',
 		rememberPassword: '¿Recuerdas tu contraseña? ',
+		chooseNewPassword: 'Elige una nueva contraseña',
+		chooseNewPasswordSubtitle:
+			'Introduce tu nueva contraseña para terminar el restablecimiento.',
+		newPasswordPlaceholder: 'Nueva contraseña',
+		confirmNewPasswordPlaceholder: 'Confirmar nueva contraseña',
+		passwordsDoNotMatch: 'Las contraseñas no coinciden',
+		invalidResetLink:
+			'Este enlace de restablecimiento no es válido o ha expirado.',
+		passwordResetSuccess:
+			'Tu contraseña se ha actualizado. Ya puedes iniciar sesión.',
+		updatePassword: 'Actualizar contraseña',
 	},
 
 	comment: {

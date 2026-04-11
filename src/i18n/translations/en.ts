@@ -81,6 +81,16 @@ export default {
 		emailAddressPlaceholder: 'Email address',
 		sendResetLink: 'Send reset link',
 		rememberPassword: 'Remember your password? ',
+		chooseNewPassword: 'Choose a new password',
+		chooseNewPasswordSubtitle:
+			'Enter your new password to finish resetting it.',
+		newPasswordPlaceholder: 'New password',
+		confirmNewPasswordPlaceholder: 'Confirm new password',
+		passwordsDoNotMatch: 'Passwords do not match',
+		invalidResetLink: 'This reset link is invalid or has expired.',
+		passwordResetSuccess:
+			'Your password has been updated. You can now sign in.',
+		updatePassword: 'Update password',
 	},
 
 	comment: {

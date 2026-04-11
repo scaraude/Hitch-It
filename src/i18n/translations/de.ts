@@ -83,6 +83,17 @@ export default {
 		emailAddressPlaceholder: 'E-Mail-Adresse',
 		sendResetLink: 'Zurücksetzungslink senden',
 		rememberPassword: 'Passwort erinnert? ',
+		chooseNewPassword: 'Wähle ein neues Passwort',
+		chooseNewPasswordSubtitle:
+			'Gib dein neues Passwort ein, um das Zurücksetzen abzuschließen.',
+		newPasswordPlaceholder: 'Neues Passwort',
+		confirmNewPasswordPlaceholder: 'Neues Passwort bestätigen',
+		passwordsDoNotMatch: 'Die Passwörter stimmen nicht überein',
+		invalidResetLink:
+			'Dieser Link zum Zurücksetzen ist ungültig oder abgelaufen.',
+		passwordResetSuccess:
+			'Dein Passwort wurde aktualisiert. Du kannst dich jetzt anmelden.',
+		updatePassword: 'Passwort aktualisieren',
 	},
 
 	comment: {

@@ -5,4 +5,5 @@ export { default as JourneyHistoryScreen } from './JourneyHistoryScreen';
 export { default as LoginScreen } from './LoginScreen';
 export { default as ManualJourneyEntryScreen } from './ManualJourneyEntryScreen';
 export { default as ProfileScreen } from './ProfileScreen';
+export { default as ResetPasswordScreen } from './ResetPasswordScreen';
 export { default as SignUpScreen } from './SignUpScreen';

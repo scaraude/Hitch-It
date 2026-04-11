@@ -11,6 +11,7 @@ export type RootStackParamList = {
 	SignUp: undefined;
 	Profile: undefined;
 	ForgotPassword: { email?: string } | undefined;
+	ResetPassword: undefined;
 	JourneyHistory: undefined;
 	JourneyDetail: { journeyId: JourneyId };
 	ManualJourneyEntry: undefined;
