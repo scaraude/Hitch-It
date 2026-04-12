@@ -27,6 +27,43 @@ export interface AuthActionResult {
 	emailNotConfirmed?: boolean;
 }
 
+export type AuthDeepLinkIntent = 'confirm-email' | 'reset-password';
+
+export type AuthEmailOtpType =
+	| 'signup'
+	| 'invite'
+	| 'magiclink'
+	| 'recovery'
+	| 'email_change'
+	| 'email';
+
+export interface AuthDeepLinkParseResult {
+	url: string;
+	path: string;
+	intent: AuthDeepLinkIntent;
+	type: AuthEmailOtpType;
+	tokenHash?: string;
+	accessToken?: string;
+	refreshToken?: string;
+	code?: string;
+	errorCode?: string;
+	errorDescription?: string;
+}
+
+export interface AuthDeepLinkState {
+	status: 'idle' | 'processing' | 'verified' | 'error';
+	intent: AuthDeepLinkIntent | null;
+	url: string | null;
+	error: string | null;
+}
+
+export interface AuthDeepLinkVerificationResult {
+	status: 'verified' | 'error';
+	intent: AuthDeepLinkIntent;
+	url: string;
+	error?: string;
+}
+
 /**
  * Sign up credentials
  */
@@ -54,4 +91,6 @@ export interface AuthContextValue extends AuthState {
 	resendConfirmationEmail: (email: string) => Promise<AuthActionResult>;
 	sendPasswordResetEmail: (email: string) => Promise<AuthActionResult>;
 	updatePassword: (newPassword: string) => Promise<AuthActionResult>;
+	authDeepLinkState: AuthDeepLinkState;
+	clearAuthDeepLinkState: () => void;
 }

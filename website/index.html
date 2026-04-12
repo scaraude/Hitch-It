@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hitchit, auth landing pages</title>
+    <meta
+      name="description"
+      content="Static auth landing pages for Hitchit email confirmation and password reset flows."
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main>
+      <section class="card stack">
+        <span class="badge">Hitchit</span>
+        <div class="stack">
+          <h1>Static auth pages, nothing more.</h1>
+          <p>
+            This directory is the minimal web surface for Hitchit. It exists to host the signup
+            confirmation and password reset landing pages used by email flows.
+          </p>
+          <p>
+            Deploy this <strong>website/</strong> directory as the Vercel root directory, then use
+            the page URLs in Supabase redirects.
+          </p>
+        </div>
+        <div class="actions">
+          <a class="button primary" href="./confirm-signup">Open signup confirmation page</a>
+          <a class="button secondary" href="./reset-password">Open reset password page</a>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

@@ -83,6 +83,16 @@ export default {
 		emailAddressPlaceholder: 'Indirizzo email',
 		sendResetLink: 'Invia link di reimpostazione',
 		rememberPassword: 'Ricordi la password? ',
+		chooseNewPassword: 'Scegli una nuova password',
+		chooseNewPasswordSubtitle:
+			'Inserisci la nuova password per completare il reset.',
+		newPasswordPlaceholder: 'Nuova password',
+		confirmNewPasswordPlaceholder: 'Conferma nuova password',
+		passwordsDoNotMatch: 'Le password non corrispondono',
+		invalidResetLink: 'Questo link di reimpostazione non è valido o è scaduto.',
+		passwordResetSuccess:
+			'La tua password è stata aggiornata. Ora puoi accedere.',
+		updatePassword: 'Aggiorna password',
 	},
 
 	comment: {
@@ -90,6 +100,9 @@ export default {
 		commentLabel: 'Commento *',
 		commentPlaceholder: 'Descrivi la tua esperienza in questo spot...',
 		noCommentsYet: 'Nessun commento ancora',
+		authRequired: 'Accesso richiesto',
+		authRequiredMessage:
+			'Solo gli utenti autenticati possono aggiungere un commento.',
 		appreciationExcellent: 'Eccellente',
 		appreciationGood: 'Buono',
 		appreciationBad: 'Cattivo',
@@ -102,6 +115,7 @@ export default {
 		commentAdded: 'Commento aggiunto',
 		addError: 'Impossibile aggiungere',
 		addErrorMessage: 'Il commento non può essere salvato.',
+		unknownAuthor: 'Utente sconosciuto',
 	},
 
 	// Profile
@@ -182,6 +196,14 @@ export default {
 		add: 'Aggiungi spot',
 		edit: 'Modifica spot',
 		delete: 'Elimina spot',
+		deleteConfirmTitle: 'Eliminare questo spot?',
+		deleteConfirmMessage: 'Questa azione non può essere annullata.',
+		deleteSuccess: 'Spot eliminato',
+		deleteSuccessMessage: 'Il tuo spot è stato eliminato con successo.',
+		deleteError: 'Eliminazione non riuscita',
+		deleteErrorMessage: 'Impossibile eliminare questo spot. Riprova.',
+		deleteForbidden: 'Azione non consentita',
+		deleteForbiddenMessage: 'Puoi eliminare solo gli spot che hai creato.',
 		details: 'Dettagli spot',
 		name: 'Nome',
 		description: 'Descrizione',
@@ -190,8 +212,7 @@ export default {
 		addSpot: 'Aggiungi spot',
 		addASpot: 'Aggiungi uno spot',
 		newSpot: 'Nuovo Spot',
-		requiredFieldsHint:
-			'* Campi obbligatori.',
+		requiredFieldsHint: '* Campi obbligatori.',
 		roadNameLabel: 'Nome strada *',
 		roadNamePlaceholder: 'Es: A6, D907, Route de Lyon...',
 		direction: 'Direzione',
@@ -227,8 +248,6 @@ export default {
 			'Lo spot è stato salvato, ma non è stato possibile aggiungere il commento.',
 		createError: 'Creazione non riuscita',
 		createErrorMessage: 'Non è stato possibile salvare lo spot.',
-		usernameUnavailableMessage:
-			'Il tuo nome utente non è disponibile. Accedi di nuovo e riprova.',
 	},
 
 	// Map

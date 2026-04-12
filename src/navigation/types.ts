@@ -9,8 +9,10 @@ export type RootStackParamList = {
 	Home: undefined;
 	Login: undefined;
 	SignUp: undefined;
+	ConfirmEmail: { email?: string } | undefined;
 	Profile: undefined;
 	ForgotPassword: { email?: string } | undefined;
+	ResetPassword: undefined;
 	JourneyHistory: undefined;
 	JourneyDetail: { journeyId: JourneyId };
 	ManualJourneyEntry: undefined;

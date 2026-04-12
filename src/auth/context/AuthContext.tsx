@@ -3,12 +3,15 @@ import {
 	type ReactNode,
 	useContext,
 	useEffect,
+	useRef,
 	useState,
 } from 'react';
+import { Linking } from 'react-native';
 import { supabase } from '../../lib/supabaseClient';
 import * as authService from '../services/authService';
 import type {
 	AuthContextValue,
+	AuthDeepLinkState,
 	LoginCredentials,
 	SignUpCredentials,
 	User,
@@ -23,31 +26,106 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
 	const [user, setUser] = useState<User | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
+	const [authDeepLinkState, setAuthDeepLinkState] = useState<AuthDeepLinkState>(
+		{
+			status: 'idle',
+			intent: null,
+			url: null,
+			error: null,
+		}
+	);
+	const lastHandledUrlRef = useRef<string | null>(null);
 
 	useEffect(() => {
-		// Load initial session
-		const loadSession = async () => {
+		let isMounted = true;
+
+		const handleIncomingUrl = async (url: string) => {
+			if (!url || lastHandledUrlRef.current === url) {
+				return;
+			}
+
+			const parsedLink = authService.parseAuthDeepLink(url);
+			if (!parsedLink) {
+				return;
+			}
+
+			lastHandledUrlRef.current = url;
+			setAuthDeepLinkState({
+				status: 'processing',
+				intent: parsedLink.intent,
+				url,
+				error: null,
+			});
+
+			const result = await authService.handleAuthDeepLink(url);
+			if (!result) {
+				lastHandledUrlRef.current = null;
+				setAuthDeepLinkState({
+					status: 'idle',
+					intent: null,
+					url: null,
+					error: null,
+				});
+				return;
+			}
+
+			if (!isMounted) {
+				return;
+			}
+
+			setAuthDeepLinkState({
+				status: result.status,
+				intent: result.intent,
+				url: result.url,
+				error: result.error ?? null,
+			});
+		};
+
+		const bootstrapAuth = async () => {
+			const initialUrl = await Linking.getInitialURL();
+			if (initialUrl) {
+				await handleIncomingUrl(initialUrl);
+			}
+
 			const currentUser = await authService.getCurrentUser();
+			if (!isMounted) {
+				return;
+			}
 			setUser(currentUser);
 			setIsLoading(false);
 		};
 
-		loadSession();
+		bootstrapAuth();
 
 		// Subscribe to auth state changes
 		const {
 			data: { subscription },
 		} = supabase.auth.onAuthStateChange(async event => {
-			if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+			if (
+				event === 'SIGNED_IN' ||
+				event === 'TOKEN_REFRESHED' ||
+				event === 'PASSWORD_RECOVERY' ||
+				event === 'USER_UPDATED'
+			) {
 				const currentUser = await authService.getCurrentUser();
-				setUser(currentUser);
+				if (isMounted) {
+					setUser(currentUser);
+				}
 			} else if (event === 'SIGNED_OUT') {
-				setUser(null);
+				if (isMounted) {
+					setUser(null);
+				}
 			}
 		});
 
+		const linkingSubscription = Linking.addEventListener('url', ({ url }) => {
+			void handleIncomingUrl(url);
+		});
+
 		return () => {
+			isMounted = false;
 			subscription.unsubscribe();
+			linkingSubscription.remove();
 		};
 	}, []);
 
@@ -89,6 +167,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
 		return authService.updatePassword(newPassword);
 	};
 
+	const clearAuthDeepLinkState = () => {
+		setAuthDeepLinkState({
+			status: 'idle',
+			intent: null,
+			url: null,
+			error: null,
+		});
+	};
+
 	const value: AuthContextValue = {
 		user,
 		isLoading,
@@ -99,6 +186,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
 		resendConfirmationEmail,
 		sendPasswordResetEmail,
 		updatePassword,
+		authDeepLinkState,
+		clearAuthDeepLinkState,
 	};
 
 	return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

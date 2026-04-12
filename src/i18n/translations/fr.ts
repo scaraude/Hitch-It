@@ -84,6 +84,30 @@ export default {
 		emailAddressPlaceholder: 'Adresse email',
 		sendResetLink: 'Envoyer le lien de réinitialisation',
 		rememberPassword: 'Vous vous souvenez de votre mot de passe ? ',
+		chooseNewPassword: 'Choisissez un nouveau mot de passe',
+		chooseNewPasswordSubtitle:
+			'Saisissez votre nouveau mot de passe pour terminer la réinitialisation.',
+		newPasswordPlaceholder: 'Nouveau mot de passe',
+		confirmNewPasswordPlaceholder: 'Confirmer le nouveau mot de passe',
+		passwordsDoNotMatch: 'Les mots de passe ne correspondent pas',
+		invalidResetLink: 'Ce lien de réinitialisation est invalide ou expiré.',
+		passwordResetSuccess:
+			'Votre mot de passe a été mis à jour. Vous pouvez maintenant vous connecter.',
+		updatePassword: 'Mettre à jour le mot de passe',
+		confirmEmailPendingTitle: 'Confirme ton email',
+		confirmEmailPendingSubtitle:
+			'Ouvre le lien reçu par email sur cet appareil pour terminer la création du compte.',
+		confirmEmailSuccessTitle: 'Email confirmé',
+		confirmEmailSuccessSubtitle:
+			'Ton compte est prêt. Tu peux continuer dans l’application.',
+		confirmEmailErrorTitle: 'Confirmation impossible',
+		confirmEmailErrorSubtitle:
+			'Ce lien de confirmation est invalide, expiré ou déjà utilisé.',
+		confirmEmailInvalidLink:
+			'Ce lien de confirmation est invalide, expiré ou déjà utilisé.',
+		confirmEmailSentTo: "Nous avons envoyé un lien de confirmation à{'\\n'}",
+		continueToApp: "Continuer dans l'application",
+		backToLogin: 'Retour à la connexion',
 	},
 
 	comment: {
@@ -91,18 +115,23 @@ export default {
 		commentLabel: 'Commentaire *',
 		commentPlaceholder: 'Décris ton expérience sur ce spot...',
 		noCommentsYet: 'Aucun commentaire pour le moment',
+		authRequired: 'Connexion requise',
+		authRequiredMessage:
+			'Seuls les utilisateurs connectés peuvent ajouter un commentaire.',
 		appreciationExcellent: 'Excellent',
 		appreciationGood: 'Bon',
 		appreciationBad: 'Mauvais',
 		loadError: 'Chargement échoué',
 		loadErrorMessage: 'Impossible de charger les commentaires de ce spot.',
 		appreciationRequired: 'Appréciation requise',
-		appreciationRequiredMessage: 'Sélectionne une appréciation pour ton commentaire.',
+		appreciationRequiredMessage:
+			'Sélectionne une appréciation pour ton commentaire.',
 		commentRequired: 'Commentaire requis',
 		commentRequiredMessage: 'Ajoute un commentaire avant de valider.',
 		commentAdded: 'Commentaire ajouté',
 		addError: 'Ajout impossible',
 		addErrorMessage: "Le commentaire n'a pas pu être enregistré.",
+		unknownAuthor: 'Utilisateur inconnu',
 	},
 
 	// Profile
@@ -183,6 +212,15 @@ export default {
 		add: 'Ajouter un point',
 		edit: 'Modifier le point',
 		delete: 'Supprimer le point',
+		deleteConfirmTitle: 'Supprimer ce point ?',
+		deleteConfirmMessage: 'Cette action est définitive.',
+		deleteSuccess: 'Point supprimé',
+		deleteSuccessMessage: 'Ton point a bien été supprimé.',
+		deleteError: 'Suppression impossible',
+		deleteErrorMessage: 'Impossible de supprimer ce point. Réessaie.',
+		deleteForbidden: 'Action non autorisée',
+		deleteForbiddenMessage:
+			'Tu peux uniquement supprimer les points que tu as créés.',
 		details: 'Détails du point',
 		name: 'Nom',
 		description: 'Description',
@@ -191,8 +229,7 @@ export default {
 		addSpot: 'Ajouter un spot',
 		addASpot: 'Ajouter un spot',
 		newSpot: 'Nouveau Spot',
-		requiredFieldsHint:
-			'* Champs obligatoires.',
+		requiredFieldsHint: '* Champs obligatoires.',
 		roadNameLabel: 'Nom de la route *',
 		roadNamePlaceholder: 'Ex: A6, D907, Route de Lyon...',
 		direction: 'Direction',
@@ -229,8 +266,6 @@ export default {
 			"Le spot est enregistré, mais le commentaire n'a pas pu être ajouté.",
 		createError: 'Création impossible',
 		createErrorMessage: "Le spot n'a pas pu être enregistré.",
-		usernameUnavailableMessage:
-			"Votre nom d'utilisateur est indisponible. Reconnectez-vous et réessayez.",
 	},
 
 	// Map

@@ -81,6 +81,30 @@ export default {
 		emailAddressPlaceholder: 'Email address',
 		sendResetLink: 'Send reset link',
 		rememberPassword: 'Remember your password? ',
+		chooseNewPassword: 'Choose a new password',
+		chooseNewPasswordSubtitle:
+			'Enter your new password to finish resetting it.',
+		newPasswordPlaceholder: 'New password',
+		confirmNewPasswordPlaceholder: 'Confirm new password',
+		passwordsDoNotMatch: 'Passwords do not match',
+		invalidResetLink: 'This reset link is invalid or has expired.',
+		passwordResetSuccess:
+			'Your password has been updated. You can now sign in.',
+		updatePassword: 'Update password',
+		confirmEmailPendingTitle: 'Confirm your email',
+		confirmEmailPendingSubtitle:
+			'Open the link from your email on this device to finish creating your account.',
+		confirmEmailSuccessTitle: 'Email confirmed',
+		confirmEmailSuccessSubtitle:
+			'Your account is ready. You can continue in the app now.',
+		confirmEmailErrorTitle: 'Confirmation failed',
+		confirmEmailErrorSubtitle:
+			'This confirmation link is invalid, expired, or already used.',
+		confirmEmailInvalidLink:
+			'This confirmation link is invalid, expired, or already used.',
+		confirmEmailSentTo: "We've sent a confirmation link to{'\\n'}",
+		continueToApp: 'Continue to the app',
+		backToLogin: 'Back to login',
 	},
 
 	comment: {
@@ -88,6 +112,8 @@ export default {
 		commentLabel: 'Comment *',
 		commentPlaceholder: 'Describe your experience at this spot...',
 		noCommentsYet: 'No comments yet',
+		authRequired: 'Authentication required',
+		authRequiredMessage: 'Only signed-in users can add a comment.',
 		appreciationExcellent: 'Excellent',
 		appreciationGood: 'Good',
 		appreciationBad: 'Bad',
@@ -100,6 +126,7 @@ export default {
 		commentAdded: 'Comment added',
 		addError: 'Unable to add',
 		addErrorMessage: 'The comment could not be saved.',
+		unknownAuthor: 'Unknown user',
 	},
 
 	// Profile
@@ -180,6 +207,14 @@ export default {
 		add: 'Add spot',
 		edit: 'Edit spot',
 		delete: 'Delete spot',
+		deleteConfirmTitle: 'Delete this spot?',
+		deleteConfirmMessage: 'This action cannot be undone.',
+		deleteSuccess: 'Spot deleted',
+		deleteSuccessMessage: 'Your spot was deleted successfully.',
+		deleteError: 'Deletion failed',
+		deleteErrorMessage: 'Unable to delete this spot. Please try again.',
+		deleteForbidden: 'Action not allowed',
+		deleteForbiddenMessage: 'You can only delete spots you created.',
 		details: 'Spot details',
 		name: 'Name',
 		description: 'Description',
@@ -188,8 +223,7 @@ export default {
 		addSpot: 'Add spot',
 		addASpot: 'Add a spot',
 		newSpot: 'New Spot',
-		requiredFieldsHint:
-			'* Required fields.',
+		requiredFieldsHint: '* Required fields.',
 		roadNameLabel: 'Road name *',
 		roadNamePlaceholder: 'E.g.: A6, D907, Route de Lyon...',
 		direction: 'Direction',
@@ -225,8 +259,6 @@ export default {
 			'The spot was saved, but the comment could not be added.',
 		createError: 'Creation failed',
 		createErrorMessage: 'The spot could not be saved.',
-		usernameUnavailableMessage:
-			'Your username is unavailable. Please sign in again and try again.',
 	},
 
 	// Map

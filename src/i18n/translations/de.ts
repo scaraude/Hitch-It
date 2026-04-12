@@ -83,6 +83,17 @@ export default {
 		emailAddressPlaceholder: 'E-Mail-Adresse',
 		sendResetLink: 'Zurücksetzungslink senden',
 		rememberPassword: 'Passwort erinnert? ',
+		chooseNewPassword: 'Wähle ein neues Passwort',
+		chooseNewPasswordSubtitle:
+			'Gib dein neues Passwort ein, um das Zurücksetzen abzuschließen.',
+		newPasswordPlaceholder: 'Neues Passwort',
+		confirmNewPasswordPlaceholder: 'Neues Passwort bestätigen',
+		passwordsDoNotMatch: 'Die Passwörter stimmen nicht überein',
+		invalidResetLink:
+			'Dieser Link zum Zurücksetzen ist ungültig oder abgelaufen.',
+		passwordResetSuccess:
+			'Dein Passwort wurde aktualisiert. Du kannst dich jetzt anmelden.',
+		updatePassword: 'Passwort aktualisieren',
 	},
 
 	comment: {
@@ -90,6 +101,9 @@ export default {
 		commentLabel: 'Kommentar *',
 		commentPlaceholder: 'Beschreibe deine Erfahrung an diesem Spot...',
 		noCommentsYet: 'Noch keine Kommentare',
+		authRequired: 'Anmeldung erforderlich',
+		authRequiredMessage:
+			'Nur angemeldete Nutzer koennen einen Kommentar hinzufuegen.',
 		appreciationExcellent: 'Ausgezeichnet',
 		appreciationGood: 'Gut',
 		appreciationBad: 'Schlecht',
@@ -104,6 +118,7 @@ export default {
 		commentAdded: 'Kommentar hinzugefügt',
 		addError: 'Hinzufügen nicht möglich',
 		addErrorMessage: 'Der Kommentar konnte nicht gespeichert werden.',
+		unknownAuthor: 'Unbekannter Nutzer',
 	},
 
 	// Profile
@@ -184,6 +199,16 @@ export default {
 		add: 'Spot hinzufügen',
 		edit: 'Spot bearbeiten',
 		delete: 'Spot löschen',
+		deleteConfirmTitle: 'Diesen Spot löschen?',
+		deleteConfirmMessage: 'Diese Aktion kann nicht rückgängig gemacht werden.',
+		deleteSuccess: 'Spot gelöscht',
+		deleteSuccessMessage: 'Dein Spot wurde erfolgreich gelöscht.',
+		deleteError: 'Löschen fehlgeschlagen',
+		deleteErrorMessage:
+			'Dieser Spot konnte nicht gelöscht werden. Bitte versuche es erneut.',
+		deleteForbidden: 'Aktion nicht erlaubt',
+		deleteForbiddenMessage:
+			'Du kannst nur Spots löschen, die du erstellt hast.',
 		details: 'Spot-Details',
 		name: 'Name',
 		description: 'Beschreibung',
@@ -228,8 +253,6 @@ export default {
 			'Der Spot wurde gespeichert, aber der Kommentar konnte nicht hinzugefügt werden.',
 		createError: 'Erstellen fehlgeschlagen',
 		createErrorMessage: 'Der Spot konnte nicht gespeichert werden.',
-		usernameUnavailableMessage:
-			'Dein Benutzername ist nicht verfügbar. Bitte melde dich erneut an und versuche es noch einmal.',
 	},
 
 	// Map

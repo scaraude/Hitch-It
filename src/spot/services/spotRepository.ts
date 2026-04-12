@@ -1,3 +1,4 @@
+import type { UserId } from '@/auth/types';
 import { supabase } from '@/lib/supabaseClient';
 import type { MapBounds } from '@/types';
 import {
@@ -18,7 +19,7 @@ type SpotRow = {
 	destinations: string[] | null;
 	created_at: string;
 	updated_at: string;
-	created_by: string;
+	created_by_user_id: string;
 };
 
 const directionValues = new Set(Object.values(Direction));
@@ -52,7 +53,7 @@ const mapRowToSpot = (row: SpotRow): Spot => ({
 	destinations: parseDestinations(row.destinations),
 	createdAt: new Date(row.created_at),
 	updatedAt: new Date(row.updated_at),
-	createdBy: row.created_by,
+	createdByUserId: row.created_by_user_id as UserId,
 });
 
 type CachedRegion = {
@@ -248,7 +249,7 @@ export const createSpot = async (spot: Spot): Promise<void> => {
 			destinations: spot.destinations,
 			created_at: spot.createdAt.toISOString(),
 			updated_at: spot.updatedAt.toISOString(),
-			created_by: spot.createdBy,
+			created_by_user_id: spot.createdByUserId,
 		});
 		if (error) {
 			throw error;
@@ -273,7 +274,7 @@ export const updateSpot = async (spot: Spot): Promise<void> => {
 				direction: spot.direction,
 				destinations: spot.destinations,
 				updated_at: spot.updatedAt.toISOString(),
-				created_by: spot.createdBy,
+				created_by_user_id: spot.createdByUserId,
 			})
 			.eq('id', spot.id);
 		if (error) {

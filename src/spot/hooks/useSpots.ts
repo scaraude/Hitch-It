@@ -7,7 +7,7 @@ import { COLORS } from '../../constants';
 import { useTranslation } from '../../i18n/useTranslation';
 import type { MapBounds, MapRegion } from '../../types';
 import { logger } from '../../utils';
-import { createSpot, getSpotsInBounds } from '../services';
+import { createSpot, deleteSpot, getSpotsInBounds } from '../services';
 import type { SpotFormData } from '../spotFormTypes';
 import type { Location, Spot, SpotMarkerData } from '../types';
 import { generateSpotId } from '../utils';
@@ -30,6 +30,8 @@ export interface UseSpotsReturn {
 	selectSpot: (spotId: string) => void;
 	selectSpotEntity: (spot: Spot) => void;
 	deselectSpot: () => void;
+	canDeleteSpot: (spot: Spot) => boolean;
+	deleteSpotById: (spotId: string) => Promise<void>;
 }
 
 const MIN_ZOOM_LEVEL = 8;
@@ -166,21 +168,6 @@ export const useSpots = (
 			return;
 		}
 
-		const authorUsername = user.username.trim();
-		if (!authorUsername) {
-			logger.spot.error(
-				'Authenticated user has no username, blocking spot creation',
-				{
-					userId: user.id,
-				}
-			);
-			toastUtils.error(
-				t('spots.createError'),
-				t('spots.usernameUnavailableMessage')
-			);
-			return;
-		}
-
 		const now = new Date();
 		const newSpot: Spot = {
 			id: generateSpotId(),
@@ -190,7 +177,7 @@ export const useSpots = (
 			destinations: formData.destinations,
 			createdAt: now,
 			updatedAt: now,
-			createdBy: authorUsername,
+			createdByUserId: user.id,
 		};
 		const newComment = {
 			id: generateCommentId(),
@@ -199,7 +186,7 @@ export const useSpots = (
 			comment: formData.comment.trim(),
 			createdAt: now,
 			updatedAt: now,
-			createdBy: authorUsername,
+			createdByUserId: user.id,
 		};
 
 		logger.spot.info('Submitting spot form', {
@@ -268,6 +255,49 @@ export const useSpots = (
 		setSelectedSpot(spot);
 	};
 
+	const canDeleteSpot = (spot: Spot): boolean => {
+		if (!isAuthenticated || !user) {
+			return false;
+		}
+
+		return user.id === spot.createdByUserId;
+	};
+
+	const deleteSpotById = async (spotId: string): Promise<void> => {
+		const spotToDelete = fullSpots.find(spot => spot.id === spotId);
+		if (!spotToDelete) {
+			logger.spot.warn('Spot not found for deletion', { spotId });
+			return;
+		}
+
+		if (!canDeleteSpot(spotToDelete)) {
+			logger.spot.warn('User attempted to delete spot without ownership', {
+				spotId,
+				spotOwnerId: spotToDelete.createdByUserId,
+				currentUserId: user?.id ?? null,
+			});
+			toastUtils.error(
+				t('spots.deleteForbidden'),
+				t('spots.deleteForbiddenMessage')
+			);
+			return;
+		}
+
+		try {
+			await deleteSpot(spotId);
+			setFullSpots(previous => previous.filter(spot => spot.id !== spotId));
+			setSelectedSpot(previous => (previous?.id === spotId ? null : previous));
+			toastUtils.success(
+				t('spots.deleteSuccess'),
+				t('spots.deleteSuccessMessage')
+			);
+		} catch (error) {
+			logger.spot.error('Failed to delete owned spot', error, { spotId });
+			toastUtils.error(t('spots.deleteError'), t('spots.deleteErrorMessage'));
+			throw error;
+		}
+	};
+
 	const deselectSpot = () => {
 		logger.spot.info('Spot deselected');
 		setSelectedSpot(null);
@@ -291,5 +321,7 @@ export const useSpots = (
 		selectSpot,
 		selectSpotEntity,
 		deselectSpot,
+		canDeleteSpot,
+		deleteSpotById,
 	};
 };
