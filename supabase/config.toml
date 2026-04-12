@@ -220,6 +220,15 @@ otp_expiry = 3600
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
 
+# Custom email templates used by Hitchit auth flows.
+[auth.email.template.confirmation]
+subject = "Confirm your Hitchit account"
+content_path = "./supabase/templates/confirm_signup.html"
+
+[auth.email.template.recovery]
+subject = "Reset your Hitchit password"
+content_path = "./supabase/templates/reset_password.html"
+
 # Uncomment to customize email template
 # [auth.email.template.invite]
 # subject = "You have been invited"
