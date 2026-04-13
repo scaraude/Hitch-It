@@ -249,6 +249,8 @@ export default {
 		commentsLabel: 'Commentaires',
 		destinationPlaceholder: 'Ex: Paris, Lyon...',
 		hitchFromSpot: 'Faire du stop depuis ce spot',
+		openGoogleItineraryCta: 'Itinéraire Google',
+		openGoogleItineraryHint: 'Ouvre Google Maps avec un itinéraire vers ce spot.',
 		createSpot: 'Créer le spot',
 		ratingLabel: 'Appréciation *',
 		commentLabel: 'Commentaire *',
