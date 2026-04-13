@@ -70,8 +70,6 @@ export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 	const directionHeading = DIRECTION_HEADING_DEGREES[spot.direction];
 	const spotTitle = getSpotCoordinatesTitle(spot);
 	const destinationsLabel = resolveDestinationsLabel(spot.destinations);
-	const itineraryButtonLabel = t('spots.openGoogleItineraryCta');
-	const itineraryButtonHint = t('spots.openGoogleItineraryHint');
 	const { waitingTimeLabel, waitingRecordsLabel } = useMemo(
 		() => getWaitingTimeLabels(comments),
 		[comments]
@@ -158,8 +156,6 @@ export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 					streetViewIcon={STREET_VIEW_ICON}
 					onOpenStreetView={handleOpenStreetView}
 					onOpenItinerary={handleOpenItinerary}
-					itineraryButtonLabel={itineraryButtonLabel}
-					itineraryButtonHint={itineraryButtonHint}
 					canDeleteSpot={canDeleteSpot}
 					onDeleteSpot={handleDeleteSpot}
 				/>

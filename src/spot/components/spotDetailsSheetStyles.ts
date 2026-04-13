@@ -4,6 +4,8 @@ import { COLORS, SIZES, SPACING } from '../../constants';
 const HANDLE_INDICATOR_WIDTH = 76;
 const HANDLE_INDICATOR_HEIGHT = 6;
 const HANDLE_INDICATOR_OPACITY = 0.65;
+const ITINERARY_CALLOUT_MAX_WIDTH = 196;
+const ITINERARY_CALLOUT_ICON_SIZE = 36;
 
 export const spotDetailsSheetStyles = StyleSheet.create({
 	sheetContainer: {
@@ -51,7 +53,6 @@ export const spotDetailsSheetStyles = StyleSheet.create({
 		fontWeight: '700',
 		color: COLORS.text,
 		flex: 1,
-		flexShrink: 1,
 		paddingRight: SPACING.xs,
 	},
 	topActions: {
@@ -87,7 +88,7 @@ export const spotDetailsSheetStyles = StyleSheet.create({
 		backgroundColor: '#EEF5FF',
 		borderWidth: 1,
 		borderColor: '#CFE2FF',
-		maxWidth: 196,
+		maxWidth: ITINERARY_CALLOUT_MAX_WIDTH,
 		shadowColor: COLORS.text,
 		shadowOffset: { width: 0, height: 8 },
 		shadowOpacity: 0.12,
@@ -95,9 +96,9 @@ export const spotDetailsSheetStyles = StyleSheet.create({
 		elevation: 4,
 	},
 	itineraryCalloutIconWrap: {
-		width: 36,
-		height: 36,
-		borderRadius: 18,
+		width: ITINERARY_CALLOUT_ICON_SIZE,
+		height: ITINERARY_CALLOUT_ICON_SIZE,
+		borderRadius: SIZES.radiusRound,
 		backgroundColor: COLORS.secondary,
 		alignItems: 'center',
 		justifyContent: 'center',

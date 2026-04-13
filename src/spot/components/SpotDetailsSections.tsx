@@ -20,8 +20,6 @@ export const SpotDetailsHeaderSection: React.FC<
 	streetViewIcon,
 	onOpenStreetView,
 	onOpenItinerary,
-	itineraryButtonLabel,
-	itineraryButtonHint,
 	canDeleteSpot,
 	onDeleteSpot,
 }) => {
@@ -49,7 +47,7 @@ export const SpotDetailsHeaderSection: React.FC<
 					onPress={onOpenItinerary}
 					accessibilityRole="button"
 					accessibilityLabel={A11Y_LABELS.getGoogleItinerary}
-					accessibilityHint={itineraryButtonHint}
+					accessibilityHint={t('spots.openGoogleItineraryHint')}
 					testID="spot-details-open-itinerary"
 				>
 					<View style={styles.itineraryCalloutIconWrap}>
@@ -62,7 +60,7 @@ export const SpotDetailsHeaderSection: React.FC<
 					<View style={styles.itineraryCalloutTextWrap}>
 						<Text style={styles.itineraryCalloutEyebrow}>Google Maps</Text>
 						<Text style={styles.itineraryCalloutLabel}>
-							{itineraryButtonLabel}
+							{t('spots.openGoogleItineraryCta')}
 						</Text>
 					</View>
 				</Pressable>

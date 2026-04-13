@@ -13,8 +13,6 @@ export interface SpotDetailsHeaderSectionProps {
 	streetViewIcon: number;
 	onOpenStreetView: () => void;
 	onOpenItinerary: () => void;
-	itineraryButtonLabel: string;
-	itineraryButtonHint: string;
 	canDeleteSpot: boolean;
 	onDeleteSpot: () => void;
 }
