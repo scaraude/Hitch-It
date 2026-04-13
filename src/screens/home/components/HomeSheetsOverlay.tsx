@@ -1,10 +1,7 @@
 import type React from 'react';
 import { useCallback } from 'react';
 import { KeyboardAvoidingView, Platform, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
-import { ActionButton } from '../../../components';
-import { SPACING } from '../../../constants';
 import { useTranslation } from '../../../i18n';
 import {
 	DriverDirectionSheet,
@@ -25,8 +22,6 @@ import {
 import { homeScreenStyles as homeStyles } from '../homeScreenStyles';
 import type { NamedLocation } from '../types';
 
-const SPOT_HITCH_BOTTOM_OFFSET = SPACING.sm;
-
 export const HomeSheetsOverlay: React.FC = () => {
 	const { userLocation } = useHomeLocation();
 	const spot = useHomeSpot();
@@ -34,16 +29,7 @@ export const HomeSheetsOverlay: React.FC = () => {
 	const map = useHomeMap();
 	const { t } = useTranslation();
 
-	const insets = useSafeAreaInsets();
-
 	const { selectedSpot } = spot;
-
-	const shouldShowSpotHitchButton =
-		!!selectedSpot &&
-		!spot.isShowingForm &&
-		!session.showNavigationSetupSheet &&
-		!session.isDriverDirectionSheetOpen &&
-		!session.showCompletionSheet;
 
 	const handleConfirmSpotPlacement = useCallback(() => {
 		spot.confirmSpotPlacement(map.mapRegion);
@@ -121,18 +107,6 @@ export const HomeSheetsOverlay: React.FC = () => {
 					durationMinutes={session.journeyDurationMinutes}
 					onSave={handleSaveJourney}
 					onDiscard={handleDiscardJourney}
-				/>
-			)}
-
-			{shouldShowSpotHitchButton && selectedSpot && (
-				<ActionButton
-					label={t('navigation.hitchIt')}
-					onPress={() => session.handleSpotNavigationSetup(selectedSpot)}
-					bottomOffset={insets.bottom + SPOT_HITCH_BOTTOM_OFFSET}
-					variant="large"
-					withContainer
-					accessibilityLabel={t('spots.hitchFromSpot')}
-					testID="spot-navigation-setup-button"
 				/>
 			)}
 

@@ -243,6 +243,8 @@ export default {
 		commentsLabel: 'Comments',
 		destinationPlaceholder: 'E.g.: Paris, Lyon...',
 		hitchFromSpot: 'Hitchhike from this spot',
+		openGoogleItineraryCta: 'Open in Google Maps',
+		openGoogleItineraryHint: 'Opens Google Maps directions to this spot.',
 		createSpot: 'Create spot',
 		ratingLabel: 'Rating *',
 		commentLabel: 'Comment *',
