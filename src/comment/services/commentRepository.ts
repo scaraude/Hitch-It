@@ -14,9 +14,14 @@ type CommentRow = {
 	created_by_user_id: string;
 	created_at: string;
 	updated_at: string;
-	author?: Array<{
-		username: string;
-	}> | null;
+	author?:
+		| Array<{
+				username: string | null;
+		  }>
+		| {
+				username: string | null;
+		  }
+		| null;
 };
 
 const commentAppreciationValues = new Set(Object.values(CommentAppreciation));
@@ -61,6 +66,18 @@ const parseWaitingTimeMinutes = (
 	return Math.round(value);
 };
 
+const resolveAuthorUsername = (author: CommentRow['author']): string | null => {
+	if (!author) {
+		return null;
+	}
+
+	if (Array.isArray(author)) {
+		return author[0]?.username ?? null;
+	}
+
+	return author.username ?? null;
+};
+
 const mapRowToComment = (row: CommentRow): Comment => ({
 	id: createCommentId(row.id),
 	spotId: row.spot_id as SpotId,
@@ -70,8 +87,41 @@ const mapRowToComment = (row: CommentRow): Comment => ({
 	createdAt: new Date(row.created_at),
 	updatedAt: new Date(row.updated_at),
 	createdByUserId: row.created_by_user_id as UserId,
-	authorUsername: row.author?.[0]?.username ?? null,
+	authorUsername: resolveAuthorUsername(row.author),
 });
+
+const fetchCommentRows = async (spotId: SpotId): Promise<CommentRow[]> => {
+	const joinedQuery = await supabase
+		.from('comments')
+		.select(
+			'id, spot_id, appreciation, comment, wait_time_minutes, created_by_user_id, created_at, updated_at, author:profiles!comments_created_by_user_id_fkey(username)'
+		)
+		.eq('spot_id', spotId)
+		.order('created_at', { ascending: false });
+
+	if (!joinedQuery.error) {
+		return (joinedQuery.data as CommentRow[] | null) ?? [];
+	}
+
+	logger.repository.warn(
+		'Failed to fetch comments with author join, retrying without author profile',
+		{ spotId, error: joinedQuery.error }
+	);
+
+	const fallbackQuery = await supabase
+		.from('comments')
+		.select(
+			'id, spot_id, appreciation, comment, wait_time_minutes, created_by_user_id, created_at, updated_at'
+		)
+		.eq('spot_id', spotId)
+		.order('created_at', { ascending: false });
+
+	if (fallbackQuery.error) {
+		throw fallbackQuery.error;
+	}
+
+	return (fallbackQuery.data as CommentRow[] | null) ?? [];
+};
 
 export const getCommentsBySpotId = async (
 	spotId: SpotId
@@ -79,21 +129,8 @@ export const getCommentsBySpotId = async (
 	logger.repository.debug('Fetching comments by spot ID', { spotId });
 
 	try {
-		const { data, error } = await supabase
-			.from('comments')
-			.select(
-				'id, spot_id, appreciation, comment, wait_time_minutes, created_by_user_id, created_at, updated_at, author:profiles!comments_created_by_user_id_fkey(username)'
-			)
-			.eq('spot_id', spotId)
-			.order('created_at', { ascending: false });
-
-		if (error) {
-			throw error;
-		}
-
-		const comments = (data ?? []).map(row =>
-			mapRowToComment(row as CommentRow)
-		);
+		const rows = await fetchCommentRows(spotId);
+		const comments = rows.map(mapRowToComment);
 
 		logger.repository.info('Comments fetched successfully', {
 			spotId,
