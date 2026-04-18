@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type React from 'react';
@@ -11,6 +12,7 @@ import {
 	MapControls,
 	SearchBarOverlay,
 } from '../../../components';
+import { COLORS } from '../../../constants';
 import { useTranslation } from '../../../i18n';
 import { useJourney } from '../../../journey/context';
 import { NavigationHeader } from '../../../navigation/components';
@@ -157,6 +159,8 @@ export const HomeFixedOverlay: React.FC = () => {
 					<Pressable
 						style={({ pressed }) => [
 							styles.compareDriverDirectionButton,
+							session.hasDriverComparison &&
+								styles.compareDriverDirectionButtonActive,
 							{
 								bottom: NAVIGATION_COMPARE_BUTTON_BOTTOM_OFFSET + insets.bottom,
 							},
@@ -167,7 +171,24 @@ export const HomeFixedOverlay: React.FC = () => {
 						accessibilityLabel={driverDirectionLabel}
 						testID="compare-driver-direction-button"
 					>
-						<Text style={styles.compareDriverDirectionButtonText}>
+						<Ionicons
+							name={
+								session.hasDriverComparison
+									? 'close-circle'
+									: 'git-compare-outline'
+							}
+							size={18}
+							color={
+								session.hasDriverComparison ? COLORS.textLight : COLORS.primary
+							}
+						/>
+						<Text
+							style={[
+								styles.compareDriverDirectionButtonLabel,
+								session.hasDriverComparison &&
+									styles.compareDriverDirectionButtonLabelActive,
+							]}
+						>
 							{driverDirectionLabel}
 						</Text>
 					</Pressable>

@@ -296,7 +296,7 @@ export default {
 		history: 'Mes voyages',
 		profile: 'Profil',
 		logIn: 'Se connecter',
-		compareDriverDirection: 'Comparer direction conducteur',
+		compareDriverDirection: 'Comparer direction',
 		clearComparison: 'Effacer comparaison',
 		markStop: 'Marquer arrêt',
 		swapLocations: 'Echanger le point de depart et la destination',

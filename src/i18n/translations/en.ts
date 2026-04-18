@@ -289,7 +289,7 @@ export default {
 		history: 'My trips',
 		profile: 'Profile',
 		logIn: 'Log in',
-		compareDriverDirection: 'Compare driver direction',
+		compareDriverDirection: 'Compare direction',
 		clearComparison: 'Clear comparison',
 		markStop: 'Mark stop',
 		swapLocations: 'Swap start and destination',
