@@ -100,7 +100,7 @@ const fetchCommentRows = async (spotId: SpotId): Promise<CommentRow[]> => {
 		.order('created_at', { ascending: false });
 
 	if (!joinedQuery.error) {
-		return (joinedQuery.data as CommentRow[] | null) ?? [];
+		return (joinedQuery.data ?? []) as CommentRow[];
 	}
 
 	logger.repository.warn(
@@ -120,7 +120,7 @@ const fetchCommentRows = async (spotId: SpotId): Promise<CommentRow[]> => {
 		throw fallbackQuery.error;
 	}
 
-	return (fallbackQuery.data as CommentRow[] | null) ?? [];
+	return (fallbackQuery.data ?? []) as CommentRow[];
 };
 
 export const getCommentsBySpotId = async (
