@@ -17,6 +17,6 @@ export interface Comment {
 	waitingTimeMinutes?: number;
 	createdAt: Date;
 	updatedAt: Date;
-	createdByUserId: UserId;
+	createdBy: UserId;
 	authorUsername?: string | null;
 }
