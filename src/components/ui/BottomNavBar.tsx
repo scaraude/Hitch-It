@@ -124,6 +124,9 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
 								)}
 								<Text
 									style={[styles.tabLabel, isActive && styles.tabLabelActive]}
+									numberOfLines={1}
+									adjustsFontSizeToFit
+									minimumFontScale={0.75}
 								>
 									{getTabLabel(tab.id)}
 								</Text>
@@ -162,9 +165,11 @@ const styles = StyleSheet.create({
 	},
 	tab: {
 		flex: 1,
+		minWidth: 0,
 		alignItems: 'center',
 		justifyContent: 'center',
 		paddingVertical: SPACING.xs,
+		paddingHorizontal: SPACING.xs,
 	},
 	tabPressed: {
 		opacity: 0.7,
@@ -173,8 +178,11 @@ const styles = StyleSheet.create({
 		marginBottom: SPACING.xs,
 	},
 	tabLabel: {
+		width: '100%',
 		fontSize: SIZES.fontMd,
 		color: TEXT_GRAY,
+		textAlign: 'center',
+		flexShrink: 1,
 	},
 	tabLabelActive: {
 		color: PRIMARY_BLUE,
