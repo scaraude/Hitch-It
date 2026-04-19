@@ -86,7 +86,7 @@ const mapRowToComment = (row: CommentRow): Comment => ({
 	waitingTimeMinutes: parseWaitingTimeMinutes(row.wait_time_minutes, row.id),
 	createdAt: new Date(row.created_at),
 	updatedAt: new Date(row.updated_at),
-	createdByUserId: row.created_by_user_id as UserId,
+	createdBy: row.created_by_user_id as UserId,
 	authorUsername: resolveAuthorUsername(row.author),
 });
 
@@ -159,7 +159,7 @@ export const createComment = async (comment: Comment): Promise<void> => {
 			spot_id: comment.spotId,
 			appreciation: comment.appreciation,
 			comment: comment.comment,
-			created_by_user_id: comment.createdByUserId,
+			created_by_user_id: comment.createdBy,
 			created_at: comment.createdAt.toISOString(),
 			updated_at: comment.updatedAt.toISOString(),
 		});

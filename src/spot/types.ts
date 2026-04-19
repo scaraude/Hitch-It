@@ -35,5 +35,5 @@ export interface Spot {
 	coordinates: Location;
 	createdAt: Date;
 	updatedAt: Date;
-	createdByUserId: UserId;
+	createdBy: UserId;
 }

@@ -177,7 +177,7 @@ export const useSpots = (
 			destinations: formData.destinations,
 			createdAt: now,
 			updatedAt: now,
-			createdByUserId: user.id,
+			createdBy: user.id,
 		};
 		const newComment = {
 			id: generateCommentId(),
@@ -186,7 +186,7 @@ export const useSpots = (
 			comment: formData.comment.trim(),
 			createdAt: now,
 			updatedAt: now,
-			createdByUserId: user.id,
+			createdBy: user.id,
 		};
 
 		logger.spot.info('Submitting spot form', {
@@ -260,7 +260,7 @@ export const useSpots = (
 			return false;
 		}
 
-		return user.id === spot.createdByUserId;
+		return user.id === spot.createdBy;
 	};
 
 	const deleteSpotById = async (spotId: string): Promise<void> => {
@@ -273,7 +273,7 @@ export const useSpots = (
 		if (!canDeleteSpot(spotToDelete)) {
 			logger.spot.warn('User attempted to delete spot without ownership', {
 				spotId,
-				spotOwnerId: spotToDelete.createdByUserId,
+				spotOwnerId: spotToDelete.createdBy,
 				currentUserId: user?.id ?? null,
 			});
 			toastUtils.error(

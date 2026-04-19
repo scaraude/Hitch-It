@@ -70,7 +70,7 @@ export const useSpotComments = (spotId: SpotId): UseSpotCommentsReturn => {
 				comment: trimmedComment,
 				createdAt: now,
 				updatedAt: now,
-				createdByUserId: user.id,
+				createdBy: user.id,
 				authorUsername: user.username.trim() || null,
 			};
 
