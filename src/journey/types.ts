@@ -8,6 +8,11 @@ export type JourneyId = string & { readonly brand: unique symbol };
 export type JourneyPointId = string & { readonly brand: unique symbol };
 export type UserId = string & { readonly brand: unique symbol };
 
+// Live recording cache (SQLite-backed). Distinct from JourneyId because a cache
+// row exists before — and may outlive — its corresponding persisted journey.
+export type CachedJourneyId = string & { readonly brand: unique symbol };
+export type CachedNavigationSessionId = string & { readonly brand: unique symbol };
+
 export interface JourneyRoutePoint {
 	latitude: number;
 	longitude: number;
@@ -94,4 +99,45 @@ export interface StopEnrichment {
 	spotId?: SpotId;
 	waitTimeMinutes?: number;
 	notes?: string;
+}
+
+// =============================================================================
+// Live recording cache (TCK-20)
+// =============================================================================
+
+export type CachedJourneyStatus =
+	| 'recording'
+	| 'paused'
+	| 'stopped'
+	| 'finalized';
+
+/**
+ * A single GPS point captured during live recording, stored in SQLite.
+ * `seq` is monotonically increasing within a cache (insertion order preserved).
+ */
+export interface CachedJourneyPoint {
+	cacheId: CachedJourneyId;
+	seq: number;
+	latitude: number;
+	longitude: number;
+	timestamp: Date;
+	speed?: number;
+	accuracy?: number;
+}
+
+/**
+ * Navigation session associated with a cached journey, persisted so the user
+ * can resume after an app crash (origin/destination kept; route is
+ * recalculated from the current GPS position on restore).
+ */
+export interface CachedNavigationSession {
+	id: CachedNavigationSessionId;
+	cachedJourneyId: CachedJourneyId;
+	originLatitude: number;
+	originLongitude: number;
+	originName?: string;
+	destinationLatitude: number;
+	destinationLongitude: number;
+	destinationName?: string;
+	createdAt: Date;
 }
