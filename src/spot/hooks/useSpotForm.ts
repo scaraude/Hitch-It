@@ -53,12 +53,11 @@ export const useSpotForm = ({
 
 	const isFormValid = useMemo(
 		() =>
-			roadName.trim().length > 0 &&
 			direction !== undefined &&
 			destinations.length > 0 &&
 			appreciation !== undefined &&
 			comment.trim().length > 0,
-		[appreciation, comment, destinations.length, direction, roadName]
+		[appreciation, comment, destinations.length, direction]
 	);
 
 	const handleAddDestination = useCallback(() => {

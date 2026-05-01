@@ -14,7 +14,7 @@ type SpotRow = {
 	id: string;
 	latitude: number;
 	longitude: number;
-	road_name: string;
+	road_name: string | null;
 	direction: string;
 	destinations: string[] | null;
 	created_at: string;
@@ -48,7 +48,7 @@ const mapRowToSpot = (row: SpotRow): Spot => ({
 		latitude: row.latitude,
 		longitude: row.longitude,
 	},
-	roadName: row.road_name,
+	roadName: row.road_name ?? undefined,
 	direction: parseDirection(row.direction, row.id),
 	destinations: parseDestinations(row.destinations),
 	createdAt: new Date(row.created_at),

@@ -295,7 +295,7 @@ export const useHomeSessionState = ({
 			onDeselectSpot();
 			setNavigationSetupOrigin({
 				location: spot.coordinates,
-				name: spot.roadName,
+				name: spot.roadName ?? '',
 			});
 			setShowNavigationSetupSheet(true);
 		},

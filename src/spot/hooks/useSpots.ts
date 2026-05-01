@@ -58,7 +58,7 @@ export const useSpots = (
 			fullSpots.map(spot => ({
 				id: spot.id as string,
 				coordinates: spot.coordinates,
-				title: spot.roadName,
+				title: spot.roadName ?? '',
 				description: spot.direction,
 				color:
 					selectedSpot?.id === spot.id
@@ -172,7 +172,7 @@ export const useSpots = (
 		const newSpot: Spot = {
 			id: generateSpotId(),
 			coordinates: pendingLocation,
-			roadName: formData.roadName,
+			roadName: formData.roadName || undefined,
 			direction: formData.direction,
 			destinations: formData.destinations,
 			createdAt: now,

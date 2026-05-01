@@ -29,7 +29,7 @@ export interface SpotMarkerData {
 
 export interface Spot {
 	id: SpotId;
-	roadName: string;
+	roadName?: string;
 	direction: Direction;
 	destinations: string[];
 	coordinates: Location;
