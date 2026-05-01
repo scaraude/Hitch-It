@@ -59,6 +59,11 @@ export interface UseHomeSessionStateReturn {
 	handleSaveJourney: () => Promise<void>;
 	handleDiscardJourney: () => Promise<void>;
 	handleMarkStop: () => void;
+	// Arrival prompt (replaces the previous auto-stop behavior)
+	showArrivalPromptSheet: boolean;
+	arrivalPromptDestinationName: string;
+	handleArrivalPromptFinish: () => Promise<void>;
+	handleArrivalPromptContinue: () => void;
 	// NavigationSetup flow
 	showNavigationSetupSheet: boolean;
 	navigationSetupOrigin: NamedLocation | null;
@@ -108,6 +113,9 @@ export const useHomeSessionState = ({
 		[]
 	);
 	const [journeyStartTime, setJourneyStartTime] = useState<Date | null>(null);
+	const [showArrivalPromptSheet, setShowArrivalPromptSheet] = useState(false);
+	const [arrivalPromptDestinationName, setArrivalPromptDestinationName] =
+		useState('');
 	const hasHandledArrivalRef = useRef(false);
 
 	const { hasArrived } = useArrivalDetection(navigation.route, userLocation);
@@ -123,42 +131,25 @@ export const useHomeSessionState = ({
 		}
 
 		hasHandledArrivalRef.current = true;
+
 		if (!hasActiveJourney) {
 			stopNavigation();
 			toastUtils.info('Destination proche', 'Arrivée détectée');
 			return;
 		}
 
-		setCompletionRoute(navigation.route);
-		setCompletionSpotsUsed(navigation.spotsOnRoute);
-		setShowCompletionSheet(true);
-
-		void (async () => {
-			try {
-				if (isRecording) {
-					await stopRecording();
-				}
-				stopNavigation();
-				toastUtils.info(
-					'Destination proche',
-					'Fin du trajet détectée automatiquement'
-				);
-			} catch (error) {
-				logger.navigation.error(
-					'Failed to auto-finish journey on arrival detection',
-					error
-				);
-			}
-		})();
+		// Active recording: prompt the user instead of auto-stopping. The
+		// underlying useArrivalDetection guards against re-trigger within the
+		// same session, so picking "Continue" leaves the sheet permanently
+		// dismissed for this trip.
+		setArrivalPromptDestinationName(navigation.route.destinationName);
+		setShowArrivalPromptSheet(true);
 	}, [
 		hasArrived,
 		hasActiveJourney,
-		isRecording,
 		navigation.isActive,
 		navigation.route,
-		navigation.spotsOnRoute,
 		stopNavigation,
-		stopRecording,
 	]);
 
 	const journeyDurationMinutes = useMemo(
@@ -248,6 +239,37 @@ export const useHomeSessionState = ({
 		markStop();
 		toastUtils.success('Arrêt marqué', 'Point ajouté au trajet');
 	}, [isRecording, markStop]);
+
+	const handleArrivalPromptFinish = useCallback(async () => {
+		setShowArrivalPromptSheet(false);
+		if (navigation.route) {
+			setCompletionRoute(navigation.route);
+			setCompletionSpotsUsed(navigation.spotsOnRoute);
+			setShowCompletionSheet(true);
+		}
+
+		try {
+			if (isRecording) {
+				await stopRecording();
+			}
+			stopNavigation();
+		} catch (error) {
+			logger.navigation.error(
+				'Failed to finish journey from arrival prompt',
+				error
+			);
+		}
+	}, [
+		isRecording,
+		navigation.route,
+		navigation.spotsOnRoute,
+		stopNavigation,
+		stopRecording,
+	]);
+
+	const handleArrivalPromptContinue = useCallback(() => {
+		setShowArrivalPromptSheet(false);
+	}, []);
 
 	const markJourneyStarted = useCallback(() => {
 		setJourneyStartTime(new Date());
@@ -441,6 +463,11 @@ export const useHomeSessionState = ({
 		handleSaveJourney,
 		handleDiscardJourney,
 		handleMarkStop,
+		// Arrival prompt
+		showArrivalPromptSheet,
+		arrivalPromptDestinationName,
+		handleArrivalPromptFinish,
+		handleArrivalPromptContinue,
 		// NavigationSetup flow
 		showNavigationSetupSheet,
 		navigationSetupOrigin,

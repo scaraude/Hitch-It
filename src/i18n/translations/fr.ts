@@ -250,7 +250,8 @@ export default {
 		destinationPlaceholder: 'Ex: Paris, Lyon...',
 		hitchFromSpot: 'Faire du stop depuis ce spot',
 		openGoogleItineraryCta: 'Itinéraire Google',
-		openGoogleItineraryHint: 'Ouvre Google Maps avec un itinéraire vers ce spot.',
+		openGoogleItineraryHint:
+			'Ouvre Google Maps avec un itinéraire vers ce spot.',
 		createSpot: 'Créer le spot',
 		ratingLabel: 'Appréciation *',
 		commentLabel: 'Commentaire *',
@@ -318,6 +319,13 @@ export default {
 		toDestination: 'Vers {{destination}}',
 		saveJourneyQuestion: 'Voulez-vous sauvegarder ce voyage ?',
 		hitchIt: 'Hitch It !',
+		arrivalPromptTitle: 'Tu sembles arrivé(e)',
+		arrivalPromptMessage:
+			'Tu es proche de {{destination}}. Veux-tu terminer le trajet ?',
+		arrivalPromptFinish: 'Terminer le trajet',
+		arrivalPromptContinue: "Continuer l'enregistrement",
+		pendingFinalizationBanner:
+			"Trajet en attente d'envoi. Touchez pour réessayer.",
 	},
 
 	// Errors
