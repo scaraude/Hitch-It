@@ -1,8 +1,7 @@
 import type React from 'react';
 import { useCallback } from 'react';
-import { KeyboardAvoidingView, Platform, View } from 'react-native';
+import { View } from 'react-native';
 import Toast from 'react-native-toast-message';
-import { useTranslation } from '../../../i18n';
 import {
 	DriverDirectionSheet,
 	NavigationCompleteSheet,
@@ -27,7 +26,6 @@ export const HomeSheetsOverlay: React.FC = () => {
 	const spot = useHomeSpot();
 	const session = useHomeSession();
 	const map = useHomeMap();
-	const { t } = useTranslation();
 
 	const { selectedSpot } = spot;
 
@@ -60,17 +58,10 @@ export const HomeSheetsOverlay: React.FC = () => {
 			)}
 
 			{spot.isShowingForm && (
-				<KeyboardAvoidingView
-					style={homeStyles.nonMapOverlay}
-					behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-					keyboardVerticalOffset={0}
-					pointerEvents="box-none"
-				>
-					<SpotForm
-						onSubmit={spot.submitSpotForm}
-						onCancel={spot.cancelSpotForm}
-					/>
-				</KeyboardAvoidingView>
+				<SpotForm
+					onSubmit={spot.submitSpotForm}
+					onCancel={spot.cancelSpotForm}
+				/>
 			)}
 
 			{selectedSpot && !spot.isShowingForm && (

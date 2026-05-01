@@ -1,18 +1,13 @@
 import { StyleSheet } from 'react-native';
 import { COLORS, SIZES, SPACING } from '../../constants';
 
-const FORM_MAX_HEIGHT = '80%';
-const FORM_SCROLL_MAX_HEIGHT = 500;
-
 export const spotFormStyles = StyleSheet.create({
-	container: {
-		maxHeight: FORM_MAX_HEIGHT,
-	},
-	formContent: {
-		padding: SPACING.lg,
-	},
 	scrollView: {
-		maxHeight: FORM_SCROLL_MAX_HEIGHT,
+		flex: 1,
+	},
+	scrollContent: {
+		paddingHorizontal: SPACING.lg,
+		paddingTop: SPACING.sm,
 	},
 	title: {
 		fontSize: SIZES.font2Xl,
@@ -68,10 +63,15 @@ export const spotFormStyles = StyleSheet.create({
 	commentSection: {
 		marginTop: SPACING.lg,
 	},
-	actions: {
+	footer: {
 		flexDirection: 'row',
 		gap: SPACING.md,
-		marginTop: SPACING.lg,
+		paddingHorizontal: SPACING.lg,
+		paddingTop: SPACING.md,
+		paddingBottom: SPACING.md,
+		backgroundColor: COLORS.background,
+		borderTopWidth: 1,
+		borderTopColor: COLORS.border,
 	},
 	button: {
 		flex: 1,

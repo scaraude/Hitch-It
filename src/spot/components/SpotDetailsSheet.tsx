@@ -1,10 +1,13 @@
-import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import BottomSheet, {
+	BottomSheetScrollView,
+	type BottomSheetScrollViewMethods,
+} from '@gorhom/bottom-sheet';
 import type React from 'react';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { Alert, Linking } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSpotComments } from '../../comment/hooks';
-import { toastUtils } from '../../components/ui';
+import { sheetStyles, toastUtils } from '../../components/ui';
 import { SPACING } from '../../constants';
 import { useTranslation } from '../../i18n';
 import { DIRECTION_HEADING_DEGREES } from '../constants';
@@ -28,7 +31,7 @@ import type {
 } from './spotDetailsTypes';
 
 const STREET_VIEW_ICON = require('../../../assets/street-view-icon.png');
-const SHEET_SNAP_POINTS = ['56%', '96%'] as const;
+const SNAP_POINTS: string[] = ['56%', '96%'];
 const SHEET_INITIAL_INDEX = 0;
 const SHEET_EXPANDED_INDEX = 1;
 
@@ -60,13 +63,13 @@ export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 	const insets = useSafeAreaInsets();
 	const { t } = useTranslation();
 	const bottomSheetRef = useRef<BottomSheet>(null);
+	const scrollViewRef = useRef<BottomSheetScrollViewMethods>(null);
 	const [isDrawerExpanded, setIsDrawerExpanded] = useState(false);
 	const { comments, isLoading, isSubmitting, submitComment } = useSpotComments(
 		spot.id
 	);
 	const commentComposerState = useSpotDetailsCommentComposer({ submitComment });
 
-	const snapPoints = useMemo(() => [...SHEET_SNAP_POINTS], []);
 	const directionHeading = DIRECTION_HEADING_DEGREES[spot.direction];
 	const spotTitle = getSpotCoordinatesTitle(spot);
 	const destinationsLabel = resolveDestinationsLabel(spot.destinations);
@@ -117,35 +120,46 @@ export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 		);
 	}, [onClose, onDeleteSpot, spot.id, t]);
 
-	const commentComposer: SpotDetailsCommentComposerModel = {
-		...commentComposerState,
-		isSubmitting,
-	};
+	const commentComposer = useMemo<SpotDetailsCommentComposerModel>(
+		() => ({ ...commentComposerState, isSubmitting }),
+		[commentComposerState, isSubmitting]
+	);
+
+	const handleCommentFocus = useCallback(() => {
+		bottomSheetRef.current?.expand();
+		scrollViewRef.current?.scrollToEnd({ animated: true });
+	}, []);
 
 	return (
 		<BottomSheet
 			ref={bottomSheetRef}
 			index={SHEET_INITIAL_INDEX}
-			snapPoints={snapPoints}
+			snapPoints={SNAP_POINTS}
 			enableDynamicSizing={false}
 			enablePanDownToClose
+			keyboardBehavior="extend"
+			keyboardBlurBehavior="restore"
+			android_keyboardInputMode="adjustResize"
 			onChange={handleSheetChange}
 			onClose={handleSheetClose}
-			style={styles.sheetContainer}
+			style={sheetStyles.container}
 			backgroundStyle={[
-				styles.sheetBackground,
+				sheetStyles.background,
 				isDrawerExpanded && styles.sheetBackgroundExpanded,
 			]}
 			handleStyle={styles.handle}
 			handleIndicatorStyle={styles.handleIndicator}
 		>
 			<BottomSheetScrollView
+				ref={scrollViewRef}
 				style={styles.content}
 				contentContainerStyle={[
 					styles.contentContainer,
 					{ paddingBottom: insets.bottom + SPACING.xl },
 				]}
 				showsVerticalScrollIndicator={false}
+				keyboardShouldPersistTaps="handled"
+				automaticallyAdjustKeyboardInsets
 				testID="spot-details-sheet"
 			>
 				<SpotDetailsHeaderSection
@@ -167,6 +181,7 @@ export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 					isLoading={isLoading}
 					comments={comments}
 					composer={commentComposer}
+					onCommentFocus={handleCommentFocus}
 				/>
 			</BottomSheetScrollView>
 		</BottomSheet>

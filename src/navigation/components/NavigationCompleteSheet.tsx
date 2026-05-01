@@ -1,5 +1,7 @@
+import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { BottomSheetHeader, bottomSheetStyles } from '../../components/ui';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { sheetStyles } from '../../components/ui';
 import { COLORS, SIZES, SPACING } from '../../constants';
 import { useTranslation } from '../../i18n';
 import type { NavigationRoute, SpotOnRoute } from '../types';
@@ -11,6 +13,8 @@ interface NavigationCompleteSheetProps {
 	onSave: () => void;
 	onDiscard: () => void;
 }
+
+const SNAP_POINTS: string[] = ['50%'];
 
 function formatDuration(minutes: number): string {
 	if (minutes < 60) {
@@ -31,13 +35,22 @@ export function NavigationCompleteSheet({
 	onSave,
 	onDiscard,
 }: NavigationCompleteSheetProps) {
+	const insets = useSafeAreaInsets();
 	const { t } = useTranslation();
 
 	return (
-		<View style={[bottomSheetStyles.container, styles.container]}>
-			<BottomSheetHeader style={styles.header} />
-
-			<View style={styles.content}>
+		<BottomSheet
+			index={0}
+			snapPoints={SNAP_POINTS}
+			enableDynamicSizing={false}
+			enablePanDownToClose={false}
+			style={sheetStyles.container}
+			backgroundStyle={sheetStyles.background}
+			handleIndicatorStyle={sheetStyles.defaultHandleIndicator}
+		>
+			<BottomSheetView
+				style={[styles.content, { paddingBottom: insets.bottom + SPACING.lg }]}
+			>
 				<Text style={styles.title}>{t('navigation.complete')}</Text>
 
 				<View style={styles.stats}>
@@ -83,22 +96,16 @@ export function NavigationCompleteSheet({
 						</Text>
 					</Pressable>
 				</View>
-			</View>
-		</View>
+			</BottomSheetView>
+		</BottomSheet>
 	);
 }
 
 const styles = StyleSheet.create({
-	container: {
-		zIndex: 900,
-	},
-	header: {
-		paddingTop: SPACING.sm,
-	},
 	content: {
+		flex: 1,
 		paddingHorizontal: SPACING.lg,
 		paddingTop: SPACING.md,
-		paddingBottom: SPACING.xl,
 	},
 	title: {
 		fontSize: SIZES.font2Xl,

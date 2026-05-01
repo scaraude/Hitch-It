@@ -8,18 +8,6 @@ const ITINERARY_CALLOUT_MAX_WIDTH = 196;
 const ITINERARY_CALLOUT_ICON_SIZE = 36;
 
 export const spotDetailsSheetStyles = StyleSheet.create({
-	sheetContainer: {
-		shadowColor: '#000',
-		shadowOffset: { width: 0, height: -2 },
-		shadowOpacity: SIZES.shadowOpacity,
-		shadowRadius: SIZES.shadowRadius,
-		elevation: 5,
-	},
-	sheetBackground: {
-		backgroundColor: COLORS.background,
-		borderTopLeftRadius: SIZES.radiusXLarge,
-		borderTopRightRadius: SIZES.radiusXLarge,
-	},
 	sheetBackgroundExpanded: {
 		borderTopLeftRadius: SIZES.radiusLarge,
 		borderTopRightRadius: SIZES.radiusLarge,

@@ -7,7 +7,7 @@ import type { SpotDetailsCommentsSectionProps } from './spotDetailsTypes';
 
 export const SpotDetailsCommentsSection: React.FC<
 	SpotDetailsCommentsSectionProps
-> = ({ isLoading, comments, composer }) => {
+> = ({ isLoading, comments, composer, onCommentFocus }) => {
 	const {
 		isWritingComment,
 		draftAppreciation,
@@ -40,6 +40,7 @@ export const SpotDetailsCommentsSection: React.FC<
 						onAppreciationChange={onAppreciationChange}
 						onCommentChange={onCommentChange}
 						autoFocusComment
+						onCommentFocus={onCommentFocus}
 					/>
 					<View style={styles.commentComposerActions}>
 						<Pressable

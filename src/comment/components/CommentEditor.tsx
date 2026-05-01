@@ -1,5 +1,6 @@
+import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import type React from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { COLORS, SIZES, SPACING } from '../../constants';
 import { A11Y_LABELS } from '../../constants/accessibility';
 import { useTranslation } from '../../i18n';
@@ -15,6 +16,7 @@ interface CommentEditorProps {
 	onAppreciationChange: (value: CommentAppreciation) => void;
 	onCommentChange: (value: string) => void;
 	autoFocusComment?: boolean;
+	onCommentFocus?: () => void;
 }
 
 export const CommentEditor: React.FC<CommentEditorProps> = ({
@@ -23,6 +25,7 @@ export const CommentEditor: React.FC<CommentEditorProps> = ({
 	onAppreciationChange,
 	onCommentChange,
 	autoFocusComment = false,
+	onCommentFocus,
 }) => {
 	const { t } = useTranslation();
 	const appreciationConfig = getCommentAppreciationConfig(t);
@@ -60,7 +63,7 @@ export const CommentEditor: React.FC<CommentEditorProps> = ({
 			</View>
 
 			<Text style={styles.label}>{t('spots.commentLabel')}</Text>
-			<TextInput
+			<BottomSheetTextInput
 				style={styles.input}
 				value={comment}
 				onChangeText={onCommentChange}
@@ -71,6 +74,7 @@ export const CommentEditor: React.FC<CommentEditorProps> = ({
 				textAlignVertical="top"
 				accessibilityLabel={A11Y_LABELS.commentInput}
 				autoFocus={autoFocusComment}
+				onFocus={onCommentFocus}
 			/>
 		</View>
 	);
