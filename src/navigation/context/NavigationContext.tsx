@@ -1,5 +1,18 @@
 import type React from 'react';
-import { createContext, useCallback, useContext, useState } from 'react';
+import {
+	createContext,
+	useCallback,
+	useContext,
+	useEffect,
+	useRef,
+	useState,
+} from 'react';
+import { useJourney } from '../../journey/context/JourneyContext';
+import {
+	getNavigationSessionForJourney,
+	saveNavigationSession,
+} from '../../journey/services/journeyCache/cachedNavigationRepository';
+import type { CachedJourneyId } from '../../journey/types';
 import { getSpotsInBounds } from '../../spot/services';
 import { polylineToBounds } from '../../utils';
 import { logger } from '../../utils/logger';
@@ -47,6 +60,9 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({
 	const [navigation, setNavigation] = useState<NavigationState>(
 		INITIAL_NAVIGATION_STATE
 	);
+	const { activeJourney, currentLocation: journeyCurrentLocation } =
+		useJourney();
+	const hasAttemptedRestoreRef = useRef(false);
 
 	const setDestination = useCallback((location: RoutePoint, name: string) => {
 		logger.navigation.info('Destination set', { name, location });
@@ -81,13 +97,18 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({
 		});
 	}, []);
 
-	const startNavigationFlow = useCallback(
+	/**
+	 * Pure routing + state update — no cache persistence side effects. Used
+	 * for both initial navigation and crash restoration so the saved session
+	 * isn't overwritten with a recalculated origin.
+	 */
+	const calculateAndApplyRoute = useCallback(
 		async (
 			startLocation: RoutePoint,
 			destinationLocation: RoutePoint,
 			destinationName: string
 		): Promise<NavigationActionResult> => {
-			logger.navigation.info('Starting navigation', {
+			logger.navigation.info('Calculating route', {
 				destination: destinationName,
 				from: startLocation,
 			});
@@ -117,7 +138,6 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({
 				});
 			} catch (error) {
 				logger.navigation.error('Failed to fetch spots for route', error);
-				// Continue navigation even if spots fail to load
 			}
 
 			setNavigation({
@@ -129,7 +149,7 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({
 				destinationMarker: null,
 			});
 
-			logger.navigation.info('Navigation started', {
+			logger.navigation.info('Navigation route applied', {
 				destinationName: result.route.destinationName,
 				distanceKm: result.route.distanceKm,
 				spotsOnRoute: spotsOnRoute.length,
@@ -139,6 +159,111 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({
 		},
 		[]
 	);
+
+	const startNavigationFlow = useCallback(
+		async (
+			startLocation: RoutePoint,
+			destinationLocation: RoutePoint,
+			destinationName: string
+		): Promise<NavigationActionResult> => {
+			const result = await calculateAndApplyRoute(
+				startLocation,
+				destinationLocation,
+				destinationName
+			);
+
+			if (!result.success) {
+				return result;
+			}
+
+			// Persist the session so the user can recover navigation after a
+			// crash. Origin/destination are the business endpoints; the
+			// calculated polyline is intentionally not stored (would be stale).
+			if (activeJourney) {
+				try {
+					await saveNavigationSession({
+						cachedJourneyId: activeJourney.id as unknown as CachedJourneyId,
+						origin: {
+							latitude: startLocation.latitude,
+							longitude: startLocation.longitude,
+						},
+						destination: {
+							latitude: destinationLocation.latitude,
+							longitude: destinationLocation.longitude,
+							name: destinationName,
+						},
+					});
+				} catch (error) {
+					logger.navigation.error(
+						'Failed to persist navigation session for crash recovery',
+						error
+					);
+				}
+			}
+
+			return { success: true };
+		},
+		[activeJourney, calculateAndApplyRoute]
+	);
+
+	// Crash recovery: when an active journey is restored at boot, look up the
+	// associated nav session and recalculate the route from the current GPS
+	// position. The saved origin stays as-is (business origin of the trip).
+	useEffect(() => {
+		if (
+			hasAttemptedRestoreRef.current ||
+			!activeJourney ||
+			navigation.isActive ||
+			!journeyCurrentLocation
+		) {
+			return;
+		}
+
+		hasAttemptedRestoreRef.current = true;
+
+		void (async () => {
+			const cacheId = activeJourney.id as unknown as CachedJourneyId;
+			try {
+				const session = await getNavigationSessionForJourney(cacheId);
+				if (!session) return;
+
+				logger.navigation.info('Restoring navigation from cache', {
+					cacheId,
+					destination: session.destinationName,
+				});
+
+				await calculateAndApplyRoute(
+					{
+						latitude: journeyCurrentLocation.latitude,
+						longitude: journeyCurrentLocation.longitude,
+					},
+					{
+						latitude: session.destinationLatitude,
+						longitude: session.destinationLongitude,
+					},
+					session.destinationName ?? 'Destination'
+				);
+			} catch (error) {
+				logger.navigation.error(
+					'Failed to restore navigation session at boot',
+					error
+				);
+			}
+		})();
+	}, [
+		activeJourney,
+		calculateAndApplyRoute,
+		journeyCurrentLocation,
+		navigation.isActive,
+	]);
+
+	// Reset the restore guard when the active journey is cleared (next
+	// recording session may need its own restoration attempt).
+	useEffect(() => {
+		if (!activeJourney) {
+			hasAttemptedRestoreRef.current = false;
+		}
+	}, [activeJourney]);
 
 	const startNavigation = useCallback(
 		async (userLocation: RoutePoint): Promise<NavigationActionResult> => {
