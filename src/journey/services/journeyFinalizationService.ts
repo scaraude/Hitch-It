@@ -3,13 +3,13 @@ import {
 	type CachedJourneyId,
 	type CachedJourneyPoint,
 	type Journey,
-	type JourneyId,
 	type JourneyRoutePoint,
 	JourneyStatus,
 	type UserId,
 } from '../types';
 import { finalize, type StoppedState } from './journeyCache/cachedJourneyState';
 import { deleteNavigationSessionForJourney } from './journeyCache/cachedNavigationRepository';
+import { cachedIdAsJourneyId } from './journeyCache/ids';
 import {
 	getCachedJourneyWithPoints,
 	getStoppedNonFinalized,
@@ -17,9 +17,6 @@ import {
 	setLastFinalizeError,
 } from './journeyCache/journeyCacheRepository';
 import { saveJourney } from './journeyRepository';
-
-const cacheIdAsJourneyId = (id: CachedJourneyId): JourneyId =>
-	id as unknown as JourneyId;
 
 const buildJourneyFromCache = (
 	state: StoppedState,
@@ -31,7 +28,7 @@ const buildJourneyFromCache = (
 	}));
 
 	return {
-		id: cacheIdAsJourneyId(state.id),
+		id: cachedIdAsJourneyId(state.id),
 		userId: state.userId,
 		status: JourneyStatus.Completed,
 		startedAt: state.startedAt,
@@ -41,48 +38,43 @@ const buildJourneyFromCache = (
 	};
 };
 
-class CacheNotFoundError extends Error {
-	constructor(cacheId: CachedJourneyId) {
-		super(`Cached journey ${cacheId} not found`);
-		this.name = 'CacheNotFoundError';
-	}
-}
-
-class CacheNotReadyForFinalizationError extends Error {
-	constructor(cacheId: CachedJourneyId, status: string) {
-		super(
-			`Cached journey ${cacheId} cannot be finalized in status '${status}' — must be 'stopped' or 'finalized' (idempotent)`
-		);
-		this.name = 'CacheNotReadyForFinalizationError';
-	}
+interface FinalizeOptions {
+	state?: StoppedState;
+	points?: CachedJourneyPoint[];
 }
 
 /**
  * Persist a stopped cached journey into Supabase as the canonical Journey
- * row, then mark the cache as finalized. Idempotent: a finalized cache
- * short-circuits and a stopped cache is upserted (saveJourney UPSERTs by
- * id, so retries don't duplicate).
+ * row, then mark the cache as finalized. saveJourney UPSERTs by id so a
+ * retry after partial failure doesn't duplicate.
  *
- * On failure the cache is left in 'stopped' state with last_finalize_error
- * set so the next retryPendingFinalizations pass can pick it up again.
+ * Callers may pass a pre-loaded state + points to skip the SQLite read
+ * (the common case from stopRecording, which just transitioned the cache
+ * itself).
+ *
+ * On Supabase failure the cache is left in 'stopped' state with
+ * last_finalize_error set, so retryPendingFinalizations can pick it up
+ * on the next boot.
  */
 export const finalizeCachedJourney = async (
-	cacheId: CachedJourneyId
+	cacheId: CachedJourneyId,
+	options: FinalizeOptions = {}
 ): Promise<Journey> => {
-	const cached = await getCachedJourneyWithPoints(cacheId);
-	if (!cached) {
-		throw new CacheNotFoundError(cacheId);
-	}
+	let state = options.state;
+	let points = options.points;
 
-	const { state, points } = cached;
-
-	if (state.status === 'finalized') {
-		logger.journey.info('Cache already finalized, skipping', { cacheId });
-		return buildJourneyFromCache({ ...state, status: 'stopped' }, points);
-	}
-
-	if (state.status !== 'stopped') {
-		throw new CacheNotReadyForFinalizationError(cacheId, state.status);
+	if (!state || !points) {
+		const cached = await getCachedJourneyWithPoints(cacheId);
+		if (!cached) {
+			throw new Error(`Cached journey ${cacheId} not found`);
+		}
+		if (cached.state.status !== 'stopped') {
+			throw new Error(
+				`Cached journey ${cacheId} cannot be finalized in status '${cached.state.status}'`
+			);
+		}
+		state = cached.state;
+		points = cached.points;
 	}
 
 	const journey = buildJourneyFromCache(state, points);
@@ -98,9 +90,11 @@ export const finalizeCachedJourney = async (
 		throw error;
 	}
 
-	await saveState(finalize(state, new Date()));
-	await setLastFinalizeError(cacheId, null);
-	await deleteNavigationSessionForJourney(cacheId);
+	await Promise.all([
+		saveState(finalize(state, new Date())),
+		setLastFinalizeError(cacheId, null),
+		deleteNavigationSessionForJourney(cacheId),
+	]);
 
 	logger.journey.info('Cached journey finalized', { cacheId });
 	return journey;
@@ -108,11 +102,8 @@ export const finalizeCachedJourney = async (
 
 /**
  * Boot-time pass: walk every stopped non-finalized cache for the user and
- * try to finalize it. Failures are logged but don't abort the loop, so a
- * single broken cache can't block others.
- *
- * Returns the IDs that are still pending after the pass — callers can
- * surface a "retry" UI when this list is non-empty.
+ * try to finalize it. Failures don't abort the loop, so a single broken
+ * cache can't block the others. Returns IDs still pending after the pass.
  */
 export const retryPendingFinalizations = async (
 	userId: UserId
@@ -140,5 +131,3 @@ export const retryPendingFinalizations = async (
 
 	return stillPending;
 };
-
-export { CacheNotFoundError, CacheNotReadyForFinalizationError };

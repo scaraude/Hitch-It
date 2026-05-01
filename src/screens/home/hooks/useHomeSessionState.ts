@@ -242,17 +242,18 @@ export const useHomeSessionState = ({
 
 	const handleArrivalPromptFinish = useCallback(async () => {
 		setShowArrivalPromptSheet(false);
-		if (navigation.route) {
-			setCompletionRoute(navigation.route);
-			setCompletionSpotsUsed(navigation.spotsOnRoute);
-			setShowCompletionSheet(true);
-		}
 
 		try {
 			if (isRecording) {
 				await stopRecording();
 			}
 			stopNavigation();
+
+			if (navigation.route) {
+				setCompletionRoute(navigation.route);
+				setCompletionSpotsUsed(navigation.spotsOnRoute);
+				setShowCompletionSheet(true);
+			}
 		} catch (error) {
 			logger.navigation.error(
 				'Failed to finish journey from arrival prompt',

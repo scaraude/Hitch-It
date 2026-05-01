@@ -12,7 +12,7 @@ import {
 	getNavigationSessionForJourney,
 	saveNavigationSession,
 } from '../../journey/services/journeyCache/cachedNavigationRepository';
-import type { CachedJourneyId } from '../../journey/types';
+import { journeyIdAsCachedId } from '../../journey/services/journeyCache/ids';
 import { getSpotsInBounds } from '../../spot/services';
 import { polylineToBounds } from '../../utils';
 import { logger } from '../../utils/logger';
@@ -182,7 +182,7 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({
 			if (activeJourney) {
 				try {
 					await saveNavigationSession({
-						cachedJourneyId: activeJourney.id as unknown as CachedJourneyId,
+						cachedJourneyId: journeyIdAsCachedId(activeJourney.id),
 						origin: {
 							latitude: startLocation.latitude,
 							longitude: startLocation.longitude,
@@ -221,7 +221,7 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({
 		}
 
 		hasAttemptedRestoreRef.current = true;
-		const cacheId = activeJourneyId as unknown as CachedJourneyId;
+		const cacheId = journeyIdAsCachedId(activeJourneyId);
 
 		void (async () => {
 			try {

@@ -17,11 +17,13 @@ import {
 	resume as resumeState,
 	stop as stopState,
 } from '../services/journeyCache/cachedJourneyState';
+import { cachedIdAsJourneyId } from '../services/journeyCache/ids';
 import {
 	appendLocationPoints,
 	createCachedJourney,
 	deleteCachedJourney,
 	getActiveCachedJourney,
+	getCachedJourneyPoints,
 	saveState,
 } from '../services/journeyCache/journeyCacheRepository';
 import {
@@ -33,7 +35,6 @@ import { locationTrackingService } from '../services/locationTrackingService';
 import {
 	type CachedJourneyId,
 	type Journey,
-	type JourneyId,
 	type JourneyPoint,
 	type JourneyPointId,
 	JourneyPointType,
@@ -42,9 +43,6 @@ import {
 	type LocationUpdate,
 	type UserId,
 } from '../types';
-
-const cachedIdAsJourneyId = (id: CachedJourneyId): JourneyId =>
-	id as unknown as JourneyId;
 
 const toRoutePoint = (location: LocationUpdate): JourneyRoutePoint => ({
 	latitude: location.latitude,
@@ -101,8 +99,8 @@ interface JourneyContextValue {
 	pauseRecording: () => Promise<void>;
 	resumeRecording: () => Promise<void>;
 
-	// Manual stop marking — kept available until TCK-24 removes the UI; the
-	// epic's target UX has no manual stops.
+	// Manual stop marking — kept for backwards compatibility while the UI
+	// still exposes the button. The target UX has no manual stops.
 	markStop: () => void;
 }
 
@@ -333,14 +331,12 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 		setIsRecording(false);
 
 		try {
-			await finalizeCachedJourney(cache.id);
+			const points = await getCachedJourneyPoints(cache.id);
+			await finalizeCachedJourney(cache.id, { state: stopped, points });
 
-			// Manual stops use the legacy journey_points table for now; this
-			// goes away once TCK-24 removes the manual stop UI and TCK-19
-			// renames the table.
-			if (manualStopsRef.current.length > 0) {
-				await saveJourneyPoints(manualStopsRef.current);
-			}
+			// Manual stops still use the legacy journey_points table; the
+			// inner saveJourneyPoints early-returns on empty.
+			await saveJourneyPoints(manualStopsRef.current);
 
 			setPendingFinalizationIds(prev => prev.filter(id => id !== cache.id));
 		} catch (error) {

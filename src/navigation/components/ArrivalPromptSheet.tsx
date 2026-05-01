@@ -42,26 +42,26 @@ export function ArrivalPromptSheet({
 					})}
 				</Text>
 
-				<View style={styles.buttons}>
+				<View style={sheetStyles.buttonGroup}>
 					<Pressable
 						style={({ pressed }) => [
-							styles.primaryButton,
-							pressed && styles.buttonPressed,
+							sheetStyles.primaryButton,
+							pressed && sheetStyles.buttonPressed,
 						]}
 						onPress={onFinish}
 					>
-						<Text style={styles.primaryButtonText}>
+						<Text style={sheetStyles.primaryButtonText}>
 							{t('navigation.arrivalPromptFinish')}
 						</Text>
 					</Pressable>
 					<Pressable
 						style={({ pressed }) => [
-							styles.secondaryButton,
-							pressed && styles.buttonPressed,
+							sheetStyles.secondaryButton,
+							pressed && sheetStyles.buttonPressed,
 						]}
 						onPress={onContinue}
 					>
-						<Text style={styles.secondaryButtonText}>
+						<Text style={sheetStyles.secondaryButtonText}>
 							{t('navigation.arrivalPromptContinue')}
 						</Text>
 					</Pressable>
@@ -89,35 +89,5 @@ const styles = StyleSheet.create({
 		color: COLORS.text,
 		textAlign: 'center',
 		marginBottom: SPACING.lg,
-	},
-	buttons: {
-		gap: SPACING.sm,
-	},
-	primaryButton: {
-		backgroundColor: COLORS.primary,
-		paddingVertical: SPACING.md,
-		borderRadius: SIZES.radiusMedium,
-		alignItems: 'center',
-	},
-	secondaryButton: {
-		backgroundColor: COLORS.surface,
-		paddingVertical: SPACING.md,
-		borderRadius: SIZES.radiusMedium,
-		alignItems: 'center',
-		borderWidth: 1,
-		borderColor: COLORS.border,
-	},
-	buttonPressed: {
-		opacity: 0.8,
-	},
-	primaryButtonText: {
-		color: COLORS.textLight,
-		fontSize: SIZES.fontMd,
-		fontWeight: '600',
-	},
-	secondaryButtonText: {
-		color: COLORS.text,
-		fontSize: SIZES.fontMd,
-		fontWeight: '600',
 	},
 });
