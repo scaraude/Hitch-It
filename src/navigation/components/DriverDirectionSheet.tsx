@@ -1,8 +1,7 @@
+import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import { useRef, useState } from 'react';
 import {
 	ActivityIndicator,
-	KeyboardAvoidingView,
-	Platform,
 	Pressable,
 	StyleSheet,
 	Text,
@@ -10,7 +9,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AddressInput } from '../../components';
-import { BottomSheetHeader, bottomSheetStyles } from '../../components/ui';
+import { sheetStyles } from '../../components/ui';
 import { COLORS, SIZES, SPACING } from '../../constants';
 import { useTranslation } from '../../i18n';
 import type { Location } from '../../types';
@@ -25,6 +24,8 @@ interface DriverDirectionSheetProps {
 	onCompare: (destination: AddressData) => Promise<void>;
 	onClose: () => void;
 }
+
+const SNAP_POINTS: string[] = ['55%', '90%'];
 
 export function DriverDirectionSheet({
 	initialDestination,
@@ -66,105 +67,97 @@ export function DriverDirectionSheet({
 	};
 
 	return (
-		<KeyboardAvoidingView
-			style={styles.overlay}
-			behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-			pointerEvents="box-none"
+		<BottomSheet
+			index={0}
+			snapPoints={SNAP_POINTS}
+			enableDynamicSizing={false}
+			enablePanDownToClose
+			onClose={onClose}
+			keyboardBehavior="extend"
+			keyboardBlurBehavior="restore"
+			android_keyboardInputMode="adjustResize"
+			style={sheetStyles.container}
+			backgroundStyle={sheetStyles.background}
+			handleIndicatorStyle={sheetStyles.defaultHandleIndicator}
 		>
-			<View
-				style={[
-					bottomSheetStyles.container,
-					styles.sheet,
-					{ paddingBottom: insets.bottom + SPACING.md },
-				]}
+			<BottomSheetView
+				style={[styles.content, { paddingBottom: insets.bottom + SPACING.md }]}
 			>
-				<BottomSheetHeader />
+				<Text style={styles.title}>
+					{t('navigation.compareDriverDirectionTitle')}
+				</Text>
+				<Text style={styles.subtitle}>
+					{t('navigation.compareDriverDirectionSubtitle')}
+				</Text>
 
-				<View style={styles.content}>
-					<Text style={styles.title}>
-						{t('navigation.compareDriverDirectionTitle')}
-					</Text>
-					<Text style={styles.subtitle}>
-						{t('navigation.compareDriverDirectionSubtitle')}
-					</Text>
+				<AddressInput
+					placeholder={t('navigation.driverDestinationPlaceholder')}
+					value={destinationText}
+					onChangeText={text => {
+						setDestinationText(text);
+						if (destinationSelectionRef.current) {
+							destinationSelectionRef.current = false;
+							return;
+						}
+						setDestinationLocation(null);
+					}}
+					onLocationSelected={handleDestinationSelected}
+					autoFocus
+					showEmptyState
+					hapticFeedback
+					suggestionsStyle="inline"
+					containerStyle={styles.addressInputContainer}
+					inputContainerStyle={styles.addressInput}
+					testID="driver-direction-input"
+				/>
 
-					<AddressInput
-						placeholder={t('navigation.driverDestinationPlaceholder')}
-						value={destinationText}
-						onChangeText={text => {
-							setDestinationText(text);
-							if (destinationSelectionRef.current) {
-								destinationSelectionRef.current = false;
-								return;
-							}
-							setDestinationLocation(null);
+				<View style={styles.actions}>
+					<Pressable
+						style={({ pressed }) => [
+							styles.secondaryButton,
+							pressed && styles.buttonPressed,
+						]}
+						onPress={onClose}
+						accessibilityRole="button"
+						accessibilityLabel={t('navigation.closeDriverComparison')}
+						testID="driver-direction-cancel"
+					>
+						<Text style={styles.secondaryButtonText}>{t('common.cancel')}</Text>
+					</Pressable>
+
+					<Pressable
+						style={({ pressed }) => [
+							styles.primaryButton,
+							!canCompare && styles.primaryButtonDisabled,
+							pressed && canCompare && styles.buttonPressed,
+						]}
+						onPress={() => {
+							void handleCompare();
 						}}
-						onLocationSelected={handleDestinationSelected}
-						autoFocus
-						showEmptyState
-						hapticFeedback
-						suggestionsStyle="inline"
-						containerStyle={styles.addressInputContainer}
-						inputContainerStyle={styles.addressInput}
-						testID="driver-direction-input"
-					/>
-
-					<View style={styles.actions}>
-						<Pressable
-							style={({ pressed }) => [
-								styles.secondaryButton,
-								pressed && styles.buttonPressed,
-							]}
-							onPress={onClose}
-							accessibilityRole="button"
-							accessibilityLabel={t('navigation.closeDriverComparison')}
-							testID="driver-direction-cancel"
-						>
-							<Text style={styles.secondaryButtonText}>
-								{t('common.cancel')}
+						disabled={!canCompare}
+						accessibilityRole="button"
+						accessibilityLabel={t('navigation.compareDriver')}
+						testID="driver-direction-compare"
+					>
+						{isSubmitting ? (
+							<ActivityIndicator color={COLORS.textLight} />
+						) : (
+							<Text style={styles.primaryButtonText}>
+								{t('navigation.compare')}
 							</Text>
-						</Pressable>
-
-						<Pressable
-							style={({ pressed }) => [
-								styles.primaryButton,
-								!canCompare && styles.primaryButtonDisabled,
-								pressed && canCompare && styles.buttonPressed,
-							]}
-							onPress={() => {
-								void handleCompare();
-							}}
-							disabled={!canCompare}
-							accessibilityRole="button"
-							accessibilityLabel={t('navigation.compareDriver')}
-							testID="driver-direction-compare"
-						>
-							{isSubmitting ? (
-								<ActivityIndicator color={COLORS.textLight} />
-							) : (
-								<Text style={styles.primaryButtonText}>
-									{t('navigation.compare')}
-								</Text>
-							)}
-						</Pressable>
-					</View>
+						)}
+					</Pressable>
 				</View>
-			</View>
-		</KeyboardAvoidingView>
+			</BottomSheetView>
+		</BottomSheet>
 	);
 }
 
 const styles = StyleSheet.create({
-	overlay: {
-		...StyleSheet.absoluteFillObject,
-		zIndex: 1200,
-	},
-	sheet: {
-		zIndex: 1200,
-	},
 	content: {
+		flex: 1,
 		paddingHorizontal: SPACING.md,
-		paddingBottom: SPACING.sm,
+		paddingTop: SPACING.sm,
 	},
 	title: {
 		fontSize: SIZES.fontLg,

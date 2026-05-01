@@ -213,7 +213,7 @@ export default {
 		addASpot: 'Aggiungi uno spot',
 		newSpot: 'Nuovo Spot',
 		requiredFieldsHint: '* Campi obbligatori.',
-		roadNameLabel: 'Nome strada *',
+		roadNameLabel: 'Nome strada',
 		roadNamePlaceholder: 'Es: A6, D907, Route de Lyon...',
 		direction: 'Direzione',
 		directionLabel: 'Direzione *',

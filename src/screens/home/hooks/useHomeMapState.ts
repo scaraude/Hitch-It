@@ -240,7 +240,7 @@ export const useHomeMapState = ({
 				).map(({ spot }) => ({
 					id: spot.id as string,
 					coordinates: spot.coordinates,
-					title: spot.roadName,
+					title: spot.roadName ?? '',
 					description: spot.direction,
 				}))
 				: spots,

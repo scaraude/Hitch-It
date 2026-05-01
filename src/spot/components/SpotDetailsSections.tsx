@@ -43,17 +43,26 @@ export const SpotDetailsHeaderSection: React.FC<
 					/>
 				</Pressable>
 				<Pressable
-					style={[styles.topActionButton, styles.primaryTopActionButton]}
+					style={styles.itineraryCalloutButton}
 					onPress={onOpenItinerary}
 					accessibilityRole="button"
 					accessibilityLabel={A11Y_LABELS.getGoogleItinerary}
+					accessibilityHint={t('spots.openGoogleItineraryHint')}
 					testID="spot-details-open-itinerary"
 				>
-					<Ionicons
-						name="navigate-outline"
-						size={SIZES.iconMd}
-						color={COLORS.background}
-					/>
+					<View style={styles.itineraryCalloutIconWrap}>
+						<Ionicons
+							name="navigate-outline"
+							size={SIZES.iconMd}
+							color={COLORS.background}
+						/>
+					</View>
+					<View style={styles.itineraryCalloutTextWrap}>
+						<Text style={styles.itineraryCalloutEyebrow}>Google Maps</Text>
+						<Text style={styles.itineraryCalloutLabel}>
+							{t('spots.openGoogleItineraryCta')}
+						</Text>
+					</View>
 				</Pressable>
 				{canDeleteSpot && (
 					<Pressable

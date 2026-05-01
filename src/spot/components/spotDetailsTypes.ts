@@ -45,4 +45,5 @@ export interface SpotDetailsCommentsSectionProps {
 	isLoading: boolean;
 	comments: Comment[];
 	composer: SpotDetailsCommentComposerModel;
+	onCommentFocus?: () => void;
 }

@@ -1,4 +1,3 @@
-import type { Comment } from '../../comment/types';
 import type { Spot } from '../types';
 
 const TITLE_COORDINATE_DECIMALS = 3;
@@ -41,27 +40,7 @@ export const buildGoogleItineraryUrl = (spot: Spot): string => {
 	return `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}&travelmode=${GOOGLE_DRIVING_MODE}`;
 };
 
-export const getWaitingTimeLabels = (comments: Comment[]) => {
-	const waitingTimes = comments
-		.map(comment => comment.waitingTimeMinutes)
-		.filter(
-			(value): value is number =>
-				typeof value === 'number' && Number.isFinite(value) && value >= 0
-		);
-
-	const averageWaitingTimeMinutes =
-		waitingTimes.length === 0
-			? undefined
-			: Math.round(
-					waitingTimes.reduce((total, waitingTime) => total + waitingTime, 0) /
-						waitingTimes.length
-				);
-
-	return {
-		waitingTimeLabel:
-			averageWaitingTimeMinutes === undefined
-				? WAITING_MINUTES_FALLBACK
-				: `${averageWaitingTimeMinutes} min`,
-		waitingRecordsLabel: `${waitingTimes.length} records`,
-	};
-};
+export const getWaitingTimeLabels = () => ({
+	waitingTimeLabel: WAITING_MINUTES_FALLBACK,
+	waitingRecordsLabel: '0 records',
+});

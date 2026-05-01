@@ -1,3 +1,4 @@
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type React from 'react';
@@ -11,6 +12,7 @@ import {
 	MapControls,
 	SearchBarOverlay,
 } from '../../../components';
+import { COLORS } from '../../../constants';
 import { useTranslation } from '../../../i18n';
 import { useJourney } from '../../../journey/context';
 import { NavigationHeader } from '../../../navigation/components';
@@ -33,7 +35,7 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 const MAP_CONTROLS_OFFSET_WITH_BOTTOM_BAR = 110;
 const MAP_CONTROLS_OFFSET_DEFAULT = 24;
 const MAP_CONTROLS_OFFSET_WITH_NAVIGATION = 170;
-const NAVIGATION_COMPARE_BUTTON_BOTTOM_OFFSET = 56;
+const NAVIGATION_COMPARE_BUTTON_BOTTOM_OFFSET = 72;
 
 export const HomeFixedOverlay: React.FC = () => {
 	const rootNavigation = useNavigation<NavigationProp>();
@@ -157,6 +159,8 @@ export const HomeFixedOverlay: React.FC = () => {
 					<Pressable
 						style={({ pressed }) => [
 							styles.compareDriverDirectionButton,
+							session.hasDriverComparison &&
+								styles.compareDriverDirectionButtonActive,
 							{
 								bottom: NAVIGATION_COMPARE_BUTTON_BOTTOM_OFFSET + insets.bottom,
 							},
@@ -167,7 +171,18 @@ export const HomeFixedOverlay: React.FC = () => {
 						accessibilityLabel={driverDirectionLabel}
 						testID="compare-driver-direction-button"
 					>
-						<Text style={styles.compareDriverDirectionButtonText}>
+						{session.hasDriverComparison ? (
+							<Ionicons name="close-circle" size={18} color={COLORS.textLight} />
+						) : (
+							<MaterialIcons name="fork-right" size={18} color={COLORS.primary} />
+						)}
+						<Text
+							style={[
+								styles.compareDriverDirectionButtonLabel,
+								session.hasDriverComparison &&
+									styles.compareDriverDirectionButtonLabelActive,
+							]}
+						>
 							{driverDirectionLabel}
 						</Text>
 					</Pressable>

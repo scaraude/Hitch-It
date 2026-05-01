@@ -4,20 +4,10 @@ import { COLORS, SIZES, SPACING } from '../../constants';
 const HANDLE_INDICATOR_WIDTH = 76;
 const HANDLE_INDICATOR_HEIGHT = 6;
 const HANDLE_INDICATOR_OPACITY = 0.65;
+const ITINERARY_CALLOUT_MAX_WIDTH = 196;
+const ITINERARY_CALLOUT_ICON_SIZE = 36;
 
 export const spotDetailsSheetStyles = StyleSheet.create({
-	sheetContainer: {
-		shadowColor: '#000',
-		shadowOffset: { width: 0, height: -2 },
-		shadowOpacity: SIZES.shadowOpacity,
-		shadowRadius: SIZES.shadowRadius,
-		elevation: 5,
-	},
-	sheetBackground: {
-		backgroundColor: COLORS.background,
-		borderTopLeftRadius: SIZES.radiusXLarge,
-		borderTopRightRadius: SIZES.radiusXLarge,
-	},
 	sheetBackgroundExpanded: {
 		borderTopLeftRadius: SIZES.radiusLarge,
 		borderTopRightRadius: SIZES.radiusLarge,
@@ -41,21 +31,24 @@ export const spotDetailsSheetStyles = StyleSheet.create({
 	},
 	titleRow: {
 		flexDirection: 'row',
-		alignItems: 'center',
+		alignItems: 'flex-start',
 		justifyContent: 'space-between',
 		marginBottom: SPACING.lg,
+		gap: SPACING.md,
 	},
 	title: {
 		fontSize: SIZES.font2Xl,
 		fontWeight: '700',
 		color: COLORS.text,
-		flexShrink: 1,
-		paddingRight: SPACING.md,
+		flex: 1,
+		paddingRight: SPACING.xs,
 	},
 	topActions: {
 		flexDirection: 'row',
-		alignItems: 'center',
+		alignItems: 'stretch',
+		justifyContent: 'flex-end',
 		gap: SPACING.sm,
+		flexShrink: 0,
 	},
 	topActionButton: {
 		width: SIZES.fabSize - SPACING.sm,
@@ -73,8 +66,45 @@ export const spotDetailsSheetStyles = StyleSheet.create({
 	topActionButtonDisabled: {
 		opacity: 0.8,
 	},
-	primaryTopActionButton: {
+	itineraryCalloutButton: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		gap: SPACING.sm,
+		paddingVertical: SPACING.sm,
+		paddingHorizontal: SPACING.md,
+		borderRadius: SIZES.radiusLarge,
+		backgroundColor: '#EEF5FF',
+		borderWidth: 1,
+		borderColor: '#CFE2FF',
+		maxWidth: ITINERARY_CALLOUT_MAX_WIDTH,
+		shadowColor: COLORS.text,
+		shadowOffset: { width: 0, height: 8 },
+		shadowOpacity: 0.12,
+		shadowRadius: 12,
+		elevation: 4,
+	},
+	itineraryCalloutIconWrap: {
+		width: ITINERARY_CALLOUT_ICON_SIZE,
+		height: ITINERARY_CALLOUT_ICON_SIZE,
+		borderRadius: SIZES.radiusRound,
 		backgroundColor: COLORS.secondary,
+		alignItems: 'center',
+		justifyContent: 'center',
+	},
+	itineraryCalloutTextWrap: {
+		flexShrink: 1,
+		gap: 2,
+	},
+	itineraryCalloutEyebrow: {
+		fontSize: SIZES.fontSm,
+		fontWeight: '600',
+		color: COLORS.secondary,
+	},
+	itineraryCalloutLabel: {
+		fontSize: SIZES.fontMd,
+		fontWeight: '700',
+		color: COLORS.text,
+		lineHeight: 20,
 	},
 	dangerTopActionButton: {
 		backgroundColor: COLORS.error,

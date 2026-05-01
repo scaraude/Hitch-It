@@ -14,7 +14,7 @@ type SpotRow = {
 	id: string;
 	latitude: number;
 	longitude: number;
-	road_name: string;
+	road_name: string | null;
 	direction: string;
 	destinations: string[] | null;
 	created_at: string;
@@ -48,12 +48,12 @@ const mapRowToSpot = (row: SpotRow): Spot => ({
 		latitude: row.latitude,
 		longitude: row.longitude,
 	},
-	roadName: row.road_name,
+	roadName: row.road_name ?? undefined,
 	direction: parseDirection(row.direction, row.id),
 	destinations: parseDestinations(row.destinations),
 	createdAt: new Date(row.created_at),
 	updatedAt: new Date(row.updated_at),
-	createdByUserId: row.created_by_user_id as UserId,
+	createdBy: row.created_by_user_id as UserId,
 });
 
 type CachedRegion = {
@@ -249,7 +249,7 @@ export const createSpot = async (spot: Spot): Promise<void> => {
 			destinations: spot.destinations,
 			created_at: spot.createdAt.toISOString(),
 			updated_at: spot.updatedAt.toISOString(),
-			created_by_user_id: spot.createdByUserId,
+			created_by_user_id: spot.createdBy,
 		});
 		if (error) {
 			throw error;
@@ -274,7 +274,7 @@ export const updateSpot = async (spot: Spot): Promise<void> => {
 				direction: spot.direction,
 				destinations: spot.destinations,
 				updated_at: spot.updatedAt.toISOString(),
-				created_by_user_id: spot.createdByUserId,
+				created_by_user_id: spot.createdBy,
 			})
 			.eq('id', spot.id);
 		if (error) {

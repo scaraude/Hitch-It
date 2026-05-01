@@ -1,5 +1,6 @@
+import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import type React from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { COLORS, SIZES, SPACING } from '../../../constants';
 import { A11Y_LABELS } from '../../../constants/accessibility';
 
@@ -19,7 +20,7 @@ export const DestinationInput: React.FC<DestinationInputProps> = ({
 	const isAddDisabled = value.trim().length === 0;
 	return (
 		<View style={styles.container}>
-			<TextInput
+			<BottomSheetTextInput
 				style={styles.input}
 				value={value}
 				onChangeText={onChangeText}
