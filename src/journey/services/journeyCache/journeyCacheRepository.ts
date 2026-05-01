@@ -1,4 +1,3 @@
-import * as Crypto from 'expo-crypto';
 import { logger } from '../../../utils';
 import type {
 	CachedJourneyId,
@@ -13,7 +12,15 @@ import {
 	startRecording,
 	toRow,
 } from './cachedJourneyState';
+import { generateCachedJourneyId } from './ids';
 import { getJourneyCacheDb } from './journeyCacheDb';
+
+const CACHED_JOURNEY_COLUMNS =
+	'id, user_id, status, started_at, stopped_at, finalized_at';
+
+// In-memory next-seq counter per cache, populated lazily on first append.
+// Avoids a SELECT MAX(seq) per GPS update on the recording hot path.
+const nextSeqByCache = new Map<string, number>();
 
 interface PointRow {
 	cache_id: string;
@@ -56,11 +63,12 @@ export const createCachedJourney = async (input: {
 	userId: UserId;
 	startedAt?: Date;
 }): Promise<CachedJourneyState> => {
-	const id = Crypto.randomUUID() as CachedJourneyId;
+	const id = generateCachedJourneyId();
 	const startedAt = input.startedAt ?? new Date();
 
 	const state = startRecording({ id, userId: input.userId, startedAt });
 	await saveState(state);
+	nextSeqByCache.set(id as string, 0);
 
 	logger.journey.info('Cached journey created', { id });
 	return state;
@@ -100,7 +108,7 @@ export const getActiveCachedJourney = async (
 ): Promise<CachedJourneyState | null> => {
 	const db = await getJourneyCacheDb();
 	const row = await db.getFirstAsync<CachedJourneyRow>(
-		`SELECT id, user_id, status, started_at, stopped_at, finalized_at
+		`SELECT ${CACHED_JOURNEY_COLUMNS}
 		 FROM cached_journeys
 		 WHERE user_id = ? AND status IN ('recording', 'paused')
 		 ORDER BY started_at DESC
@@ -121,7 +129,7 @@ export const getStoppedNonFinalized = async (
 ): Promise<CachedJourneyState[]> => {
 	const db = await getJourneyCacheDb();
 	const rows = await db.getAllAsync<CachedJourneyRow>(
-		`SELECT id, user_id, status, started_at, stopped_at, finalized_at
+		`SELECT ${CACHED_JOURNEY_COLUMNS}
 		 FROM cached_journeys
 		 WHERE user_id = ? AND status = 'stopped'
 		 ORDER BY stopped_at ASC`,
@@ -131,9 +139,50 @@ export const getStoppedNonFinalized = async (
 	return rows.map(fromRow);
 };
 
+const insertPointRow = async (
+	db: Awaited<ReturnType<typeof getJourneyCacheDb>>,
+	row: PointRow
+): Promise<void> => {
+	await db.runAsync(
+		`INSERT INTO cached_journey_points
+		 (cache_id, seq, latitude, longitude, timestamp, speed, accuracy)
+		 VALUES (?, ?, ?, ?, ?, ?, ?)`,
+		row.cache_id,
+		row.seq,
+		row.latitude,
+		row.longitude,
+		row.timestamp,
+		row.speed,
+		row.accuracy
+	);
+};
+
+const reserveNextSeq = async (
+	db: Awaited<ReturnType<typeof getJourneyCacheDb>>,
+	cacheId: CachedJourneyId,
+	count: number
+): Promise<number> => {
+	const key = cacheId as string;
+	let next = nextSeqByCache.get(key);
+
+	if (next === undefined) {
+		// Lazy init from DB on first append after restore. After that, the
+		// counter is authoritative for the lifetime of the app session.
+		const row = await db.getFirstAsync<{ max_seq: number | null }>(
+			'SELECT MAX(seq) AS max_seq FROM cached_journey_points WHERE cache_id = ?',
+			key
+		);
+		next = (row?.max_seq ?? -1) + 1;
+	}
+
+	nextSeqByCache.set(key, next + count);
+	return next;
+};
+
 /**
- * Append GPS points in a single transaction. seq starts after the current
- * max for the cache so multiple appends preserve insertion order.
+ * Append GPS points to the cache. Uses an in-memory seq counter to skip
+ * SELECT MAX on the recording hot path. Single points are inserted
+ * directly; batches go through a transaction.
  */
 export const appendLocationPoints = async (
 	cacheId: CachedJourneyId,
@@ -142,27 +191,16 @@ export const appendLocationPoints = async (
 	if (points.length === 0) return;
 
 	const db = await getJourneyCacheDb();
-	const maxSeqRow = await db.getFirstAsync<{ max_seq: number | null }>(
-		'SELECT MAX(seq) AS max_seq FROM cached_journey_points WHERE cache_id = ?',
-		cacheId as string
-	);
-	const nextSeqStart = (maxSeqRow?.max_seq ?? -1) + 1;
+	const startSeq = await reserveNextSeq(db, cacheId, points.length);
+
+	if (points.length === 1) {
+		await insertPointRow(db, toPointRow(cacheId, startSeq, points[0]));
+		return;
+	}
 
 	await db.withTransactionAsync(async () => {
 		for (let i = 0; i < points.length; i += 1) {
-			const row = toPointRow(cacheId, nextSeqStart + i, points[i]);
-			await db.runAsync(
-				`INSERT INTO cached_journey_points
-				 (cache_id, seq, latitude, longitude, timestamp, speed, accuracy)
-				 VALUES (?, ?, ?, ?, ?, ?, ?)`,
-				row.cache_id,
-				row.seq,
-				row.latitude,
-				row.longitude,
-				row.timestamp,
-				row.speed,
-				row.accuracy
-			);
+			await insertPointRow(db, toPointRow(cacheId, startSeq + i, points[i]));
 		}
 	});
 };
@@ -189,8 +227,7 @@ export const getCachedJourneyWithPoints = async (
 } | null> => {
 	const db = await getJourneyCacheDb();
 	const row = await db.getFirstAsync<CachedJourneyRow>(
-		`SELECT id, user_id, status, started_at, stopped_at, finalized_at
-		 FROM cached_journeys WHERE id = ?`,
+		`SELECT ${CACHED_JOURNEY_COLUMNS} FROM cached_journeys WHERE id = ?`,
 		cacheId as string
 	);
 	if (!row) return null;
@@ -222,5 +259,6 @@ export const deleteCachedJourney = async (
 		'DELETE FROM cached_journeys WHERE id = ?',
 		cacheId as string
 	);
+	nextSeqByCache.delete(cacheId as string);
 	logger.journey.info('Cached journey deleted', { id: cacheId });
 };

@@ -209,10 +209,11 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({
 	// Crash recovery: when an active journey is restored at boot, look up the
 	// associated nav session and recalculate the route from the current GPS
 	// position. The saved origin stays as-is (business origin of the trip).
+	const activeJourneyId = activeJourney?.id;
 	useEffect(() => {
 		if (
 			hasAttemptedRestoreRef.current ||
-			!activeJourney ||
+			!activeJourneyId ||
 			navigation.isActive ||
 			!journeyCurrentLocation
 		) {
@@ -220,9 +221,9 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({
 		}
 
 		hasAttemptedRestoreRef.current = true;
+		const cacheId = activeJourneyId as unknown as CachedJourneyId;
 
 		void (async () => {
-			const cacheId = activeJourney.id as unknown as CachedJourneyId;
 			try {
 				const session = await getNavigationSessionForJourney(cacheId);
 				if (!session) return;
@@ -251,19 +252,19 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({
 			}
 		})();
 	}, [
-		activeJourney,
+		activeJourneyId,
 		calculateAndApplyRoute,
 		journeyCurrentLocation,
 		navigation.isActive,
 	]);
 
-	// Reset the restore guard when the active journey is cleared (next
-	// recording session may need its own restoration attempt).
+	// Reset the restore guard when the active journey is cleared so a future
+	// recording session can attempt its own restoration.
 	useEffect(() => {
-		if (!activeJourney) {
+		if (!activeJourneyId) {
 			hasAttemptedRestoreRef.current = false;
 		}
-	}, [activeJourney]);
+	}, [activeJourneyId]);
 
 	const startNavigation = useCallback(
 		async (userLocation: RoutePoint): Promise<NavigationActionResult> => {

@@ -40,8 +40,7 @@ CREATE TABLE IF NOT EXISTS cached_journey_points (
 );
 
 CREATE TABLE IF NOT EXISTS cached_navigation_session (
-  id TEXT PRIMARY KEY,
-  cached_journey_id TEXT NOT NULL REFERENCES cached_journeys(id) ON DELETE CASCADE,
+  cached_journey_id TEXT PRIMARY KEY REFERENCES cached_journeys(id) ON DELETE CASCADE,
   origin_lat REAL NOT NULL,
   origin_lng REAL NOT NULL,
   origin_name TEXT,
@@ -50,9 +49,6 @@ CREATE TABLE IF NOT EXISTS cached_navigation_session (
   destination_name TEXT,
   created_at TEXT NOT NULL
 );
-
-CREATE INDEX IF NOT EXISTS cached_navigation_session_journey_idx
-  ON cached_navigation_session(cached_journey_id);
 `;
 
 let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
