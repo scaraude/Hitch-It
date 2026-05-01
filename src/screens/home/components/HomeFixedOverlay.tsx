@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type React from 'react';
@@ -35,7 +35,7 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 const MAP_CONTROLS_OFFSET_WITH_BOTTOM_BAR = 110;
 const MAP_CONTROLS_OFFSET_DEFAULT = 24;
 const MAP_CONTROLS_OFFSET_WITH_NAVIGATION = 170;
-const NAVIGATION_COMPARE_BUTTON_BOTTOM_OFFSET = 56;
+const NAVIGATION_COMPARE_BUTTON_BOTTOM_OFFSET = 72;
 
 export const HomeFixedOverlay: React.FC = () => {
 	const rootNavigation = useNavigation<NavigationProp>();
@@ -171,17 +171,11 @@ export const HomeFixedOverlay: React.FC = () => {
 						accessibilityLabel={driverDirectionLabel}
 						testID="compare-driver-direction-button"
 					>
-						<Ionicons
-							name={
-								session.hasDriverComparison
-									? 'close-circle'
-									: 'git-compare-outline'
-							}
-							size={18}
-							color={
-								session.hasDriverComparison ? COLORS.textLight : COLORS.primary
-							}
-						/>
+						{session.hasDriverComparison ? (
+							<Ionicons name="close-circle" size={18} color={COLORS.textLight} />
+						) : (
+							<MaterialIcons name="fork-right" size={18} color={COLORS.primary} />
+						)}
 						<Text
 							style={[
 								styles.compareDriverDirectionButtonLabel,
