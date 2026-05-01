@@ -53,9 +53,7 @@ export const saveNavigationSession = async (
 	);
 
 	const id = (existing?.id ?? Crypto.randomUUID()) as CachedNavigationSessionId;
-	const createdAt = existing
-		? new Date(existing.created_at)
-		: new Date();
+	const createdAt = existing ? new Date(existing.created_at) : new Date();
 
 	await db.runAsync(
 		`INSERT INTO cached_navigation_session

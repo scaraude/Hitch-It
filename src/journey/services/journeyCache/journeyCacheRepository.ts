@@ -183,7 +183,10 @@ export const getCachedJourneyPoints = async (
 
 export const getCachedJourneyWithPoints = async (
 	cacheId: CachedJourneyId
-): Promise<{ state: CachedJourneyState; points: CachedJourneyPoint[] } | null> => {
+): Promise<{
+	state: CachedJourneyState;
+	points: CachedJourneyPoint[];
+} | null> => {
 	const db = await getJourneyCacheDb();
 	const row = await db.getFirstAsync<CachedJourneyRow>(
 		`SELECT id, user_id, status, started_at, stopped_at, finalized_at

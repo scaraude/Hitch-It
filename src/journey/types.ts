@@ -11,7 +11,9 @@ export type UserId = string & { readonly brand: unique symbol };
 // Live recording cache (SQLite-backed). Distinct from JourneyId because a cache
 // row exists before — and may outlive — its corresponding persisted journey.
 export type CachedJourneyId = string & { readonly brand: unique symbol };
-export type CachedNavigationSessionId = string & { readonly brand: unique symbol };
+export type CachedNavigationSessionId = string & {
+	readonly brand: unique symbol;
+};
 
 export interface JourneyRoutePoint {
 	latitude: number;
