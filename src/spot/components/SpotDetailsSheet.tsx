@@ -70,10 +70,7 @@ export const SpotDetailsSheet: React.FC<SpotDetailsSheetProps> = ({
 	const directionHeading = DIRECTION_HEADING_DEGREES[spot.direction];
 	const spotTitle = getSpotCoordinatesTitle(spot);
 	const destinationsLabel = resolveDestinationsLabel(spot.destinations);
-	const { waitingTimeLabel, waitingRecordsLabel } = useMemo(
-		() => getWaitingTimeLabels(comments),
-		[comments]
-	);
+	const { waitingTimeLabel, waitingRecordsLabel } = getWaitingTimeLabels();
 
 	const handleSheetChange = useCallback((index: number) => {
 		setIsDrawerExpanded(index >= SHEET_EXPANDED_INDEX);

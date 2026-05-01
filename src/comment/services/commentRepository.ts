@@ -10,7 +10,6 @@ type CommentRow = {
 	spot_id: string;
 	appreciation: string;
 	comment: string;
-	wait_time_minutes?: number | null;
 	created_by_user_id: string;
 	created_at: string;
 	updated_at: string;
@@ -49,22 +48,6 @@ const parseCommentText = (value: string, commentId: string): string => {
 	return trimmedComment;
 };
 
-const parseWaitingTimeMinutes = (
-	value: number | null | undefined,
-	commentId: string
-): number | undefined => {
-	if (value === null || value === undefined) {
-		return undefined;
-	}
-
-	if (!Number.isFinite(value) || value < 0) {
-		throw new Error(
-			`Invalid waiting time "${value}" for comment "${commentId}"`
-		);
-	}
-
-	return Math.round(value);
-};
 
 const resolveAuthorUsername = (author: CommentRow['author']): string | null => {
 	if (!author) {
@@ -83,7 +66,6 @@ const mapRowToComment = (row: CommentRow): Comment => ({
 	spotId: row.spot_id as SpotId,
 	appreciation: parseCommentAppreciation(row.appreciation, row.id),
 	comment: parseCommentText(row.comment, row.id),
-	waitingTimeMinutes: parseWaitingTimeMinutes(row.wait_time_minutes, row.id),
 	createdAt: new Date(row.created_at),
 	updatedAt: new Date(row.updated_at),
 	createdBy: row.created_by_user_id as UserId,
@@ -94,7 +76,7 @@ const fetchCommentRows = async (spotId: SpotId): Promise<CommentRow[]> => {
 	const joinedQuery = await supabase
 		.from('comments')
 		.select(
-			'id, spot_id, appreciation, comment, wait_time_minutes, created_by_user_id, created_at, updated_at, author:profiles!comments_created_by_user_id_fkey(username)'
+			'id, spot_id, appreciation, comment, created_by_user_id, created_at, updated_at, author:profiles!comments_created_by_user_id_fkey(username)'
 		)
 		.eq('spot_id', spotId)
 		.order('created_at', { ascending: false });
@@ -111,7 +93,7 @@ const fetchCommentRows = async (spotId: SpotId): Promise<CommentRow[]> => {
 	const fallbackQuery = await supabase
 		.from('comments')
 		.select(
-			'id, spot_id, appreciation, comment, wait_time_minutes, created_by_user_id, created_at, updated_at'
+			'id, spot_id, appreciation, comment, created_by_user_id, created_at, updated_at'
 		)
 		.eq('spot_id', spotId)
 		.order('created_at', { ascending: false });

@@ -14,7 +14,6 @@ export interface Comment {
 	spotId: SpotId;
 	appreciation: CommentAppreciation;
 	comment: string;
-	waitingTimeMinutes?: number;
 	createdAt: Date;
 	updatedAt: Date;
 	createdBy: UserId;

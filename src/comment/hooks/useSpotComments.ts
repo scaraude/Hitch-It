@@ -71,7 +71,6 @@ export const useSpotComments = (spotId: SpotId): UseSpotCommentsReturn => {
 				createdAt: now,
 				updatedAt: now,
 				createdBy: user.id,
-				authorUsername: user.username.trim() || null,
 			};
 
 			setIsSubmitting(true);
