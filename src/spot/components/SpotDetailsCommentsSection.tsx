@@ -39,6 +39,7 @@ export const SpotDetailsCommentsSection: React.FC<
 						comment={draftComment}
 						onAppreciationChange={onAppreciationChange}
 						onCommentChange={onCommentChange}
+						autoFocusComment
 					/>
 					<View style={styles.commentComposerActions}>
 						<Pressable

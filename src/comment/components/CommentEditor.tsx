@@ -14,6 +14,7 @@ interface CommentEditorProps {
 	comment: string;
 	onAppreciationChange: (value: CommentAppreciation) => void;
 	onCommentChange: (value: string) => void;
+	autoFocusComment?: boolean;
 }
 
 export const CommentEditor: React.FC<CommentEditorProps> = ({
@@ -21,6 +22,7 @@ export const CommentEditor: React.FC<CommentEditorProps> = ({
 	comment,
 	onAppreciationChange,
 	onCommentChange,
+	autoFocusComment = false,
 }) => {
 	const { t } = useTranslation();
 	const appreciationConfig = getCommentAppreciationConfig(t);
@@ -68,6 +70,7 @@ export const CommentEditor: React.FC<CommentEditorProps> = ({
 				numberOfLines={4}
 				textAlignVertical="top"
 				accessibilityLabel={A11Y_LABELS.commentInput}
+				autoFocus={autoFocusComment}
 			/>
 		</View>
 	);
