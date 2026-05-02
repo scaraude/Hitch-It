@@ -34,18 +34,12 @@ import { locationTrackingService } from '../services/locationTrackingService';
 import {
 	type CachedJourneyId,
 	type Journey,
-	type JourneyRoutePoint,
 	JourneyStatus,
 	type JourneyStop,
 	type LocationUpdate,
 	type UserId,
 } from '../types';
 import { generateJourneyStopId } from '../utils/ids';
-
-const toRoutePoint = (location: LocationUpdate): JourneyRoutePoint => ({
-	latitude: location.latitude,
-	longitude: location.longitude,
-});
 
 const cacheStatusToJourneyStatus = (
 	status: CachedJourneyState['status']
