@@ -1,6 +1,5 @@
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import * as Crypto from 'expo-crypto';
 import { useCallback } from 'react';
 import { Alert, StyleSheet, View } from 'react-native';
 import { useAuth } from '../auth';
@@ -9,14 +8,9 @@ import { useTranslation } from '../i18n';
 import { LocationPickerStep, StopsManagementStep } from '../journey/components';
 import { ManualJourneyStep, useManualJourneyFlow } from '../journey/hooks';
 import * as journeyRepository from '../journey/services/journeyRepository';
-import type {
-	Journey,
-	JourneyId,
-	JourneyStop,
-	JourneyStopId,
-	UserId,
-} from '../journey/types';
+import type { Journey, JourneyStop, UserId } from '../journey/types';
 import { JourneyStatus } from '../journey/types';
+import { generateJourneyId, generateJourneyStopId } from '../journey/utils/ids';
 import { calculateRouteWithWaypoints } from '../navigation/services/routingService';
 import type { RootStackParamList, RoutePoint } from '../navigation/types';
 import type { Location } from '../types';
@@ -105,7 +99,7 @@ export default function ManualJourneyEntryScreen() {
 		flow.setSaving(true);
 		try {
 			const now = new Date();
-			const journeyId = Crypto.randomUUID() as JourneyId;
+			const journeyId = generateJourneyId();
 			const endTime = new Date(
 				now.getTime() + (flow.stops.length + 1) * MILLISECONDS_IN_MINUTE
 			);
@@ -135,7 +129,7 @@ export default function ManualJourneyEntryScreen() {
 			const stops: JourneyStop[] = [];
 
 			stops.push({
-				id: Crypto.randomUUID() as JourneyStopId,
+				id: generateJourneyStopId(),
 				journeyId,
 				latitude: flow.startLocation.latitude,
 				longitude: flow.startLocation.longitude,
@@ -149,7 +143,7 @@ export default function ManualJourneyEntryScreen() {
 				);
 
 				stops.push({
-					id: Crypto.randomUUID() as JourneyStopId,
+					id: generateJourneyStopId(),
 					journeyId,
 					latitude: stop.location.latitude,
 					longitude: stop.location.longitude,
@@ -160,7 +154,7 @@ export default function ManualJourneyEntryScreen() {
 			}
 
 			stops.push({
-				id: Crypto.randomUUID() as JourneyStopId,
+				id: generateJourneyStopId(),
 				journeyId,
 				latitude: flow.endLocation.latitude,
 				longitude: flow.endLocation.longitude,

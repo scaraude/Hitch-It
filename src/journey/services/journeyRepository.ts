@@ -40,7 +40,6 @@ type JourneyStopRow = {
 };
 
 const journeyStatusValues = new Set(Object.values(JourneyStatus));
-const JOURNEY_STOPS_PAGE_SIZE = 1000;
 
 const parseJourneyStatus = (
 	value: string,
@@ -104,43 +103,27 @@ const mapRowToJourneyStop = (row: JourneyStopRow): JourneyStop => ({
 	notes: row.notes ?? undefined,
 });
 
+// A journey rarely has more than a handful of stops (ride changes), so a
+// single fetch is enough — no pagination loop needed.
 const getJourneyStopRows = async (
 	journeyId: JourneyId
 ): Promise<JourneyStopRow[]> => {
-	const rows: JourneyStopRow[] = [];
-	let from = 0;
+	const { data, error } = await supabase
+		.from('journey_stops')
+		.select('*')
+		.eq('journey_id', journeyId)
+		.order('timestamp', { ascending: true })
+		.order('created_at', { ascending: true })
+		.order('id', { ascending: true });
 
-	while (true) {
-		const to = from + JOURNEY_STOPS_PAGE_SIZE - 1;
-		const { data, error } = await supabase
-			.from('journey_stops')
-			.select('*')
-			.eq('journey_id', journeyId)
-			.order('timestamp', { ascending: true })
-			.order('created_at', { ascending: true })
-			.order('id', { ascending: true })
-			.range(from, to);
-
-		if (error) {
-			logger.repository.error('Failed to fetch journey stops page', error, {
-				journeyId,
-				from,
-				to,
-			});
-			throw error;
-		}
-
-		const pageRows = (data ?? []) as JourneyStopRow[];
-		rows.push(...pageRows);
-
-		if (pageRows.length < JOURNEY_STOPS_PAGE_SIZE) {
-			break;
-		}
-
-		from += JOURNEY_STOPS_PAGE_SIZE;
+	if (error) {
+		logger.repository.error('Failed to fetch journey stops', error, {
+			journeyId,
+		});
+		throw error;
 	}
 
-	return rows;
+	return (data ?? []) as JourneyStopRow[];
 };
 
 export const saveJourney = async (journey: Journey): Promise<void> => {

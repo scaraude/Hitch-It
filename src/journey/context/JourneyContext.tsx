@@ -1,4 +1,3 @@
-import * as Crypto from 'expo-crypto';
 import type React from 'react';
 import {
 	createContext,
@@ -38,10 +37,10 @@ import {
 	type JourneyRoutePoint,
 	JourneyStatus,
 	type JourneyStop,
-	type JourneyStopId,
 	type LocationUpdate,
 	type UserId,
 } from '../types';
+import { generateJourneyStopId } from '../utils/ids';
 
 const toRoutePoint = (location: LocationUpdate): JourneyRoutePoint => ({
 	latitude: location.latitude,
@@ -445,7 +444,7 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 		logger.journey.info('Marking stop at current location');
 
 		const stop: JourneyStop = {
-			id: Crypto.randomUUID() as JourneyStopId,
+			id: generateJourneyStopId(),
 			journeyId: cachedIdAsJourneyId(cache.id),
 			latitude: location.latitude,
 			longitude: location.longitude,
