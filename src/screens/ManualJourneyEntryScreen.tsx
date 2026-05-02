@@ -12,11 +12,11 @@ import * as journeyRepository from '../journey/services/journeyRepository';
 import type {
 	Journey,
 	JourneyId,
-	JourneyPoint,
-	JourneyPointId,
+	JourneyStop,
+	JourneyStopId,
 	UserId,
 } from '../journey/types';
-import { JourneyPointType, JourneyStatus } from '../journey/types';
+import { JourneyStatus } from '../journey/types';
 import { calculateRouteWithWaypoints } from '../navigation/services/routingService';
 import type { RootStackParamList, RoutePoint } from '../navigation/types';
 import type { Location } from '../types';
@@ -132,29 +132,25 @@ export default function ManualJourneyEntryScreen() {
 				});
 			}
 
-			const stopPoints: JourneyPoint[] = [];
+			const stops: JourneyStop[] = [];
 
-			// Add start point
-			stopPoints.push({
-				id: Crypto.randomUUID() as JourneyPointId,
+			stops.push({
+				id: Crypto.randomUUID() as JourneyStopId,
 				journeyId,
-				type: JourneyPointType.Stop,
 				latitude: flow.startLocation.latitude,
 				longitude: flow.startLocation.longitude,
 				timestamp: now,
 			});
 
-			// Add intermediate stops
 			for (let i = 0; i < flow.stops.length; i++) {
 				const stop = flow.stops[i];
 				const stopTime = new Date(
 					now.getTime() + (i + 1) * MILLISECONDS_IN_MINUTE
 				);
 
-				stopPoints.push({
-					id: Crypto.randomUUID() as JourneyPointId,
+				stops.push({
+					id: Crypto.randomUUID() as JourneyStopId,
 					journeyId,
-					type: JourneyPointType.Stop,
 					latitude: stop.location.latitude,
 					longitude: stop.location.longitude,
 					timestamp: stopTime,
@@ -163,11 +159,9 @@ export default function ManualJourneyEntryScreen() {
 				});
 			}
 
-			// Add end point
-			stopPoints.push({
-				id: Crypto.randomUUID() as JourneyPointId,
+			stops.push({
+				id: Crypto.randomUUID() as JourneyStopId,
 				journeyId,
-				type: JourneyPointType.Stop,
 				latitude: flow.endLocation.latitude,
 				longitude: flow.endLocation.longitude,
 				timestamp: endTime,
@@ -188,11 +182,11 @@ export default function ManualJourneyEntryScreen() {
 				notes: flow.notes.trim() || undefined,
 				routePolyline,
 				totalDistanceKm,
-				points: stopPoints,
+				stops,
 			};
 
 			await journeyRepository.saveJourney(journey);
-			await journeyRepository.saveJourneyPoints(stopPoints);
+			await journeyRepository.saveJourneyStops(stops);
 
 			logger.app.info('Manual journey saved', { journeyId });
 

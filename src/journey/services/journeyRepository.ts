@@ -3,13 +3,13 @@ import { decodePolyline, encodePolyline, logger } from '@/utils';
 import type {
 	Journey,
 	JourneyId,
-	JourneyPoint,
-	JourneyPointId,
 	JourneyRoutePoint,
+	JourneyStop,
+	JourneyStopId,
 	SpotId,
 	UserId,
 } from '../types';
-import { JourneyPointType, JourneyStatus } from '../types';
+import { JourneyStatus } from '../types';
 
 type JourneyRow = {
 	id: string;
@@ -27,10 +27,9 @@ type JourneyRow = {
 	updated_at: string;
 };
 
-type JourneyPointRow = {
+type JourneyStopRow = {
 	id: string;
 	journey_id: string;
-	type: string;
 	latitude: number;
 	longitude: number;
 	timestamp: string;
@@ -41,8 +40,7 @@ type JourneyPointRow = {
 };
 
 const journeyStatusValues = new Set(Object.values(JourneyStatus));
-const journeyPointTypeValues = new Set(Object.values(JourneyPointType));
-const JOURNEY_POINTS_PAGE_SIZE = 1000;
+const JOURNEY_STOPS_PAGE_SIZE = 1000;
 
 const parseJourneyStatus = (
 	value: string,
@@ -54,19 +52,6 @@ const parseJourneyStatus = (
 
 	throw new Error(
 		`Invalid journey status "${value}" for journey "${journeyId}"`
-	);
-};
-
-const parseJourneyPointType = (
-	value: string,
-	pointId: string
-): JourneyPointType => {
-	if (journeyPointTypeValues.has(value as JourneyPointType)) {
-		return value as JourneyPointType;
-	}
-
-	throw new Error(
-		`Invalid journey point type "${value}" for point "${pointId}"`
 	);
 };
 
@@ -92,7 +77,7 @@ const parseRoutePolyline = (
 
 const mapRowToJourney = (
 	row: JourneyRow,
-	points: JourneyPoint[] = []
+	stops: JourneyStop[] = []
 ): Journey => ({
 	id: row.id as JourneyId,
 	userId: row.user_id as UserId,
@@ -105,13 +90,12 @@ const mapRowToJourney = (
 	totalDistanceKm: row.total_distance_km ?? undefined,
 	isShared: row.is_shared,
 	shareToken: row.share_token ?? undefined,
-	points,
+	stops,
 });
 
-const mapRowToJourneyPoint = (row: JourneyPointRow): JourneyPoint => ({
-	id: row.id as JourneyPointId,
+const mapRowToJourneyStop = (row: JourneyStopRow): JourneyStop => ({
+	id: row.id as JourneyStopId,
 	journeyId: row.journey_id as JourneyId,
-	type: parseJourneyPointType(row.type, row.id),
 	latitude: row.latitude,
 	longitude: row.longitude,
 	timestamp: new Date(row.timestamp),
@@ -120,47 +104,40 @@ const mapRowToJourneyPoint = (row: JourneyPointRow): JourneyPoint => ({
 	notes: row.notes ?? undefined,
 });
 
-const getJourneyPointRows = async (
-	journeyId: JourneyId,
-	pointType?: JourneyPointType
-): Promise<JourneyPointRow[]> => {
-	const rows: JourneyPointRow[] = [];
+const getJourneyStopRows = async (
+	journeyId: JourneyId
+): Promise<JourneyStopRow[]> => {
+	const rows: JourneyStopRow[] = [];
 	let from = 0;
 
 	while (true) {
-		const to = from + JOURNEY_POINTS_PAGE_SIZE - 1;
-		let query = supabase
-			.from('journey_points')
+		const to = from + JOURNEY_STOPS_PAGE_SIZE - 1;
+		const { data, error } = await supabase
+			.from('journey_stops')
 			.select('*')
 			.eq('journey_id', journeyId)
 			.order('timestamp', { ascending: true })
 			.order('created_at', { ascending: true })
-			.order('id', { ascending: true });
-
-		if (pointType) {
-			query = query.eq('type', pointType);
-		}
-
-		const { data, error } = await query.range(from, to);
+			.order('id', { ascending: true })
+			.range(from, to);
 
 		if (error) {
-			logger.repository.error('Failed to fetch journey points page', error, {
+			logger.repository.error('Failed to fetch journey stops page', error, {
 				journeyId,
-				pointType,
 				from,
 				to,
 			});
 			throw error;
 		}
 
-		const pageRows = (data ?? []) as JourneyPointRow[];
+		const pageRows = (data ?? []) as JourneyStopRow[];
 		rows.push(...pageRows);
 
-		if (pageRows.length < JOURNEY_POINTS_PAGE_SIZE) {
+		if (pageRows.length < JOURNEY_STOPS_PAGE_SIZE) {
 			break;
 		}
 
-		from += JOURNEY_POINTS_PAGE_SIZE;
+		from += JOURNEY_STOPS_PAGE_SIZE;
 	}
 
 	return rows;
@@ -198,58 +175,53 @@ export const saveJourney = async (journey: Journey): Promise<void> => {
 	logger.repository.info('Journey saved successfully', { id: journey.id });
 };
 
-export const saveJourneyPoint = async (point: JourneyPoint): Promise<void> => {
-	logger.repository.debug('Saving journey point', {
-		id: point.id,
-		journeyId: point.journeyId,
-		type: point.type,
+export const saveJourneyStop = async (stop: JourneyStop): Promise<void> => {
+	logger.repository.debug('Saving journey stop', {
+		id: stop.id,
+		journeyId: stop.journeyId,
 	});
 
-	const { error } = await supabase.from('journey_points').upsert({
-		id: point.id,
-		journey_id: point.journeyId,
-		type: point.type,
-		latitude: point.latitude,
-		longitude: point.longitude,
-		timestamp: point.timestamp.toISOString(),
-		spot_id: point.spotId ?? null,
-		wait_time_minutes: point.waitTimeMinutes ?? null,
-		notes: point.notes ?? null,
+	const { error } = await supabase.from('journey_stops').upsert({
+		id: stop.id,
+		journey_id: stop.journeyId,
+		latitude: stop.latitude,
+		longitude: stop.longitude,
+		timestamp: stop.timestamp.toISOString(),
+		spot_id: stop.spotId ?? null,
+		wait_time_minutes: stop.waitTimeMinutes ?? null,
+		notes: stop.notes ?? null,
 	});
 
 	if (error) {
-		logger.repository.error('Failed to save journey point', error, {
-			id: point.id,
+		logger.repository.error('Failed to save journey stop', error, {
+			id: stop.id,
 		});
 		throw error;
 	}
 };
 
-export const saveJourneyPoints = async (
-	points: JourneyPoint[]
-): Promise<void> => {
-	if (points.length === 0) return;
+export const saveJourneyStops = async (stops: JourneyStop[]): Promise<void> => {
+	if (stops.length === 0) return;
 
-	logger.repository.debug('Saving journey points batch', {
-		count: points.length,
+	logger.repository.debug('Saving journey stops batch', {
+		count: stops.length,
 	});
 
-	const rows = points.map(point => ({
-		id: point.id,
-		journey_id: point.journeyId,
-		type: point.type,
-		latitude: point.latitude,
-		longitude: point.longitude,
-		timestamp: point.timestamp.toISOString(),
-		spot_id: point.spotId ?? null,
-		wait_time_minutes: point.waitTimeMinutes ?? null,
-		notes: point.notes ?? null,
+	const rows = stops.map(stop => ({
+		id: stop.id,
+		journey_id: stop.journeyId,
+		latitude: stop.latitude,
+		longitude: stop.longitude,
+		timestamp: stop.timestamp.toISOString(),
+		spot_id: stop.spotId ?? null,
+		wait_time_minutes: stop.waitTimeMinutes ?? null,
+		notes: stop.notes ?? null,
 	}));
 
-	const { error } = await supabase.from('journey_points').upsert(rows);
+	const { error } = await supabase.from('journey_stops').upsert(rows);
 
 	if (error) {
-		logger.repository.error('Failed to save journey points batch', error);
+		logger.repository.error('Failed to save journey stops batch', error);
 		throw error;
 	}
 };
@@ -275,12 +247,10 @@ export const getJourneyById = async (
 	}
 
 	const journeyRow = journeyData as JourneyRow;
-	const pointsRows = journeyRow.route_polyline
-		? await getJourneyPointRows(id, JourneyPointType.Stop)
-		: await getJourneyPointRows(id);
-	const points = pointsRows.map(row => mapRowToJourneyPoint(row));
+	const stopRows = await getJourneyStopRows(id);
+	const stops = stopRows.map(row => mapRowToJourneyStop(row));
 
-	return mapRowToJourney(journeyRow, points);
+	return mapRowToJourney(journeyRow, stops);
 };
 
 export const getActiveJourney = async (
@@ -308,13 +278,10 @@ export const getActiveJourney = async (
 		return null;
 	}
 
-	const pointsRows = await getJourneyPointRows(
-		journeyData.id as JourneyId,
-		JourneyPointType.Stop
-	);
-	const points = pointsRows.map(row => mapRowToJourneyPoint(row));
+	const stopRows = await getJourneyStopRows(journeyData.id as JourneyId);
+	const stops = stopRows.map(row => mapRowToJourneyStop(row));
 
-	return mapRowToJourney(journeyData as JourneyRow, points);
+	return mapRowToJourney(journeyData as JourneyRow, stops);
 };
 
 export const getJourneysByUserId = async (
@@ -333,7 +300,6 @@ export const getJourneysByUserId = async (
 		throw error;
 	}
 
-	// Return journeys without points (load points on demand)
 	return (journeysData ?? []).map(row =>
 		mapRowToJourney(row as JourneyRow, [])
 	);
@@ -377,24 +343,24 @@ export const deleteJourney = async (id: JourneyId): Promise<void> => {
 	logger.repository.info('Journey deleted successfully', { id });
 };
 
-export const updateJourneyPoint = async (
-	pointId: JourneyPointId,
-	updates: Partial<Pick<JourneyPoint, 'spotId' | 'waitTimeMinutes' | 'notes'>>
+export const updateJourneyStop = async (
+	stopId: JourneyStopId,
+	updates: Partial<Pick<JourneyStop, 'spotId' | 'waitTimeMinutes' | 'notes'>>
 ): Promise<void> => {
-	logger.repository.debug('Updating journey point', { pointId, updates });
+	logger.repository.debug('Updating journey stop', { stopId, updates });
 
 	const { error } = await supabase
-		.from('journey_points')
+		.from('journey_stops')
 		.update({
 			spot_id: updates.spotId ?? null,
 			wait_time_minutes: updates.waitTimeMinutes ?? null,
 			notes: updates.notes ?? null,
 		})
-		.eq('id', pointId);
+		.eq('id', stopId);
 
 	if (error) {
-		logger.repository.error('Failed to update journey point', error, {
-			pointId,
+		logger.repository.error('Failed to update journey stop', error, {
+			stopId,
 		});
 		throw error;
 	}

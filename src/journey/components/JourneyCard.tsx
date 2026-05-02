@@ -4,11 +4,9 @@ import MapView, { Marker, Polyline, PROVIDER_DEFAULT } from 'react-native-maps';
 import { COLORS, SIZES, SPACING } from '../../constants';
 import { useTranslation } from '../../i18n/useTranslation';
 import type { Journey } from '../types';
-import { JourneyPointType } from '../types';
 import {
 	formatDistance,
 	formatDuration,
-	resolveStopPoints,
 } from '../utils/journeyDetailViewModel';
 
 interface JourneyCardProps {
@@ -16,33 +14,20 @@ interface JourneyCardProps {
 	onPress: () => void;
 }
 
-function getStopCount(journey: Journey): number {
-	return resolveStopPoints(journey).length;
-}
-
 export function JourneyCard({ journey, onPress }: JourneyCardProps) {
 	const { t } = useTranslation();
 	const title = journey.title || t('journey.defaultTitle');
 	const distance = formatDistance(journey.totalDistanceKm);
 	const duration = formatDuration(journey.startedAt, journey.endedAt);
-	const stopCount = getStopCount(journey);
+	const stopCount = journey.stops.length;
 	const stopCountLabel =
 		stopCount > 1
 			? t('journey.stopCountLabelPlural', { count: stopCount })
 			: t('journey.stopCountLabel', { count: stopCount });
 	const routePolylinePoints = journey.routePolyline ?? [];
-	const routePoints = journey.points.filter(
-		point => point.type === JourneyPointType.Location
-	);
-	const stopPoints = journey.points.filter(
-		point => point.type === JourneyPointType.Stop
-	);
+	const stopPoints = journey.stops;
 	const mapPoints =
-		routePolylinePoints.length > 1
-			? routePolylinePoints
-			: routePoints.length > 1
-				? routePoints
-				: journey.points;
+		routePolylinePoints.length > 1 ? routePolylinePoints : stopPoints;
 
 	// Extract map region from points (if available)
 	const hasPoints = mapPoints.length > 0;

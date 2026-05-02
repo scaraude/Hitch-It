@@ -33,7 +33,7 @@ const buildJourneyFromCache = (
 		status: JourneyStatus.Completed,
 		startedAt: state.startedAt,
 		endedAt: state.stoppedAt,
-		points: [],
+		stops: [],
 		routePolyline: routePolyline.length > 0 ? routePolyline : undefined,
 	};
 };

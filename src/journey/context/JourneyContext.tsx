@@ -30,16 +30,15 @@ import {
 	finalizeCachedJourney,
 	retryPendingFinalizations,
 } from '../services/journeyFinalizationService';
-import { saveJourneyPoints } from '../services/journeyRepository';
+import { saveJourneyStops } from '../services/journeyRepository';
 import { locationTrackingService } from '../services/locationTrackingService';
 import {
 	type CachedJourneyId,
 	type Journey,
-	type JourneyPoint,
-	type JourneyPointId,
-	JourneyPointType,
 	type JourneyRoutePoint,
 	JourneyStatus,
+	type JourneyStop,
+	type JourneyStopId,
 	type LocationUpdate,
 	type UserId,
 } from '../types';
@@ -65,7 +64,7 @@ const cacheStatusToJourneyStatus = (
 
 const buildJourneyView = (
 	state: CachedJourneyState,
-	stops: JourneyPoint[]
+	stops: JourneyStop[]
 ): Journey => ({
 	id: cachedIdAsJourneyId(state.id),
 	userId: state.userId,
@@ -75,7 +74,7 @@ const buildJourneyView = (
 		state.status === 'stopped' || state.status === 'finalized'
 			? state.stoppedAt
 			: undefined,
-	points: stops,
+	stops,
 	routePolyline: undefined,
 });
 
@@ -122,7 +121,7 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 	>([]);
 
 	const cacheStateRef = useRef<CachedJourneyState | null>(null);
-	const manualStopsRef = useRef<JourneyPoint[]>([]);
+	const manualStopsRef = useRef<JourneyStop[]>([]);
 
 	const refreshActiveJourneyView = useCallback(() => {
 		const cache = cacheStateRef.current;
@@ -141,7 +140,7 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 		[refreshActiveJourneyView]
 	);
 
-	const stopsCount = activeJourney?.points.length ?? 0;
+	const stopsCount = activeJourney?.stops.length ?? 0;
 
 	const handleLocationUpdate = useCallback((location: LocationUpdate) => {
 		setCurrentLocation(location);
@@ -334,9 +333,8 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 			const points = await getCachedJourneyPoints(cache.id);
 			await finalizeCachedJourney(cache.id, { state: stopped, points });
 
-			// Manual stops still use the legacy journey_points table; the
-			// inner saveJourneyPoints early-returns on empty.
-			await saveJourneyPoints(manualStopsRef.current);
+			// saveJourneyStops early-returns on empty.
+			await saveJourneyStops(manualStopsRef.current);
 
 			setPendingFinalizationIds(prev => prev.filter(id => id !== cache.id));
 		} catch (error) {
@@ -446,19 +444,18 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 
 		logger.journey.info('Marking stop at current location');
 
-		const stopPoint: JourneyPoint = {
-			id: Crypto.randomUUID() as JourneyPointId,
+		const stop: JourneyStop = {
+			id: Crypto.randomUUID() as JourneyStopId,
 			journeyId: cachedIdAsJourneyId(cache.id),
-			type: JourneyPointType.Stop,
 			latitude: location.latitude,
 			longitude: location.longitude,
 			timestamp: new Date(),
 		};
 
-		manualStopsRef.current = [...manualStopsRef.current, stopPoint];
+		manualStopsRef.current = [...manualStopsRef.current, stop];
 		refreshActiveJourneyView();
 
-		logger.journey.info('Stop marked', { id: stopPoint.id });
+		logger.journey.info('Stop marked', { id: stop.id });
 	}, [currentLocation, refreshActiveJourneyView]);
 
 	const value: JourneyContextValue = {
