@@ -13,11 +13,11 @@ import { useAuth } from '../../auth';
 import { logger } from '../../utils';
 import {
 	type CachedJourneyState,
-	finalize,
 	pause as pauseState,
 	resume as resumeState,
 	stop as stopState,
 } from '../services/journeyCache/cachedJourneyState';
+import { cachedIdAsJourneyId } from '../services/journeyCache/ids';
 import {
 	appendLocationPoints,
 	createCachedJourney,
@@ -26,12 +26,15 @@ import {
 	getCachedJourneyPoints,
 	saveState,
 } from '../services/journeyCache/journeyCacheRepository';
-import { saveJourney, saveJourneyPoints } from '../services/journeyRepository';
+import {
+	finalizeCachedJourney,
+	retryPendingFinalizations,
+} from '../services/journeyFinalizationService';
+import { saveJourneyPoints } from '../services/journeyRepository';
 import { locationTrackingService } from '../services/locationTrackingService';
 import {
 	type CachedJourneyId,
 	type Journey,
-	type JourneyId,
 	type JourneyPoint,
 	type JourneyPointId,
 	JourneyPointType,
@@ -40,9 +43,6 @@ import {
 	type LocationUpdate,
 	type UserId,
 } from '../types';
-
-const cachedIdAsJourneyId = (id: CachedJourneyId): JourneyId =>
-	id as unknown as JourneyId;
 
 const toRoutePoint = (location: LocationUpdate): JourneyRoutePoint => ({
 	latitude: location.latitude,
@@ -86,15 +86,21 @@ interface JourneyContextValue {
 	currentLocation: LocationUpdate | null;
 	stopsCount: number;
 
+	// IDs of stopped caches whose Supabase finalization is still pending
+	// (network failure at stop time). Consumers can show a retry banner and
+	// invoke `retryFinalization` to attempt persistence again.
+	pendingFinalizationIds: CachedJourneyId[];
+
 	// Core actions
 	startRecording: () => Promise<boolean>;
 	stopRecording: () => Promise<void>;
+	retryFinalization: () => Promise<void>;
 	discardJourney: () => Promise<void>;
 	pauseRecording: () => Promise<void>;
 	resumeRecording: () => Promise<void>;
 
-	// Manual stop marking — kept available until TCK-24 removes the UI; the
-	// epic's target UX has no manual stops.
+	// Manual stop marking — kept for backwards compatibility while the UI
+	// still exposes the button. The target UX has no manual stops.
 	markStop: () => void;
 }
 
@@ -111,6 +117,9 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 	const [currentLocation, setCurrentLocation] = useState<LocationUpdate | null>(
 		null
 	);
+	const [pendingFinalizationIds, setPendingFinalizationIds] = useState<
+		CachedJourneyId[]
+	>([]);
 
 	const cacheStateRef = useRef<CachedJourneyState | null>(null);
 	const manualStopsRef = useRef<JourneyPoint[]>([]);
@@ -211,6 +220,25 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 		return () => subscription.remove();
 	}, [restoreActiveJourney]);
 
+	// On boot, replay any cache row stuck in 'stopped' (the user previously
+	// hit Stop but Supabase persistence failed — typically offline). Each
+	// retry that still fails stays in pendingFinalizationIds so the UI can
+	// surface a retry banner.
+	useEffect(() => {
+		if (!user) return;
+		void (async () => {
+			try {
+				const stillPending = await retryPendingFinalizations(user.id as UserId);
+				setPendingFinalizationIds(stillPending);
+			} catch (error) {
+				logger.journey.error(
+					'Failed to retry pending finalizations at boot',
+					error
+				);
+			}
+		})();
+	}, [user]);
+
 	const resetState = useCallback(() => {
 		manualStopsRef.current = [];
 		setCacheState(null);
@@ -302,39 +330,34 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 		setCacheState(stopped);
 		setIsRecording(false);
 
-		// Transitional finalization: persist to Supabase right away so the
-		// journey shows up in history. TCK-23 will replace this with the
-		// retry-safe finalization service.
 		try {
 			const points = await getCachedJourneyPoints(cache.id);
-			const routePolyline = points.map(toRoutePoint);
+			await finalizeCachedJourney(cache.id, { state: stopped, points });
 
-			const completedJourney: Journey = {
-				id: cachedIdAsJourneyId(cache.id),
-				userId: cache.userId,
-				status: JourneyStatus.Completed,
-				startedAt: cache.startedAt,
-				endedAt: stoppedAt,
-				points: manualStopsRef.current,
-				routePolyline: routePolyline.length > 0 ? routePolyline : undefined,
-			};
+			// Manual stops still use the legacy journey_points table; the
+			// inner saveJourneyPoints early-returns on empty.
+			await saveJourneyPoints(manualStopsRef.current);
 
-			await saveJourney(completedJourney);
-			if (manualStopsRef.current.length > 0) {
-				await saveJourneyPoints(manualStopsRef.current);
-			}
-
-			const finalized = finalize(stopped, new Date());
-			await saveState(finalized);
-			setCacheState(finalized);
+			setPendingFinalizationIds(prev => prev.filter(id => id !== cache.id));
 		} catch (error) {
-			logger.journey.error('Failed to persist completed journey', error, {
-				journeyId: cache.id,
-			});
+			logger.journey.error(
+				'Finalization failed at stop time, cache preserved for retry',
+				error,
+				{ cacheId: cache.id }
+			);
+			setPendingFinalizationIds(prev =>
+				prev.includes(cache.id) ? prev : [...prev, cache.id]
+			);
 		}
 
 		logger.journey.info('Journey recording stopped');
 	}, [setCacheState]);
+
+	const retryFinalization = useCallback(async () => {
+		if (!user) return;
+		const stillPending = await retryPendingFinalizations(user.id as UserId);
+		setPendingFinalizationIds(stillPending);
+	}, [user]);
 
 	const discardJourney = useCallback(async () => {
 		const cache = cacheStateRef.current;
@@ -443,8 +466,10 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 		isRecording,
 		currentLocation,
 		stopsCount,
+		pendingFinalizationIds,
 		startRecording,
 		stopRecording,
+		retryFinalization,
 		discardJourney,
 		pauseRecording,
 		resumeRecording,
