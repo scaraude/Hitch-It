@@ -279,7 +279,6 @@ export default {
 		logIn: 'Iniciar sesión',
 		compareDriverDirection: 'Comparar dirección del conductor',
 		clearComparison: 'Limpiar comparación',
-		markStop: 'Marcar parada',
 		swapLocations: 'Intercambiar inicio y destino',
 		startPointLabel: 'Punto de inicio',
 		startPointPlaceholder: '¿Desde dónde partes?',

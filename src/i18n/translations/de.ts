@@ -283,7 +283,6 @@ export default {
 		logIn: 'Anmelden',
 		compareDriverDirection: 'Fahrerrichtung vergleichen',
 		clearComparison: 'Vergleich löschen',
-		markStop: 'Stopp markieren',
 		swapLocations: 'Start und Ziel tauschen',
 		startPointLabel: 'Startpunkt',
 		startPointPlaceholder: 'Wo starten Sie?',

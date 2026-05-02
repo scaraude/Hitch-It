@@ -291,7 +291,6 @@ export default {
 		logIn: 'Log in',
 		compareDriverDirection: 'Compare direction',
 		clearComparison: 'Clear comparison',
-		markStop: 'Mark stop',
 		swapLocations: 'Swap start and destination',
 		startPointLabel: 'Start point',
 		startPointPlaceholder: 'Where are you starting from?',

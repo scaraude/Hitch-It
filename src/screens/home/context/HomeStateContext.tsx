@@ -21,9 +21,7 @@ import {
 } from '../hooks/useHomeSessionState';
 
 // Re-export hook return types for consumers
-export type { UseHomeMapStateReturn as HomeMapState };
-export type { UseHomeSearchStateReturn as HomeSearchState };
-export type { UseHomeSessionStateReturn as HomeSessionState };
+export type { UseHomeMapStateReturn as HomeMapState, UseHomeSearchStateReturn as HomeSearchState, UseHomeSessionStateReturn as HomeSessionState };
 
 interface HomeStateContextValue {
 	// Location
@@ -73,7 +71,6 @@ export const HomeStateProvider: React.FC<HomeStateProviderProps> = ({
 		startRecording: journey.startRecording,
 		stopRecording: journey.stopRecording,
 		discardJourney: journey.discardJourney,
-		markStop: journey.markStop,
 		isRecording: journey.isRecording,
 		onDeselectSpot: spot.deselectSpot,
 	});

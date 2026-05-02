@@ -1,4 +1,3 @@
-import * as Crypto from 'expo-crypto';
 import type React from 'react';
 import {
 	createContext,
@@ -33,12 +32,10 @@ import {
 	type Journey,
 	type JourneyId,
 	type JourneyPoint,
-	type JourneyPointId,
-	JourneyPointType,
 	type JourneyRoutePoint,
 	JourneyStatus,
 	type LocationUpdate,
-	type UserId,
+	type UserId
 } from '../types';
 
 const cachedIdAsJourneyId = (id: CachedJourneyId): JourneyId =>
@@ -92,10 +89,6 @@ interface JourneyContextValue {
 	discardJourney: () => Promise<void>;
 	pauseRecording: () => Promise<void>;
 	resumeRecording: () => Promise<void>;
-
-	// Manual stop marking — kept available until TCK-24 removes the UI; the
-	// epic's target UX has no manual stops.
-	markStop: () => void;
 }
 
 const JourneyContext = createContext<JourneyContextValue | undefined>(
@@ -410,34 +403,6 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 		setIsRecording(true);
 	}, [handleLocationError, handleLocationUpdate, setCacheState]);
 
-	const markStop = useCallback(() => {
-		const cache = cacheStateRef.current;
-		const location = currentLocation;
-
-		if (!cache || cache.status !== 'recording' || !location) {
-			logger.journey.warn(
-				'Cannot mark stop: journey must be recording with a known location'
-			);
-			return;
-		}
-
-		logger.journey.info('Marking stop at current location');
-
-		const stopPoint: JourneyPoint = {
-			id: Crypto.randomUUID() as JourneyPointId,
-			journeyId: cachedIdAsJourneyId(cache.id),
-			type: JourneyPointType.Stop,
-			latitude: location.latitude,
-			longitude: location.longitude,
-			timestamp: new Date(),
-		};
-
-		manualStopsRef.current = [...manualStopsRef.current, stopPoint];
-		refreshActiveJourneyView();
-
-		logger.journey.info('Stop marked', { id: stopPoint.id });
-	}, [currentLocation, refreshActiveJourneyView]);
-
 	const value: JourneyContextValue = {
 		activeJourney,
 		isRecording,
@@ -448,7 +413,6 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 		discardJourney,
 		pauseRecording,
 		resumeRecording,
-		markStop,
 	};
 
 	return (
