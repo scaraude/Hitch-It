@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react';
 import type React from 'react';
+import { useEffect, useRef } from 'react';
 import { Animated, Easing, Text, View } from 'react-native';
 import { useTranslation } from '../../../i18n';
 import { homeScreenStyles as styles } from '../homeScreenStyles';
@@ -61,9 +61,7 @@ export const RecordingBadge: React.FC<RecordingBadgeProps> = ({
 			]}
 			pointerEvents="none"
 		>
-			<Animated.View
-				style={[styles.recordingDot, { opacity: pulseOpacity }]}
-			/>
+			<Animated.View style={[styles.recordingDot, { opacity: pulseOpacity }]} />
 			<Text style={styles.recordingBadgeText}>{t('navigation.recording')}</Text>
 		</View>
 	);

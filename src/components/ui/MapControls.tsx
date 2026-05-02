@@ -1,6 +1,6 @@
+import AntDesign from '@expo/vector-icons/AntDesign';
 import type React from 'react';
 import { StyleSheet, View } from 'react-native';
-import AntDesign from '@expo/vector-icons/AntDesign';
 import { COLORS, SPACING } from '../../constants';
 import { useTranslation } from '../../i18n';
 import { CompassIcon } from './CompassIcon';
