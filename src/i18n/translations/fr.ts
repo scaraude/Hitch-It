@@ -298,7 +298,6 @@ export default {
 		logIn: 'Se connecter',
 		compareDriverDirection: 'Comparer direction',
 		clearComparison: 'Effacer comparaison',
-		markStop: 'Marquer arrêt',
 		swapLocations: 'Echanger le point de depart et la destination',
 		startPointLabel: 'Point de départ',
 		startPointPlaceholder: "D'où partez-vous ?",

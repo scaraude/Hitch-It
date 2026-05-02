@@ -44,7 +44,6 @@ interface UseHomeSessionStateArgs {
 	startRecording: () => Promise<boolean>;
 	stopRecording: () => Promise<void>;
 	discardJourney: () => Promise<void>;
-	markStop: () => void;
 	isRecording: boolean;
 	onDeselectSpot: () => void;
 }
@@ -58,7 +57,6 @@ export interface UseHomeSessionStateReturn {
 	handleStopNavigation: () => Promise<void>;
 	handleSaveJourney: () => Promise<void>;
 	handleDiscardJourney: () => Promise<void>;
-	handleMarkStop: () => void;
 	// NavigationSetup flow
 	showNavigationSetupSheet: boolean;
 	navigationSetupOrigin: NamedLocation | null;
@@ -94,7 +92,6 @@ export const useHomeSessionState = ({
 	startRecording,
 	stopRecording,
 	discardJourney,
-	markStop,
 	isRecording,
 	onDeselectSpot,
 }: UseHomeSessionStateArgs): UseHomeSessionStateReturn => {
@@ -236,18 +233,6 @@ export const useHomeSessionState = ({
 			toastUtils.error('Erreur', 'Suppression du voyage impossible');
 		}
 	}, [discardJourney, endNavigationSession, hasActiveJourney]);
-
-	const handleMarkStop = useCallback(() => {
-		if (!isRecording) {
-			toastUtils.info(
-				'Enregistrement inactif',
-				'Impossible de marquer un arrêt sans enregistrement actif'
-			);
-			return;
-		}
-		markStop();
-		toastUtils.success('Arrêt marqué', 'Point ajouté au trajet');
-	}, [isRecording, markStop]);
 
 	const markJourneyStarted = useCallback(() => {
 		setJourneyStartTime(new Date());
@@ -440,7 +425,6 @@ export const useHomeSessionState = ({
 		handleStopNavigation,
 		handleSaveJourney,
 		handleDiscardJourney,
-		handleMarkStop,
 		// NavigationSetup flow
 		showNavigationSetupSheet,
 		navigationSetupOrigin,

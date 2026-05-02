@@ -118,26 +118,4 @@ export const homeScreenStyles = StyleSheet.create({
 	compareDriverDirectionButtonLabelActive: {
 		color: COLORS.textLight,
 	},
-	markStopButton: {
-		position: 'absolute',
-		right: 16,
-		backgroundColor: COLORS.warning,
-		borderTopLeftRadius: 10,
-		borderTopRightRadius: 10,
-		paddingHorizontal: 14,
-		paddingVertical: 10,
-		shadowColor: COLORS.text,
-		shadowOffset: { width: 0, height: 2 },
-		shadowOpacity: 0.15,
-		shadowRadius: 6,
-		elevation: 3,
-	},
-	markStopButtonPressed: {
-		opacity: 0.85,
-	},
-	markStopButtonText: {
-		color: COLORS.background,
-		fontSize: 13,
-		fontWeight: '700',
-	},
 });
