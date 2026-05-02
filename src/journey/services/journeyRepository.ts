@@ -9,7 +9,7 @@ import type {
 	SpotId,
 	UserId,
 } from '../types';
-import { JourneyPointType, JourneyStatus } from '../types';
+import { JourneyStatus } from '../types';
 
 type JourneyRow = {
 	id: string;
@@ -30,7 +30,6 @@ type JourneyRow = {
 type JourneyPointRow = {
 	id: string;
 	journey_id: string;
-	type: string;
 	latitude: number;
 	longitude: number;
 	timestamp: string;
@@ -41,7 +40,6 @@ type JourneyPointRow = {
 };
 
 const journeyStatusValues = new Set(Object.values(JourneyStatus));
-const journeyPointTypeValues = new Set(Object.values(JourneyPointType));
 const JOURNEY_POINTS_PAGE_SIZE = 1000;
 
 const parseJourneyStatus = (
@@ -54,19 +52,6 @@ const parseJourneyStatus = (
 
 	throw new Error(
 		`Invalid journey status "${value}" for journey "${journeyId}"`
-	);
-};
-
-const parseJourneyPointType = (
-	value: string,
-	pointId: string
-): JourneyPointType => {
-	if (journeyPointTypeValues.has(value as JourneyPointType)) {
-		return value as JourneyPointType;
-	}
-
-	throw new Error(
-		`Invalid journey point type "${value}" for point "${pointId}"`
 	);
 };
 
@@ -111,7 +96,6 @@ const mapRowToJourney = (
 const mapRowToJourneyPoint = (row: JourneyPointRow): JourneyPoint => ({
 	id: row.id as JourneyPointId,
 	journeyId: row.journey_id as JourneyId,
-	type: parseJourneyPointType(row.type, row.id),
 	latitude: row.latitude,
 	longitude: row.longitude,
 	timestamp: new Date(row.timestamp),
@@ -121,15 +105,14 @@ const mapRowToJourneyPoint = (row: JourneyPointRow): JourneyPoint => ({
 });
 
 const getJourneyPointRows = async (
-	journeyId: JourneyId,
-	pointType?: JourneyPointType
+	journeyId: JourneyId
 ): Promise<JourneyPointRow[]> => {
 	const rows: JourneyPointRow[] = [];
 	let from = 0;
 
 	while (true) {
 		const to = from + JOURNEY_POINTS_PAGE_SIZE - 1;
-		let query = supabase
+		const query = supabase
 			.from('journey_points')
 			.select('*')
 			.eq('journey_id', journeyId)
@@ -137,16 +120,11 @@ const getJourneyPointRows = async (
 			.order('created_at', { ascending: true })
 			.order('id', { ascending: true });
 
-		if (pointType) {
-			query = query.eq('type', pointType);
-		}
-
 		const { data, error } = await query.range(from, to);
 
 		if (error) {
 			logger.repository.error('Failed to fetch journey points page', error, {
 				journeyId,
-				pointType,
 				from,
 				to,
 			});
@@ -202,13 +180,11 @@ export const saveJourneyPoint = async (point: JourneyPoint): Promise<void> => {
 	logger.repository.debug('Saving journey point', {
 		id: point.id,
 		journeyId: point.journeyId,
-		type: point.type,
 	});
 
 	const { error } = await supabase.from('journey_points').upsert({
 		id: point.id,
 		journey_id: point.journeyId,
-		type: point.type,
 		latitude: point.latitude,
 		longitude: point.longitude,
 		timestamp: point.timestamp.toISOString(),
@@ -237,7 +213,6 @@ export const saveJourneyPoints = async (
 	const rows = points.map(point => ({
 		id: point.id,
 		journey_id: point.journeyId,
-		type: point.type,
 		latitude: point.latitude,
 		longitude: point.longitude,
 		timestamp: point.timestamp.toISOString(),
@@ -275,9 +250,7 @@ export const getJourneyById = async (
 	}
 
 	const journeyRow = journeyData as JourneyRow;
-	const pointsRows = journeyRow.route_polyline
-		? await getJourneyPointRows(id, JourneyPointType.Stop)
-		: await getJourneyPointRows(id);
+	const pointsRows = await getJourneyPointRows(id);
 	const points = pointsRows.map(row => mapRowToJourneyPoint(row));
 
 	return mapRowToJourney(journeyRow, points);
@@ -308,10 +281,7 @@ export const getActiveJourney = async (
 		return null;
 	}
 
-	const pointsRows = await getJourneyPointRows(
-		journeyData.id as JourneyId,
-		JourneyPointType.Stop
-	);
+	const pointsRows = await getJourneyPointRows(journeyData.id as JourneyId);
 	const points = pointsRows.map(row => mapRowToJourneyPoint(row));
 
 	return mapRowToJourney(journeyData as JourneyRow, points);

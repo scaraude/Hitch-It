@@ -1,5 +1,4 @@
 import type { Journey, JourneyPoint, JourneyRoutePoint } from '../types';
-import { JourneyPointType } from '../types';
 
 export interface MapRegion {
 	latitude: number;
@@ -45,12 +44,8 @@ export function formatDistance(km?: number): string {
  */
 export function resolveMapPoints(journey: Journey): MapPoint[] {
 	const routePolylinePoints = journey.routePolyline ?? [];
-	const routePoints = journey.points.filter(
-		p => p.type === JourneyPointType.Location
-	);
 
 	if (routePolylinePoints.length > 1) return routePolylinePoints;
-	if (routePoints.length > 1) return routePoints;
 	return journey.points;
 }
 
@@ -76,9 +71,9 @@ export function deriveMapRegion(points: MapPoint[]): MapRegion | undefined {
 	};
 }
 
-/** Returns stop-typed points from a journey. */
+/** Returns recorded stops from a journey. */
 export function resolveStopPoints(journey: Journey): JourneyPoint[] {
-	return journey.points.filter(p => p.type === JourneyPointType.Stop);
+	return journey.points;
 }
 
 export interface JourneyDetailViewModel {

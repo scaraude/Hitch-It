@@ -4,7 +4,6 @@ import MapView, { Marker, Polyline, PROVIDER_DEFAULT } from 'react-native-maps';
 import { COLORS, SIZES, SPACING } from '../../constants';
 import { useTranslation } from '../../i18n/useTranslation';
 import type { Journey } from '../types';
-import { JourneyPointType } from '../types';
 import {
 	formatDistance,
 	formatDuration,
@@ -31,18 +30,9 @@ export function JourneyCard({ journey, onPress }: JourneyCardProps) {
 			? t('journey.stopCountLabelPlural', { count: stopCount })
 			: t('journey.stopCountLabel', { count: stopCount });
 	const routePolylinePoints = journey.routePolyline ?? [];
-	const routePoints = journey.points.filter(
-		point => point.type === JourneyPointType.Location
-	);
-	const stopPoints = journey.points.filter(
-		point => point.type === JourneyPointType.Stop
-	);
+	const stopPoints = journey.points;
 	const mapPoints =
-		routePolylinePoints.length > 1
-			? routePolylinePoints
-			: routePoints.length > 1
-				? routePoints
-				: journey.points;
+		routePolylinePoints.length > 1 ? routePolylinePoints : journey.points;
 
 	// Extract map region from points (if available)
 	const hasPoints = mapPoints.length > 0;
