@@ -1,13 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import type React from 'react';
 import { useCallback } from 'react';
-import {
-	Pressable,
-	StyleSheet,
-	Text,
-	TextInput,
-	View,
-} from 'react-native';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { COLORS, SPACING } from '../../constants';
 import { SIZES } from '../../constants/sizes';
 import { useTranslation } from '../../i18n';

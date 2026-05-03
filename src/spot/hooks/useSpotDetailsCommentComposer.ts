@@ -50,7 +50,7 @@ export const useSpotDetailsCommentComposer = ({
 		if (submitted) {
 			handleCancelComment();
 		}
-	}, [draftAppreciation, draftComment, handleCancelComment, submitComment]);
+	}, [draftAppreciation, draftComment, handleCancelComment, submitComment, t]);
 
 	return {
 		isWritingComment,

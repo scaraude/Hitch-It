@@ -128,11 +128,7 @@ export const NavigationSetupSheet: React.FC<NavigationSetupSheetProps> = ({
 					<NavigationSetupAddressField
 						label={t('navigation.destinationLabel')}
 						icon={
-							<Ionicons
-								name="flag"
-								size={SIZES.iconSm}
-								color={COLORS.error}
-							/>
+							<Ionicons name="flag" size={SIZES.iconSm} color={COLORS.error} />
 						}
 						placeholder={t('navigation.destinationPlaceholder')}
 						value={destinationText}

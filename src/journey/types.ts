@@ -5,7 +5,7 @@ export type { SpotId } from '../spot/types';
 
 // Branded types for journey domain
 export type JourneyId = string & { readonly brand: unique symbol };
-export type JourneyPointId = string & { readonly brand: unique symbol };
+export type JourneyStopId = string & { readonly brand: unique symbol };
 export type UserId = string & { readonly brand: unique symbol };
 
 // Live recording cache (SQLite-backed). Distinct from JourneyId because a cache
@@ -27,10 +27,11 @@ export enum JourneyStatus {
 }
 
 /**
- * A stop recorded in the journey timeline.
+ * A stop on the journey: a ride change. Distinct from the GPS trace,
+ * which lives in journey.routePolyline.
  */
-export interface JourneyPoint {
-	id: JourneyPointId;
+export interface JourneyStop {
+	id: JourneyStopId;
 	journeyId: JourneyId;
 	latitude: number;
 	longitude: number;
@@ -53,7 +54,7 @@ export interface Journey {
 	endedAt?: Date;
 
 	// Path data (loaded separately for performance)
-	points: JourneyPoint[];
+	stops: JourneyStop[];
 	routePolyline?: JourneyRoutePoint[];
 
 	// Enrichment (added post-trip in F12)

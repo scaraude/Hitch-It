@@ -310,6 +310,12 @@ export default {
 		toDestination: 'To {{destination}}',
 		saveJourneyQuestion: 'Do you want to save this journey?',
 		hitchIt: 'Hitch It!',
+		arrivalPromptTitle: 'You seem to have arrived',
+		arrivalPromptMessage:
+			'You are near {{destination}}. Do you want to finish the trip?',
+		arrivalPromptFinish: 'Finish trip',
+		arrivalPromptContinue: 'Keep recording',
+		pendingFinalizationBanner: 'Trip pending upload. Tap to retry.',
 	},
 
 	// Errors

@@ -110,7 +110,8 @@ export default {
 		loadError: 'Error al cargar',
 		loadErrorMessage: 'No se pudieron cargar los comentarios de este spot.',
 		appreciationRequired: 'Apreciación requerida',
-		appreciationRequiredMessage: 'Selecciona una apreciación para tu comentario.',
+		appreciationRequiredMessage:
+			'Selecciona una apreciación para tu comentario.',
 		commentRequired: 'Comentario requerido',
 		commentRequiredMessage: 'Agrega un comentario antes de enviar.',
 		commentAdded: 'Comentario agregado',
@@ -298,6 +299,13 @@ export default {
 		toDestination: 'Hacia {{destination}}',
 		saveJourneyQuestion: '¿Quieres guardar este viaje?',
 		hitchIt: '¡Autostop!',
+		arrivalPromptTitle: 'Parece que has llegado',
+		arrivalPromptMessage:
+			'Estás cerca de {{destination}}. ¿Quieres terminar el viaje?',
+		arrivalPromptFinish: 'Terminar viaje',
+		arrivalPromptContinue: 'Seguir grabando',
+		pendingFinalizationBanner:
+			'Viaje pendiente de envío. Toca para reintentar.',
 	},
 
 	// Errors

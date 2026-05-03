@@ -232,17 +232,17 @@ export const useHomeMapState = ({
 		() =>
 			isNavigationActive
 				? (driverRoute
-					? commonSpotsOnRoute.filter(
-						({ closestRoutePointIndex }) =>
-							closestRoutePointIndex >= progressRoutePointIndex
-					)
-					: visibleSpotsOnRoute
-				).map(({ spot }) => ({
-					id: spot.id as string,
-					coordinates: spot.coordinates,
-					title: spot.roadName ?? '',
-					description: spot.direction,
-				}))
+						? commonSpotsOnRoute.filter(
+								({ closestRoutePointIndex }) =>
+									closestRoutePointIndex >= progressRoutePointIndex
+							)
+						: visibleSpotsOnRoute
+					).map(({ spot }) => ({
+						id: spot.id as string,
+						coordinates: spot.coordinates,
+						title: spot.roadName ?? '',
+						description: spot.direction,
+					}))
 				: spots,
 		[
 			commonSpotsOnRoute,

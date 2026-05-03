@@ -21,7 +21,11 @@ import {
 } from '../hooks/useHomeSessionState';
 
 // Re-export hook return types for consumers
-export type { UseHomeMapStateReturn as HomeMapState, UseHomeSearchStateReturn as HomeSearchState, UseHomeSessionStateReturn as HomeSessionState };
+export type {
+	UseHomeMapStateReturn as HomeMapState,
+	UseHomeSearchStateReturn as HomeSearchState,
+	UseHomeSessionStateReturn as HomeSessionState,
+};
 
 interface HomeStateContextValue {
 	// Location

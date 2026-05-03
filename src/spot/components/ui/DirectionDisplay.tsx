@@ -56,7 +56,12 @@ export const DirectionDisplay: React.FC<DirectionDisplayProps> = ({
 	const isCompact = variant === 'compact';
 
 	return (
-		<View style={[styles.container, isCompact ? styles.compactContainer : styles.fullContainer]}>
+		<View
+			style={[
+				styles.container,
+				isCompact ? styles.compactContainer : styles.fullContainer,
+			]}
+		>
 			{showEmoji ? (
 				<Text style={isCompact ? styles.compactEmoji : styles.fullEmoji}>
 					{DIRECTION_CONFIG[direction].emoji}

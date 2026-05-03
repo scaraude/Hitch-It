@@ -1,38 +1,38 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { COLORS, SIZES, SPACING } from '../../../constants';
 import { useTranslation } from '../../../i18n';
-import type { JourneyPoint } from '../../types';
+import type { JourneyStop } from '../../types';
 
 interface JourneyStopsListProps {
-	stopPoints: JourneyPoint[];
+	stops: JourneyStop[];
 }
 
-export function JourneyStopsList({ stopPoints }: JourneyStopsListProps) {
+export function JourneyStopsList({ stops }: JourneyStopsListProps) {
 	const { t } = useTranslation();
 
-	if (stopPoints.length === 0) return null;
+	if (stops.length === 0) return null;
 
 	return (
 		<View style={styles.stopsSection}>
 			<Text style={styles.stopsTitle}>{t('journey.stopsLabel')}</Text>
-			{stopPoints.map((point, index) => (
-				<View key={point.id} style={styles.stopItem}>
+			{stops.map((stop, index) => (
+				<View key={stop.id} style={styles.stopItem}>
 					<View style={styles.stopNumber}>
 						<Text style={styles.stopNumberText}>{index + 1}</Text>
 					</View>
 					<View style={styles.stopDetails}>
 						<Text style={styles.stopTime}>
-							{point.timestamp.toLocaleTimeString([], {
+							{stop.timestamp.toLocaleTimeString([], {
 								hour: '2-digit',
 								minute: '2-digit',
 							})}
 						</Text>
-						{point.waitTimeMinutes !== undefined && (
+						{stop.waitTimeMinutes !== undefined && (
 							<Text style={styles.stopWaitTime}>
-								{t('journey.waitTime', { minutes: point.waitTimeMinutes })}
+								{t('journey.waitTime', { minutes: stop.waitTimeMinutes })}
 							</Text>
 						)}
-						{point.notes && <Text style={styles.stopNotes}>{point.notes}</Text>}
+						{stop.notes && <Text style={styles.stopNotes}>{stop.notes}</Text>}
 					</View>
 				</View>
 			))}

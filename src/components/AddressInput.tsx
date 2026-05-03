@@ -1,6 +1,6 @@
 import * as Haptics from 'expo-haptics';
-import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import {
 	ActivityIndicator,
 	Animated,

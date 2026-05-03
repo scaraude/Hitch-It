@@ -111,7 +111,8 @@ export default {
 		loadErrorMessage:
 			'Kommentare für diesen Spot konnten nicht geladen werden.',
 		appreciationRequired: 'Wertschätzung erforderlich',
-		appreciationRequiredMessage: 'Wähle eine Wertschätzung für deinen Kommentar aus.',
+		appreciationRequiredMessage:
+			'Wähle eine Wertschätzung für deinen Kommentar aus.',
 		commentRequired: 'Kommentar erforderlich',
 		commentRequiredMessage:
 			'Fügen Sie einen Kommentar hinzu, bevor Sie absenden.',
@@ -302,6 +303,13 @@ export default {
 		toDestination: 'Nach {{destination}}',
 		saveJourneyQuestion: 'Möchten Sie diese Reise speichern?',
 		hitchIt: 'Trampen!',
+		arrivalPromptTitle: 'Du scheinst angekommen zu sein',
+		arrivalPromptMessage:
+			'Du bist in der Nähe von {{destination}}. Fahrt beenden?',
+		arrivalPromptFinish: 'Fahrt beenden',
+		arrivalPromptContinue: 'Aufzeichnung fortsetzen',
+		pendingFinalizationBanner:
+			'Fahrt wartet auf Upload. Zum Wiederholen tippen.',
 	},
 
 	// Errors
