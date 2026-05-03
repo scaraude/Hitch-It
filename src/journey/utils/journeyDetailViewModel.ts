@@ -1,4 +1,4 @@
-import type { Journey, JourneyPoint, JourneyRoutePoint } from '../types';
+import type { Journey, JourneyRoutePoint, JourneyStop } from '../types';
 
 export interface MapRegion {
 	latitude: number;
@@ -7,8 +7,8 @@ export interface MapRegion {
 	longitudeDelta: number;
 }
 
-/** A point that carries at minimum lat/lng — covers both JourneyPoint and JourneyRoutePoint. */
-type MapPoint = JourneyRoutePoint | JourneyPoint;
+/** A point that carries at minimum lat/lng — covers both JourneyStop and JourneyRoutePoint. */
+type MapPoint = JourneyRoutePoint | JourneyStop;
 
 // ---------------------------------------------------------------------------
 // Formatting helpers (single source of truth — also used by JourneyCard)
@@ -40,13 +40,12 @@ export function formatDistance(km?: number): string {
 
 /**
  * Returns the best set of coordinates available for rendering a route.
- * Mirrors the selection logic used in JourneyCard.
+ * Falls back to stops only when no polyline is recorded.
  */
 export function resolveMapPoints(journey: Journey): MapPoint[] {
 	const routePolylinePoints = journey.routePolyline ?? [];
-
 	if (routePolylinePoints.length > 1) return routePolylinePoints;
-	return journey.points;
+	return journey.stops;
 }
 
 /**
@@ -71,16 +70,11 @@ export function deriveMapRegion(points: MapPoint[]): MapRegion | undefined {
 	};
 }
 
-/** Returns recorded stops from a journey. */
-export function resolveStopPoints(journey: Journey): JourneyPoint[] {
-	return journey.points;
-}
-
 export interface JourneyDetailViewModel {
 	title: string;
 	distance: string;
 	duration: string;
-	stopPoints: JourneyPoint[];
+	stops: JourneyStop[];
 	mapPoints: MapPoint[];
 	mapRegion: MapRegion | undefined;
 	startPoint: MapPoint | null;
@@ -96,15 +90,14 @@ export function buildJourneyDetailViewModel(
 	journey: Journey,
 	fallbackTitle: string
 ): JourneyDetailViewModel {
-	const stopPoints = resolveStopPoints(journey);
+	const stops = journey.stops;
 	const mapPoints = resolveMapPoints(journey);
 	const mapRegion = deriveMapRegion(mapPoints);
 
-	const startPoint =
-		stopPoints.length > 0 ? stopPoints[0] : (mapPoints[0] ?? null);
+	const startPoint = stops.length > 0 ? stops[0] : (mapPoints[0] ?? null);
 	const endPoint =
-		stopPoints.length > 0
-			? stopPoints[stopPoints.length - 1]
+		stops.length > 0
+			? stops[stops.length - 1]
 			: mapPoints.length > 0
 				? mapPoints[mapPoints.length - 1]
 				: null;
@@ -113,7 +106,7 @@ export function buildJourneyDetailViewModel(
 		title: journey.title || fallbackTitle,
 		distance: formatDistance(journey.totalDistanceKm),
 		duration: formatDuration(journey.startedAt, journey.endedAt),
-		stopPoints,
+		stops,
 		mapPoints,
 		mapRegion,
 		startPoint,

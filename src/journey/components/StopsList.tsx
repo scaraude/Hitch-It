@@ -13,7 +13,10 @@ interface StopsListProps {
 	onSelectStop: (id: string) => void;
 }
 
-export const StopsList: React.FC<StopsListProps> = ({ stops, onSelectStop }) => {
+export const StopsList: React.FC<StopsListProps> = ({
+	stops,
+	onSelectStop,
+}) => {
 	const { t } = useTranslation();
 
 	return (

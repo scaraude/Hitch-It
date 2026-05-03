@@ -3,6 +3,7 @@ import { useCallback } from 'react';
 import { View } from 'react-native';
 import Toast from 'react-native-toast-message';
 import {
+	ArrivalPromptSheet,
 	DriverDirectionSheet,
 	NavigationCompleteSheet,
 	EmbarquerSheet as NavigationSetupSheet,
@@ -47,6 +48,10 @@ export const HomeSheetsOverlay: React.FC = () => {
 	const handleDiscardJourney = useCallback(() => {
 		void session.handleDiscardJourney();
 	}, [session.handleDiscardJourney]);
+
+	const handleArrivalPromptFinish = useCallback(() => {
+		void session.handleArrivalPromptFinish();
+	}, [session.handleArrivalPromptFinish]);
 
 	return (
 		<View style={homeStyles.nonMapOverlay} pointerEvents="box-none">
@@ -98,6 +103,14 @@ export const HomeSheetsOverlay: React.FC = () => {
 					durationMinutes={session.journeyDurationMinutes}
 					onSave={handleSaveJourney}
 					onDiscard={handleDiscardJourney}
+				/>
+			)}
+
+			{session.showArrivalPromptSheet && (
+				<ArrivalPromptSheet
+					destinationName={session.arrivalPromptDestinationName}
+					onFinish={handleArrivalPromptFinish}
+					onContinue={session.handleArrivalPromptContinue}
 				/>
 			)}
 

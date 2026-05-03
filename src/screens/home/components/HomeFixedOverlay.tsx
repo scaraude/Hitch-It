@@ -172,9 +172,17 @@ export const HomeFixedOverlay: React.FC = () => {
 						testID="compare-driver-direction-button"
 					>
 						{session.hasDriverComparison ? (
-							<Ionicons name="close-circle" size={18} color={COLORS.textLight} />
+							<Ionicons
+								name="close-circle"
+								size={18}
+								color={COLORS.textLight}
+							/>
 						) : (
-							<MaterialIcons name="fork-right" size={18} color={COLORS.primary} />
+							<MaterialIcons
+								name="fork-right"
+								size={18}
+								color={COLORS.primary}
+							/>
 						)}
 						<Text
 							style={[

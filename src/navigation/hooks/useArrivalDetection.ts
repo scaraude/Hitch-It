@@ -4,7 +4,7 @@ import { logger } from '../../utils/logger';
 import { distanceToDestination } from '../services/routeSpotMatcher';
 import type { NavigationRoute, RoutePoint } from '../types';
 
-const ARRIVAL_THRESHOLD_METERS = 10000;
+const ARRIVAL_THRESHOLD_METERS = 5000;
 
 interface UseArrivalDetectionResult {
 	hasArrived: boolean;

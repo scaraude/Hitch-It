@@ -182,7 +182,7 @@ export default function JourneyDetailScreen() {
 									title={t('journey.endMarker')}
 								/>
 							)}
-							{vm.stopPoints.map(point => (
+							{vm.stops.map(point => (
 								<Marker
 									key={point.id}
 									coordinate={{
@@ -261,7 +261,7 @@ export default function JourneyDetailScreen() {
 						<View style={styles.statBox}>
 							<Ionicons name="car-outline" size={24} color={COLORS.primary} />
 							<Text style={styles.statValue}>
-								{vm.stopPoints.length} {t('journey.carLabel')}
+								{vm.stops.length} {t('journey.carLabel')}
 							</Text>
 						</View>
 						<View style={styles.statBox}>
@@ -270,7 +270,7 @@ export default function JourneyDetailScreen() {
 						</View>
 					</View>
 
-					<JourneyStopsList stopPoints={vm.stopPoints} />
+					<JourneyStopsList stops={vm.stops} />
 
 					{journey.notes && (
 						<View style={styles.notesSection}>

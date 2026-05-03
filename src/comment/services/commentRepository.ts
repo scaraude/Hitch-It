@@ -48,7 +48,6 @@ const parseCommentText = (value: string, commentId: string): string => {
 	return trimmedComment;
 };
 
-
 const resolveAuthorUsername = (author: CommentRow['author']): string | null => {
 	if (!author) {
 		return null;

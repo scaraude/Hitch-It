@@ -40,10 +40,10 @@ export default function JourneyHistoryScreen() {
 		);
 
 		const totalVehicles = journeys.reduce((vehicles, journey) => {
-			if (journey.points?.length > 0) {
-				vehicles += journey.points?.length;
+			if (journey.stops.length > 0) {
+				vehicles += journey.stops.length;
 			} else {
-				vehicles += 1; // Assume at least 1 vehicle if points are missing
+				vehicles += 1;
 			}
 			return vehicles;
 		}, 0);

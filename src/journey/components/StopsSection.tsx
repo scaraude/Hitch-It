@@ -39,10 +39,7 @@ export const StopsSection: React.FC<StopsSectionProps> = ({
 					{t('journey.stopsCount', { count: stops.length })}
 				</Text>
 				<Pressable
-					style={[
-						styles.addButton,
-						isAddingStop && styles.addButtonActive,
-					]}
+					style={[styles.addButton, isAddingStop && styles.addButtonActive]}
 					onPress={onToggleAddStop}
 				>
 					<Ionicons
