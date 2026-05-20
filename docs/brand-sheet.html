@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Hitch-It · Brand Sheet (proposition)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito+Sans:ital,opsz,wght@0,6..12,400;0,6..12,600;0,6..12,700;0,6..12,800&display=swap" rel="stylesheet" />
+<script type="module" src="https://cdn.jsdelivr.net/npm/ionicons@7.4.0/dist/ionicons/ionicons.esm.js"></script>
+<script nomodule src="https://cdn.jsdelivr.net/npm/ionicons@7.4.0/dist/ionicons/ionicons.js"></script>
+<style>
+  :root {
+    /* ===== Recommended direction: "Sunbeam & Petrol" ===== */
+    --sunbeam:        #FFB703;
+    --sunbeam-tint:   #FFCB47;
+    --sunbeam-deep:   #E09600;
+    --ink:            #1B2A41;
+    --ink-soft:       #5A6472;
+    --petrol:         #0F6E72;
+    --petrol-tint:    #E2F0F0;
+    --coral:          #FB5343;
+    --bg:             #FFFDF9;
+    --surface:        #F6F3EC;
+    --border:         #E9E5DC;
+    --success:        #2E9E5B;
+    --warning:        #E8810C;
+    --error:          #E5484D;
+    --info:           #2D7DD2;
+    --r-xs: 8px;
+    --r-sm: 12px;
+    --r-md: 16px;
+    --r-lg: 20px;
+    --r-xl: 24px;
+    --r-pill: 9999px;
+    --shadow: 0 6px 20px rgba(27,42,65,0.08);
+    --shadow-lg: 0 12px 36px rgba(27,42,65,0.12);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: "Nunito Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, .display { font-family: "Fredoka", "Nunito Sans", sans-serif; font-weight: 600; letter-spacing: -0.01em; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px 96px; }
+  .hero {
+    background: linear-gradient(135deg, var(--sunbeam) 0%, var(--sunbeam-tint) 100%);
+    padding: 56px 24px 64px; color: var(--ink); position: relative; overflow: hidden;
+  }
+  .hero::after {
+    content: ""; position: absolute; right: -80px; top: -80px;
+    width: 280px; height: 280px; border-radius: 50%; background: rgba(255,255,255,0.25);
+  }
+  .hero-inner { max-width: 1080px; margin: 0 auto; position: relative; z-index: 1; }
+  .hero h1 { font-size: 52px; margin: 0 0 6px; font-weight: 500; }
+  .hero .tag { font-size: 18px; font-weight: 700; opacity: 0.85; }
+  .hero .meta { margin-top: 18px; font-size: 14px; opacity: 0.8; max-width: 620px; }
+  .pill-row { margin-top: 24px; display: flex; gap: 10px; flex-wrap: wrap; }
+  .pill { background: var(--ink); color: var(--sunbeam); padding: 8px 16px; border-radius: var(--r-pill); font-family: "Fredoka"; font-weight: 500; font-size: 14px; }
+  .pill.ghost { background: rgba(27,42,65,0.08); color: var(--ink); }
+  .essence { margin-top: 22px; font-family: "Fredoka"; font-weight: 500; font-size: 34px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .essence .sep { color: rgba(27,42,65,0.35); font-size: 18px; }
+  .tone { margin-top: 10px; font-size: 14px; font-weight: 700; color: rgba(27,42,65,0.7); }
+  section { margin-top: 56px; }
+  .kicker { font-family: "Fredoka"; font-weight: 600; color: var(--petrol); font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+  h2 { font-size: 30px; margin: 0 0 4px; }
+  .lead { color: var(--ink-soft); font-size: 16px; margin: 0 0 24px; max-width: 720px; }
+  .dirs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .dir { border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden; background: #fff; }
+  .dir.reco { border: 2px solid var(--sunbeam); box-shadow: var(--shadow); }
+  .dir .swatches { display: flex; height: 64px; }
+  .dir .swatches span { flex: 1; }
+  .dir .body { padding: 14px 16px 18px; }
+  .dir .body h3 { margin: 0 0 4px; font-size: 17px; }
+  .dir .body p { margin: 0; font-size: 13px; color: var(--ink-soft); }
+  .badge-reco { display: inline-block; background: var(--sunbeam); color: var(--ink); font-family:"Fredoka"; font-weight:600; font-size: 11px; padding: 3px 9px; border-radius: var(--r-pill); margin-bottom: 8px; }
+  .palette { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px,1fr)); gap: 14px; }
+  .sw { border-radius: var(--r-md); overflow: hidden; border: 1px solid var(--border); background:#fff; }
+  .sw .chip { height: 80px; display:flex; align-items:flex-end; padding: 8px 10px; }
+  .sw .info { padding: 10px 12px 12px; }
+  .sw .name { font-family:"Fredoka"; font-weight:500; font-size: 14px; }
+  .sw .hex { font-size: 12px; color: var(--ink-soft); font-variant-numeric: tabular-nums; text-transform: uppercase; }
+  .sw .use { font-size: 11.5px; color: var(--ink-soft); margin-top: 4px; }
+  .aaa { font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 6px; }
+  .aaa.pass { background: rgba(46,158,91,0.15); color: #1d6e3e; }
+  .typecard { background:#fff; border:1px solid var(--border); border-radius: var(--r-lg); padding: 28px; }
+  .specimen { font-family:"Fredoka"; font-size: 56px; font-weight: 600; line-height: 1; margin: 0; }
+  .specimen.body { font-family:"Nunito Sans"; font-size: 40px; font-weight: 700; }
+  .scale { width:100%; border-collapse: collapse; margin-top: 22px; }
+  .scale td { padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: baseline; }
+  .scale td.lbl { color: var(--ink-soft); font-size: 13px; width: 160px; font-variant-numeric: tabular-nums; }
+  .radii { display:flex; gap:16px; flex-wrap: wrap; }
+  .rbox { width: 110px; }
+  .rbox .b { height: 64px; background: var(--petrol-tint); border: 2px solid var(--petrol); }
+  .rbox .l { font-size: 12px; color: var(--ink-soft); margin-top: 6px; text-align:center; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .panel { background:#fff; border:1px solid var(--border); border-radius: var(--r-lg); padding: 22px; }
+  .panel h3 { margin: 0 0 16px; font-size: 16px; }
+  .btn { border:0; cursor:pointer; font-family:"Fredoka"; font-weight:500; font-size:16px; padding: 13px 22px; border-radius: var(--r-md); display:inline-flex; align-items:center; gap:8px; }
+  .btn.primary { background: var(--sunbeam); color: var(--ink); box-shadow: 0 4px 12px rgba(255,183,3,0.4); }
+  .btn.secondary { background: var(--petrol); color:#fff; }
+  .btn.ghost { background: transparent; color: var(--petrol); border: 2px solid var(--petrol); }
+  .btnrow { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+  .hitch {
+    width:100%; justify-content:center; font-size: 20px; padding: 18px;
+    background: var(--sunbeam); color: var(--ink); border:0; border-radius: var(--r-pill);
+    font-family:"Fredoka"; font-weight:600; box-shadow: 0 8px 24px rgba(255,183,3,0.45);
+    animation: pulse 2.4s ease-in-out infinite; display:inline-flex; align-items:center; gap:8px; cursor:pointer;
+  }
+  @keyframes pulse {
+    0%,100% { transform: scale(1); box-shadow: 0 8px 24px rgba(255,183,3,0.45); }
+    50% { transform: scale(1.02); box-shadow: 0 10px 30px rgba(255,183,3,0.6); }
+  }
+  .spotcard { border:1px solid var(--border); border-radius: var(--r-md); overflow:hidden; }
+  .spotcard .photo { height: 120px; background: linear-gradient(135deg,#cfe6e6,#a9d3d4); display:flex; align-items:center; justify-content:center; color: var(--petrol); font-family:"Fredoka"; }
+  .spotcard .c { padding: 14px 16px; }
+  .spotcard .c h4 { margin:0 0 4px; font-family:"Fredoka"; font-weight:500; }
+  .spotcard .c p { margin:0; font-size:13px; color: var(--ink-soft); }
+  .chips { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
+  .chip2 { background: var(--surface); border:1px solid var(--border); border-radius: var(--r-pill); padding:5px 12px; font-size:12px; font-weight:600; }
+  .chip2.go { background: rgba(46,158,91,0.12); border-color: rgba(46,158,91,0.3); color:#1d6e3e; }
+  .sheet { background:#fff; border:1px solid var(--border); border-radius: var(--r-xl) var(--r-xl) 0 0; box-shadow: var(--shadow-lg); overflow:hidden; }
+  .sheet .handle { width:40px; height:4px; border-radius:99px; background: var(--border); margin: 12px auto 4px; }
+  .sheet .head { padding: 8px 20px 16px; }
+  .sheet .head h4 { margin:0; font-family:"Fredoka"; font-weight:500; }
+  .sheet .item { display:flex; justify-content:space-between; padding: 14px 20px; border-top:1px solid var(--border); }
+  .legend { display:flex; gap:18px; flex-wrap:wrap; }
+  .leg { display:flex; align-items:center; gap:8px; font-size:13px; }
+  .dot { width:14px; height:14px; border-radius:50%; }
+  .icons { display:flex; gap:28px; align-items:center; flex-wrap:wrap; }
+  .iconcol { text-align:center; }
+  .iconcol .l { font-size:12px; color:var(--ink-soft); margin-top:6px; }
+  .note { background: var(--petrol-tint); border-left: 4px solid var(--petrol); border-radius: 0 var(--r-sm) var(--r-sm) 0; padding: 14px 18px; font-size: 14px; margin-top: 16px; }
+  .note b { color: var(--petrol); }
+  code { background: rgba(27,42,65,0.06); padding: 1px 5px; border-radius: 5px; font-size: 12px; }
+  ul.clean { margin: 8px 0 0; padding-left: 18px; }
+  ul.clean li { margin-bottom: 6px; }
+  .footer { margin-top: 64px; padding-top: 24px; border-top:1px solid var(--border); color: var(--ink-soft); font-size:13px; }
+  @media (max-width: 760px) {
+    .dirs, .grid2 { grid-template-columns: 1fr; }
+    .hero h1 { font-size: 38px; }
+    .specimen { font-size: 40px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <h1>Hitch-It</h1>
+    <div class="tag">L'auto-stop, simple et vivant.</div>
+    <div class="meta">Proposition de direction de marque — à valider et itérer. Pour auto-stoppeurs 20–35 ans, débutants comme habitués des longs trajets, avec une dimension communautaire (spots, blogs, partages).</div>
+    <div class="essence">
+      <span style="color:#0F6E72">Aventure</span>
+      <span class="sep">★</span>
+      <span style="color:#1B2A41">Simplicité</span>
+      <span class="sep">★</span>
+      <span style="color:#0F6E72">Action</span>
+    </div>
+    <div class="tone">Ton : familier · joueur · fun</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <section>
+    <div class="kicker">Les 3 mots</div>
+    <h2>Plus joyeux, moins « boutons »</h2>
+    <p class="lead">On abandonne les pills sombres (effet bloc terne). Ma reco : <b>variante A</b> — typographie colorée, ça respire la joie et ce ne sont plus des boutons. J'ajoute un accent <b>corail</b> au système pour le « vif ». Choisis :</p>
+    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px;" class="dirs">
+      <div style="border:2px solid var(--sunbeam); border-radius:var(--r-lg); overflow:hidden; box-shadow:var(--shadow); background:#fff;">
+        <div style="background:linear-gradient(135deg,#FFB703,#FFCB47); padding:26px 18px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-family:Fredoka; font-weight:500; font-size:22px;">
+          <span style="color:#0F6E72">Aventure</span><span style="color:rgba(27,42,65,0.35); font-size:13px">★</span>
+          <span style="color:#FB5343">Simplicité</span><span style="color:rgba(27,42,65,0.35); font-size:13px">★</span>
+          <span style="color:#1B2A41">Action</span>
+        </div>
+        <div style="padding:12px 16px;"><span class="badge-reco">★ Recommandée</span><p style="margin:0; font-size:13px; color:var(--ink-soft)">A · Typographie colorée. Joyeux, vivant, pas de boutons.</p></div>
+      </div>
+      <div style="border:1px solid var(--border); border-radius:var(--r-lg); overflow:hidden; background:#fff;">
+        <div style="background:linear-gradient(135deg,#FFB703,#FFCB47); padding:26px 18px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+          <span style="background:#fff; border-radius:9999px; padding:7px 14px; display:inline-flex; align-items:center; gap:7px; font-weight:700; font-size:14px;"><ion-icon name="compass" style="color:#0F6E72; font-size:18px"></ion-icon> Aventure</span>
+          <span style="background:#fff; border-radius:9999px; padding:7px 14px; display:inline-flex; align-items:center; gap:7px; font-weight:700; font-size:14px;"><ion-icon name="sparkles" style="color:#FB5343; font-size:18px"></ion-icon> Simplicité</span>
+          <span style="background:#fff; border-radius:9999px; padding:7px 14px; display:inline-flex; align-items:center; gap:7px; font-weight:700; font-size:14px;"><ion-icon name="flash" style="color:#E8810C; font-size:18px"></ion-icon> Action</span>
+        </div>
+        <div style="padding:12px 16px;"><p style="margin:0; font-size:13px; color:var(--ink-soft)">B · Pills blanches + icône colorée. Léger, lisible, un peu plus « UI ».</p></div>
+      </div>
+      <div style="border:1px solid var(--border); border-radius:var(--r-lg); overflow:hidden; background:#fff;">
+        <div style="background:linear-gradient(135deg,#FFB703,#FFCB47); padding:26px 18px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+          <span style="background:#0F6E72; color:#fff; border-radius:9999px; padding:7px 15px; font-family:Fredoka; font-weight:500; font-size:14px;">Aventure</span>
+          <span style="background:#FB5343; color:#fff; border-radius:9999px; padding:7px 15px; font-family:Fredoka; font-weight:500; font-size:14px;">Simplicité</span>
+          <span style="background:#1B2A41; color:#fff; border-radius:9999px; padding:7px 15px; font-family:Fredoka; font-weight:500; font-size:14px;">Action</span>
+        </div>
+        <div style="padding:12px 16px;"><p style="margin:0; font-size:13px; color:var(--ink-soft)">C · Pills colorées pleines. Vif et punchy, mais reste « boutons ».</p></div>
+      </div>
+    </div>
+    <p class="lead" style="margin-top:18px;">👆 Le hero en haut de page utilise déjà la <b>variante A</b> — scrolle pour la voir en grand.</p>
+  </section>
+
+  <section>
+    <div class="kicker">3 directions</div>
+    <h2>Trois pistes autour du jaune</h2>
+    <p class="lead">Le jaune (≈ logo) reste la couleur d'action dans les trois cas. Ce qui change, c'est la couleur de structure/secondaire qui l'accompagne. Ma reco : <b>Sunbeam &amp; Petrol</b>.</p>
+    <div class="dirs">
+      <div class="dir reco">
+        <div class="swatches"><span style="background:#FFB703"></span><span style="background:#0F6E72"></span><span style="background:#1B2A41"></span><span style="background:#F6F3EC"></span></div>
+        <div class="body">
+          <span class="badge-reco">★ Recommandée</span>
+          <h3>Sunbeam &amp; Petrol</h3>
+          <p>Jaune + bleu-pétrole + neutres chauds. « Ciel &amp; route », énergique et voyageur. Le pétrole rappelle aussi le bleu actuel de l'app.</p>
+        </div>
+      </div>
+      <div class="dir">
+        <div class="swatches"><span style="background:#FFB703"></span><span style="background:#2E7D5B"></span><span style="background:#1B2A41"></span><span style="background:#F6F3EC"></span></div>
+        <div class="body">
+          <h3>Trail &amp; Pine</h3>
+          <p>Jaune + vert forêt + neutres chauds. Plus nature/outdoor, reprend le vert de la bottom sheet actuelle.</p>
+        </div>
+      </div>
+      <div class="dir">
+        <div class="swatches"><span style="background:#FFB703"></span><span style="background:#14213D"></span><span style="background:#3A3A40"></span><span style="background:#F4F4F2"></span></div>
+        <div class="body">
+          <h3>Sunbeam &amp; Ink</h3>
+          <p>Jaune + encre/charbon, neutres plus froids. Très épuré, « Notion / Tailscale » : un seul accent fort sur une base sobre.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="kicker">Logo &amp; wordmark</div>
+    <h2>Le « Hitch-It » trop gras — réglé</h2>
+    <p class="lead">Tu as raison : <b>Fredoka 700 en grand</b> = effet « Simpsons ». Mais tu l'aimes ailleurs — normal, en titres UI elle est top. La clé : <b>le logo et la police d'interface sont deux jobs différents</b>. On garde Fredoka partout (titres UI), mais le wordmark utilise un poids <b>plus léger</b>. Choisis le poids qui te parle :</p>
+    <div class="panel">
+      <div style="display:flex; flex-direction:column; gap:18px;">
+        <div style="display:flex; align-items:center; gap:18px; opacity:0.5;">
+          <span style="font-family:Fredoka; font-weight:700; font-size:40px;">Hitch-It</span>
+          <span style="font-size:13px; color:var(--ink-soft);">700 · trop lourd (l'effet cartoon)</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:18px;">
+          <span style="font-family:Fredoka; font-weight:500; font-size:40px;">Hitch-It</span>
+          <span style="font-size:13px; color:var(--petrol); font-weight:700;">500 · ma reco — friendly mais propre</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:18px;">
+          <span style="font-family:Fredoka; font-weight:400; font-size:40px;">Hitch-It</span>
+          <span style="font-size:13px; color:var(--ink-soft);">400 · encore plus léger / posé</span>
+        </div>
+      </div>
+      <div class="note" style="margin-top:22px;">Les <b>titres dans l'app</b> (que tu aimes) restent en Fredoka 500–600. On évite juste le 700 aux grandes tailles. Le titre de cette page est déjà passé en 500 — compare avec la première version.</div>
+    </div>
+  </section>
+
+  <section>
+    <div class="kicker">Couleurs · Sunbeam &amp; Petrol</div>
+    <h2>Palette</h2>
+    <p class="lead">Mode clair uniquement. Les neutres sont <b>chauds et doux</b> (le ton « doux » que tu cherchais), mais le <b>texte reste sur de l'encre foncée</b> pour tenir l'accessibilité AAA. Voir la note plus bas sur jaune + AAA.</p>
+    <div class="palette">
+      <div class="sw"><div class="chip" style="background:#FFB703"><span style="color:#1B2A41;font-family:Fredoka;font-weight:600">Aa</span></div><div class="info"><div class="name">Sunbeam</div><div class="hex">#FFB703</div><div class="use">Primaire · CTA · « Hitch it »</div></div></div>
+      <div class="sw"><div class="chip" style="background:#FFCB47"></div><div class="info"><div class="name">Sunbeam tint</div><div class="hex">#FFCB47</div><div class="use">Survol · fonds doux</div></div></div>
+      <div class="sw"><div class="chip" style="background:#E09600"></div><div class="info"><div class="name">Sunbeam deep</div><div class="hex">#E09600</div><div class="use">État pressé</div></div></div>
+      <div class="sw"><div class="chip" style="background:#1B2A41"><span style="color:#fff;font-family:Fredoka">Aa</span></div><div class="info"><div class="name">Ink</div><div class="hex">#1B2A41</div><div class="use">Texte · structure <span class="aaa pass">AAA</span></div></div></div>
+      <div class="sw"><div class="chip" style="background:#5A6472"><span style="color:#fff;font-family:Fredoka">Aa</span></div><div class="info"><div class="name">Ink soft</div><div class="hex">#5A6472</div><div class="use">Texte secondaire</div></div></div>
+      <div class="sw"><div class="chip" style="background:#0F6E72"><span style="color:#fff;font-family:Fredoka">Aa</span></div><div class="info"><div class="name">Petrol</div><div class="hex">#0F6E72</div><div class="use">Secondaire · liens <span class="aaa pass">AAA</span></div></div></div>
+      <div class="sw"><div class="chip" style="background:#FB5343"><span style="color:#fff;font-family:Fredoka">Aa</span></div><div class="info"><div class="name">Coral</div><div class="hex">#FB5343</div><div class="use">Accent expressif (hero, illus, empty states)</div></div></div>
+      <div class="sw"><div class="chip" style="background:#FFFDF9;border-bottom:1px solid #E9E5DC"></div><div class="info"><div class="name">Background</div><div class="hex">#FFFDF9</div><div class="use">Fond d'écran (blanc chaud)</div></div></div>
+      <div class="sw"><div class="chip" style="background:#F6F3EC"></div><div class="info"><div class="name">Surface</div><div class="hex">#F6F3EC</div><div class="use">Cartes · chips (papier chaud)</div></div></div>
+      <div class="sw"><div class="chip" style="background:#2E9E5B"></div><div class="info"><div class="name">Success</div><div class="hex">#2E9E5B</div><div class="use">Bon spot · validé</div></div></div>
+      <div class="sw"><div class="chip" style="background:#E8810C"></div><div class="info"><div class="name">Warning</div><div class="hex">#E8810C</div><div class="use">Orange distinct du jaune</div></div></div>
+      <div class="sw"><div class="chip" style="background:#E5484D"></div><div class="info"><div class="name">Error</div><div class="hex">#E5484D</div><div class="use">Erreurs · danger</div></div></div>
+      <div class="sw"><div class="chip" style="background:#2D7DD2"></div><div class="info"><div class="name">Info</div><div class="hex">#2D7DD2</div><div class="use">Infos neutres</div></div></div>
+    </div>
+    <div class="note">
+      <b>Jaune + AAA, la tension résolue.</b> Un jaune vif ne peut pas porter du texte sur fond blanc (contraste ~1.4:1, échec total). On le réserve donc aux <b>fonds d'action avec texte encre par-dessus</b> (jaune + #1B2A41 ≈ 11:1, AAA ✓) et aux accents. Tout le texte courant est en encre sur fond clair (AAA). Les neutres chauds donnent la douceur sans sacrifier la lisibilité.
+    </div>
+  </section>
+
+  <section>
+    <div class="kicker">Typographie</div>
+    <h2>Deux polices rondes &amp; lisibles</h2>
+    <p class="lead">Tu voulais « rond et doux, mais pas vieillot ». Reco : <b>Fredoka</b> pour les titres (géométrique, ronde, joyeuse, moderne) + <b>Nunito Sans</b> pour le corps (ronde mais ultra-lisible jusqu'en petit). Les deux sont gratuites (Google Fonts / expo-google-fonts).</p>
+    <div class="typecard">
+      <p class="specimen">Fredoka · Titres</p>
+      <p class="specimen body">Nunito Sans · Corps</p>
+      <table class="scale">
+        <tr><td class="lbl">Display / 28 · Fredoka 600</td><td><span style="font-family:Fredoka;font-weight:600;font-size:28px">Trouve ton prochain spot</span></td></tr>
+        <tr><td class="lbl">Title / 24 · Fredoka 600</td><td><span style="font-family:Fredoka;font-weight:600;font-size:24px">Itinéraire en cours</span></td></tr>
+        <tr><td class="lbl">Heading / 20 · Fredoka 500</td><td><span style="font-family:Fredoka;font-weight:500;font-size:20px">Spots à proximité</span></td></tr>
+        <tr><td class="lbl">Body / 16 · Nunito 400</td><td><span style="font-size:16px">Le point idéal pour lever le pouce, avec de la visibilité et un endroit où s'arrêter.</span></td></tr>
+        <tr><td class="lbl">Label / 14 · Nunito 700</td><td><span style="font-size:14px;font-weight:700">Ajouter un spot</span></td></tr>
+        <tr><td class="lbl">Caption / 12 · Nunito 600</td><td><span style="font-size:12px;font-weight:600;color:#5A6472">Mis à jour il y a 2 min</span></td></tr>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="kicker">Formes</div>
+    <h2>Arrondi cohérent, pas bubble</h2>
+    <p class="lead">« Rond mais pas vieillot » = un arrondi <b>moyen et constant</b>, pas du tout-pilule partout. Carte par défaut à 16. Pilule réservée aux boutons d'action ronds, tags et FAB.</p>
+    <div class="radii">
+      <div class="rbox"><div class="b" style="border-radius:8px"></div><div class="l">8 · chips, inputs</div></div>
+      <div class="rbox"><div class="b" style="border-radius:12px"></div><div class="l">12 · petits boutons</div></div>
+      <div class="rbox"><div class="b" style="border-radius:16px"></div><div class="l">16 · cartes (défaut)</div></div>
+      <div class="rbox"><div class="b" style="border-radius:20px"></div><div class="l">20 · modales</div></div>
+      <div class="rbox"><div class="b" style="border-radius:24px"></div><div class="l">24 · bottom sheet</div></div>
+      <div class="rbox"><div class="b" style="border-radius:9999px"></div><div class="l">pill · CTA, tags</div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="kicker">Composants</div>
+    <h2>Aperçu UI</h2>
+    <p class="lead">Densité : <b>aérée sur le contenu</b> (formulaires, profil, sheets — grandes zones tactiles, top en extérieur/mouvement) et <b>discrète sur la carte</b> pour la garder héroïne.</p>
+    <div class="grid2">
+      <div class="panel">
+        <h3>Boutons</h3>
+        <div class="btnrow" style="margin-bottom:16px">
+          <button class="btn primary">Action</button>
+          <button class="btn secondary">Secondaire</button>
+          <button class="btn ghost">Ghost</button>
+        </div>
+        <h3 style="margin-top:8px">CTA « Hitch it » — Ionicons <code>thumbs-up</code></h3>
+        <button class="hitch">
+          <ion-icon name="thumbs-up" style="font-size:24px; color:#1B2A41;"></ion-icon>
+          Hitch it
+        </button>
+        <h3 style="margin-top:22px;">Blanc vs Ink sur jaune</h3>
+        <div style="display:flex; gap:14px; flex-wrap:wrap; align-items:stretch;">
+          <div style="flex:1; min-width:130px; text-align:center;">
+            <div style="background:var(--sunbeam); border-radius:var(--r-md); padding:18px; display:flex; justify-content:center;">
+              <ion-icon name="thumbs-up" style="font-size:40px; color:#1B2A41;"></ion-icon>
+            </div>
+            <div style="font-size:12px; margin-top:8px;"><b style="color:var(--petrol);">Ink #1B2A41 — ma reco</b><br>≈ 11:1, AAA ✓ · raccord avec le texte</div>
+          </div>
+          <div style="flex:1; min-width:130px; text-align:center;">
+            <div style="background:var(--sunbeam); border-radius:var(--r-md); padding:18px; display:flex; justify-content:center;">
+              <ion-icon name="thumbs-up" style="font-size:40px; color:#fff;"></ion-icon>
+            </div>
+            <div style="font-size:12px; margin-top:8px; color:var(--ink-soft);">Blanc nu<br>≈ 1.6:1, illisible ✗</div>
+          </div>
+        </div>
+        <div class="note" style="margin-top:18px;">
+          Sur jaune, je recommande le pouce en <b>ink #1B2A41</b> : raccord avec le texte du bouton et AAA. Le <b>blanc nu</b> disparaît (le logo ne s'en sort que grâce à son contour noir, que l'Ionicon plat n'a pas). On garde le pouce <b>blanc pour les fonds non-jaunes</b> (pétrole, encre), où il ressort nickel.
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Carte de spot</h3>
+        <div class="spotcard">
+          <div class="photo">photo du spot</div>
+          <div class="c">
+            <h4>Sortie A6 — Aire de Beaune</h4>
+            <p>Bonne visibilité · place pour s'arrêter</p>
+            <div class="chips">
+              <span class="chip2 go">★ 4.6 · bon</span>
+              <span class="chip2">Autoroute</span>
+              <span class="chip2">42 départs</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Bottom sheet « À proximité »</h3>
+        <div class="sheet">
+          <div class="handle"></div>
+          <div class="head"><h4>À proximité · 84 spots</h4></div>
+          <div class="item"><span>Porte d'Italie</span><span style="color:#0F6E72;font-weight:700">1,2 km</span></div>
+          <div class="item"><span>Péage Sud</span><span style="color:#0F6E72;font-weight:700">3,8 km</span></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Légende des marqueurs (carte)</h3>
+        <div class="legend" style="margin-bottom:18px">
+          <div class="leg"><span class="dot" style="background:#2E9E5B"></span> Très bon</div>
+          <div class="leg"><span class="dot" style="background:#FFB703"></span> Correct</div>
+          <div class="leg"><span class="dot" style="background:#E8810C"></span> Moyen</div>
+          <div class="leg"><span class="dot" style="background:#E5484D"></span> Mauvais</div>
+        </div>
+        <h3>Iconographie</h3>
+        <div class="icons">
+          <div class="iconcol">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#1B2A41" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-5.3-7-11a7 7 0 0 1 14 0c0 5.7-7 11-7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg>
+            <div class="l">Line (défaut)</div>
+          </div>
+          <div class="iconcol">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="#FFB703" stroke="#1B2A41" stroke-width="1.6" stroke-linejoin="round"><path d="M12 21s-7-5.3-7-11a7 7 0 0 1 14 0c0 5.7-7 11-7 11Z"/><circle cx="12" cy="10" r="2.5" fill="#1B2A41" stroke="none"/></svg>
+            <div class="l">Filled (actif)</div>
+          </div>
+        </div>
+        <div class="note" style="margin-top:18px">Reco : icônes <b>line aux angles arrondis</b> par défaut, <b>filled</b> pour l'état actif/sélectionné. Set <b>Ionicons</b> (déjà dispo via <code>@expo/vector-icons</code>, variantes outline + filled).</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="kicker">Mouvement &amp; imagerie</div>
+    <h2>Un peu de vie, pas Disney Land</h2>
+    <div class="grid2">
+      <div class="panel">
+        <h3>Animations</h3>
+        <ul class="clean">
+          <li>Appui bouton : léger scale (0.96) + ressort</li>
+          <li>« Hitch it » : pulse doux au repos (démo ci-dessus), s'arrête en enregistrement</li>
+          <li>Bottom sheet : snap ressort fluide</li>
+          <li>Marqueurs : apparition fondu/scale au chargement des spots</li>
+          <li>Badge d'enregistrement : fondu subtil (ticket existant)</li>
+          <li>Standard : 200–250ms, ease-out, ressort via reanimated</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3>Photo &amp; illustration</h3>
+        <ul class="clean">
+          <li><b>Photos</b> : sur les spots et dans les articles/blogs (peu ailleurs)</li>
+          <li><b>Illustrations</b> légères, style line, pour empty states &amp; onboarding (vibe aventure : routes, panneaux, van)</li>
+          <li>Cohérentes avec le style d'icônes (line, arrondi)</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <div class="footer">
+    Hitch-It · brand sheet (proposition v1) — à valider. Le jaune exact reste à caler sur le hex du logo. Polices via Google Fonts (Fredoka, Nunito Sans).
+  </div>
+
+</div>
+</body>
+</html>
