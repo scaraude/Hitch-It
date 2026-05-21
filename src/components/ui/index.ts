@@ -1,5 +1,6 @@
 export { ActionButton } from './ActionButton';
 export { BottomNavBar } from './BottomNavBar';
+export { Button } from './Button';
 export { CompassIcon } from './CompassIcon';
 export { FloatingButton } from './FloatingButton';
 export { LoadingSpinner } from './LoadingSpinner';

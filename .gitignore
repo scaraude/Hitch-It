@@ -32,6 +32,10 @@ local.properties
 *.hprof
 .cxx/
 
+# Keep the /build Claude Code skill (the generic build/ rule above would ignore it)
+!.claude/skills/build/
+!.claude/skills/build/**
+
 # node.js
 #
 node_modules/

@@ -12,6 +12,7 @@ import {
 import { Marker, Polyline } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import MapViewComponent, { type MapViewRef } from '../../components/MapView';
+import { Button } from '../../components/ui';
 import { COLORS, SPACING } from '../../constants';
 import { SIZES } from '../../constants/sizes';
 import { useTranslation } from '../../i18n';
@@ -270,18 +271,12 @@ export const StopsManagementStep: React.FC<StopsManagementStepProps> = ({
 					</View>
 				</ScrollView>
 
-				<Pressable
-					style={[
-						styles.saveButton,
-						(!canSave || isSaving) && styles.saveButtonDisabled,
-					]}
+				<Button
+					label={isSaving ? t('common.saving') : t('journey.saveJourney')}
 					onPress={onSave}
 					disabled={!canSave || isSaving}
-				>
-					<Text style={styles.saveButtonText}>
-						{isSaving ? t('common.saving') : t('journey.saveJourney')}
-					</Text>
-				</Pressable>
+					style={styles.saveButton}
+				/>
 			</View>
 		</View>
 	);
@@ -391,18 +386,6 @@ const styles = StyleSheet.create({
 		textAlignVertical: 'top',
 	},
 	saveButton: {
-		backgroundColor: COLORS.primary,
-		paddingVertical: SPACING.md,
-		borderRadius: SIZES.radiusMedium,
-		alignItems: 'center',
 		marginTop: SPACING.sm,
-	},
-	saveButtonDisabled: {
-		opacity: 0.6,
-	},
-	saveButtonText: {
-		color: COLORS.textLight,
-		fontSize: SIZES.fontMd,
-		fontWeight: '600',
 	},
 });

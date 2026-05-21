@@ -1,15 +1,9 @@
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import { useRef, useState } from 'react';
-import {
-	ActivityIndicator,
-	Pressable,
-	StyleSheet,
-	Text,
-	View,
-} from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AddressInput } from '../../components';
-import { sheetStyles } from '../../components/ui';
+import { Button, sheetStyles } from '../../components/ui';
 import { COLORS, SIZES, SPACING } from '../../constants';
 import { useTranslation } from '../../i18n';
 import type { Location } from '../../types';
@@ -112,41 +106,26 @@ export function DriverDirectionSheet({
 				/>
 
 				<View style={styles.actions}>
-					<Pressable
-						style={({ pressed }) => [
-							styles.secondaryButton,
-							pressed && styles.buttonPressed,
-						]}
+					<Button
+						variant="ghost"
+						label={t('common.cancel')}
 						onPress={onClose}
-						accessibilityRole="button"
 						accessibilityLabel={t('navigation.closeDriverComparison')}
 						testID="driver-direction-cancel"
-					>
-						<Text style={styles.secondaryButtonText}>{t('common.cancel')}</Text>
-					</Pressable>
+						style={styles.flexButton}
+					/>
 
-					<Pressable
-						style={({ pressed }) => [
-							styles.primaryButton,
-							!canCompare && styles.primaryButtonDisabled,
-							pressed && canCompare && styles.buttonPressed,
-						]}
+					<Button
+						label={t('navigation.compare')}
 						onPress={() => {
 							void handleCompare();
 						}}
 						disabled={!canCompare}
-						accessibilityRole="button"
+						loading={isSubmitting}
 						accessibilityLabel={t('navigation.compareDriver')}
 						testID="driver-direction-compare"
-					>
-						{isSubmitting ? (
-							<ActivityIndicator color={COLORS.textLight} />
-						) : (
-							<Text style={styles.primaryButtonText}>
-								{t('navigation.compare')}
-							</Text>
-						)}
-					</Pressable>
+						style={styles.flexButton}
+					/>
 				</View>
 			</BottomSheetView>
 		</BottomSheet>
@@ -182,38 +161,7 @@ const styles = StyleSheet.create({
 		flexDirection: 'row',
 		gap: SPACING.sm,
 	},
-	primaryButton: {
+	flexButton: {
 		flex: 1,
-		backgroundColor: COLORS.primary,
-		paddingVertical: SPACING.sm + SPACING.xs,
-		borderRadius: SIZES.radiusMedium,
-		alignItems: 'center',
-		justifyContent: 'center',
-	},
-	primaryButtonDisabled: {
-		backgroundColor: COLORS.surface,
-	},
-	secondaryButton: {
-		flex: 1,
-		backgroundColor: COLORS.surface,
-		paddingVertical: SPACING.sm + SPACING.xs,
-		borderRadius: SIZES.radiusMedium,
-		borderWidth: 1,
-		borderColor: COLORS.border,
-		alignItems: 'center',
-		justifyContent: 'center',
-	},
-	buttonPressed: {
-		opacity: 0.8,
-	},
-	primaryButtonText: {
-		color: COLORS.textLight,
-		fontSize: SIZES.fontMd,
-		fontWeight: '600',
-	},
-	secondaryButtonText: {
-		color: COLORS.text,
-		fontSize: SIZES.fontMd,
-		fontWeight: '600',
 	},
 });
