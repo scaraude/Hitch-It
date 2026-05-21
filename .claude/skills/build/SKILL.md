@@ -30,7 +30,16 @@ Tickets live in **Notion**, not the repo. Their IDs (`TCK-85`, `BKL-19`) are the
 
 Why first: the repo's docs (brand book, specs) describe intent, but the Notion ticket is the source of truth for *current* scope. Building from docs alone leads to out-of-scope PRs.
 
-## Phase 1 — Implement
+## Phase 1 — Branch setup + Implement
+
+Before writing any code, set up a clean feature branch from master:
+
+```bash
+git checkout master && git pull origin master
+git checkout -b feat/<ticket-id>-<short-slug>
+```
+
+Name the branch after the ticket ID (e.g. `feat/tck-86-typography-fonts`). Skip if you are already on the correct feature branch for this ticket.
 
 - Follow `CLAUDE.md` (Core Rules, Design System, Type System) and `docs/ENGINEERING_STANDARDS.md`.
 - Library-first; reuse shared UI/tokens; no hardcoded hex/strings; branded IDs and enums; i18n for user-facing copy.
