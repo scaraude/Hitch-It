@@ -96,7 +96,7 @@ export const MapControlButton: React.FC<MapControlButtonProps> = ({
 const styles = StyleSheet.create({
 	container: {
 		// Outer shadow layer for depth
-		shadowColor: '#000',
+		shadowColor: COLORS.text,
 		shadowOffset: { width: 0, height: 4 },
 		shadowOpacity: 0.15,
 		shadowRadius: 12,

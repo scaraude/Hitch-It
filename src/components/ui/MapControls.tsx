@@ -19,7 +19,7 @@ interface MapControlsProps {
 	bottomOffset?: number;
 }
 
-const LOCATE_ICON_COLOR = '#626262';
+const LOCATE_ICON_COLOR = COLORS.textSecondary;
 
 export const MapControls: React.FC<MapControlsProps> = ({
 	mapHeading = 0,
