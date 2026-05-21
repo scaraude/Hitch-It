@@ -45,7 +45,7 @@ Run these in order. Re-run after fixes until each is clean. Do not push until al
 
 - Lint + type-check green. Commands: `pnpm lint` and `pnpm type-check`. If `pnpm` is not on PATH, fall back to `corepack pnpm <script>` or the local binaries (`node_modules/.bin/biome check .`, `node_modules/.bin/tsc --noEmit`).
 - Read your own diff end to end. Check every ticket acceptance criterion is met.
-- For UI work you cannot run on a device here, say so explicitly and provide a static artifact (e.g. an HTML preview) rather than claiming visual success. Evidence before assertions — never claim something passes without running it.
+- For UI tickets, actually render the change: use the `android-verify` skill to run the app on the emulator and screenshot the affected screens. If for some reason the device can't run, say so explicitly and provide a static artifact (e.g. an HTML preview) instead of claiming visual success. Evidence before assertions — never claim something passes without running it.
 
 ### Gate 2 — Simplify agent
 
