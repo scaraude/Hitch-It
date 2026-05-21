@@ -3,16 +3,16 @@ import { Text, type TextProps, type TextStyle } from 'react-native';
 import { COLORS, TYPOGRAPHY } from '../../constants';
 
 type TypographyVariant = keyof typeof TYPOGRAPHY;
+type AppColor = (typeof COLORS)[keyof typeof COLORS];
 
 interface AppTextProps extends TextProps {
 	variant?: TypographyVariant;
-	color?: string;
+	color?: AppColor;
 }
 
-const variantStyle = (variant: TypographyVariant): TextStyle => ({
-	...TYPOGRAPHY[variant],
-	color: COLORS.text,
-});
+function variantStyle(variant: TypographyVariant): TextStyle {
+	return { ...TYPOGRAPHY[variant], color: COLORS.text };
+}
 
 export const AppText: React.FC<AppTextProps> = ({
 	variant = 'body',

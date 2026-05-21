@@ -23,7 +23,7 @@ import { RootNavigator } from './src/navigation';
 import { logger } from './src/utils';
 
 const App: React.FC = () => {
-	const [fontsLoaded] = useFonts({
+	const [fontsLoaded, fontError] = useFonts({
 		Fredoka_500Medium,
 		Fredoka_600SemiBold,
 		NunitoSans_400Regular,
@@ -31,6 +31,10 @@ const App: React.FC = () => {
 		NunitoSans_600SemiBold,
 		NunitoSans_700Bold,
 	});
+
+	if (fontError) {
+		logger.app.error('Failed to load brand fonts:', fontError);
+	}
 
 	useEffect(() => {
 		logger.app.info('App initialized');
@@ -49,7 +53,7 @@ const App: React.FC = () => {
 		};
 	}, []);
 
-	if (!fontsLoaded) {
+	if (!fontsLoaded && !fontError) {
 		return (
 			<View
 				style={{
