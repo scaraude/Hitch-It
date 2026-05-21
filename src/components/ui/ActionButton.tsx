@@ -1,7 +1,15 @@
 import { Ionicons } from '@expo/vector-icons';
 import type React from 'react';
 import { useEffect } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+	Pressable,
+	type StyleProp,
+	StyleSheet,
+	Text,
+	type TextStyle,
+	View,
+	type ViewStyle,
+} from 'react-native';
 import Animated, {
 	useAnimatedStyle,
 	useSharedValue,
@@ -51,12 +59,7 @@ export const ActionButton: React.FC<ActionButtonProps> = ({
 		transform: [{ scale: pulse.value }],
 	}));
 
-	const buttonStyle =
-		variant === 'default' ? styles.button : styles.buttonLarge;
-	const pressedStyle =
-		variant === 'default' ? styles.buttonPressed : styles.buttonLargePressed;
-	const textStyle =
-		variant === 'default' ? styles.buttonText : styles.buttonTextLarge;
+	const variantStyles = VARIANT_STYLES[variant];
 	const positionStyle =
 		!withContainer && bottomOffset !== undefined
 			? { bottom: bottomOffset }
@@ -65,10 +68,10 @@ export const ActionButton: React.FC<ActionButtonProps> = ({
 	const button = (
 		<AnimatedPressable
 			style={({ pressed }) => [
-				buttonStyle,
+				variantStyles.button,
 				positionStyle,
 				pulseStyle,
-				pressed && pressedStyle,
+				pressed && variantStyles.pressed,
 			]}
 			onPress={onPress}
 			accessibilityLabel={accessibilityLabel ?? label}
@@ -81,7 +84,7 @@ export const ActionButton: React.FC<ActionButtonProps> = ({
 				color={COLORS.onAction}
 				style={styles.icon}
 			/>
-			<Text style={textStyle}>{label}</Text>
+			<Text style={variantStyles.text}>{label}</Text>
 		</AnimatedPressable>
 	);
 
@@ -162,3 +165,23 @@ const styles = StyleSheet.create({
 		marginRight: SPACING.xs,
 	},
 });
+
+const VARIANT_STYLES: Record<
+	ActionButtonVariant,
+	{
+		button: StyleProp<ViewStyle>;
+		pressed: StyleProp<ViewStyle>;
+		text: StyleProp<TextStyle>;
+	}
+> = {
+	default: {
+		button: styles.button,
+		pressed: styles.buttonPressed,
+		text: styles.buttonText,
+	},
+	large: {
+		button: styles.buttonLarge,
+		pressed: styles.buttonLargePressed,
+		text: styles.buttonTextLarge,
+	},
+};

@@ -19,8 +19,6 @@ interface MapControlsProps {
 	bottomOffset?: number;
 }
 
-const LOCATE_ICON_COLOR = COLORS.textSecondary;
-
 export const MapControls: React.FC<MapControlsProps> = ({
 	mapHeading = 0,
 	isFollowingUser = false,
@@ -52,7 +50,7 @@ export const MapControls: React.FC<MapControlsProps> = ({
 					<AntDesign
 						name="aim"
 						size={22}
-						color={isFollowingUser ? COLORS.background : LOCATE_ICON_COLOR}
+						color={isFollowingUser ? COLORS.background : COLORS.textSecondary}
 					/>
 				}
 				onPress={onLocateUser}
