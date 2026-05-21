@@ -1,5 +1,5 @@
 import { StyleSheet } from 'react-native';
-import { COLORS, SIZES, SPACING } from '../../constants';
+import { COLORS, FONTS, SIZES, SPACING } from '../../constants';
 
 export const sheetStyles = StyleSheet.create({
 	container: {
@@ -39,12 +39,12 @@ export const sheetStyles = StyleSheet.create({
 	},
 	primaryButtonText: {
 		color: COLORS.textLight,
+		fontFamily: FONTS.bodySemiBold,
 		fontSize: SIZES.fontMd,
-		fontWeight: '600',
 	},
 	secondaryButtonText: {
 		color: COLORS.text,
+		fontFamily: FONTS.bodySemiBold,
 		fontSize: SIZES.fontMd,
-		fontWeight: '600',
 	},
 });
