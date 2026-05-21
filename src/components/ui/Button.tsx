@@ -70,7 +70,7 @@ export const Button: React.FC<ButtonProps> = ({
 const styles = StyleSheet.create({
 	base: {
 		minHeight: SIZES.buttonHeight,
-		paddingVertical: SPACING.sm + 2,
+		paddingVertical: SPACING.sm,
 		paddingHorizontal: SPACING.lg,
 		borderRadius: SIZES.radiusMd,
 		alignItems: 'center',
