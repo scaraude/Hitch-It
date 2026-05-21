@@ -45,7 +45,7 @@ Run these in order. Re-run after fixes until each is clean. Do not push until al
 
 - Lint + type-check green. Commands: `pnpm lint` and `pnpm type-check`. If `pnpm` is not on PATH, fall back to `corepack pnpm <script>` or the local binaries (`node_modules/.bin/biome check .`, `node_modules/.bin/tsc --noEmit`).
 - Read your own diff end to end. Check every ticket acceptance criterion is met.
-- For UI work you cannot run on a device here, say so explicitly and provide a static artifact (e.g. an HTML preview) rather than claiming visual success. See `superpowers:verification-before-completion`.
+- For UI work you cannot run on a device here, say so explicitly and provide a static artifact (e.g. an HTML preview) rather than claiming visual success. Evidence before assertions — never claim something passes without running it.
 
 ### Gate 2 — Simplify agent
 
@@ -53,7 +53,7 @@ Dispatch the **code-simplifier** agent (`Agent` tool, `subagent_type: code-simpl
 
 ### Gate 3 — Review agent
 
-Dispatch the **code-review** agent (`Agent` tool, `subagent_type: feature-dev:code-reviewer`, or the `/code-review` skill). Briefing: the ticket's goal + acceptance criteria, the diff/branch, and the project conventions to check against. Address high-priority findings (bugs, security, convention violations). For each piece of feedback, verify it's correct before acting — see `superpowers:receiving-code-review`. Re-run Gates 1–2 if you change code. Loop until review is clean.
+Dispatch the **code-review** agent (`Agent` tool, `subagent_type: feature-dev:code-reviewer`, or the `/code-review` skill). Briefing: the ticket's goal + acceptance criteria, the diff/branch, and the project conventions to check against. Address high-priority findings (bugs, security, convention violations). For each piece of feedback, verify it's correct before acting — don't blindly implement suggestions that are wrong or churny. Re-run Gates 1–2 if you change code. Loop until review is clean.
 
 ## Phase 3 — Ship
 
