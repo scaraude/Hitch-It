@@ -19,6 +19,11 @@ import Animated, {
 } from 'react-native-reanimated';
 import { COLORS, FONTS, SIZES, SPACING } from '../../constants';
 
+const CTA_PADDING_V = SPACING.sm + 2;
+const CTA_SHADOW_OPACITY = 0.2;
+const CTA_SHADOW_OPACITY_LARGE = 0.18;
+const CTA_SHADOW_RADIUS = 10;
+
 type ActionButtonVariant = 'default' | 'large';
 
 interface ActionButtonProps {
@@ -50,8 +55,7 @@ export const ActionButton: React.FC<ActionButtonProps> = ({
 				withTiming(1.03, { duration: 900 }),
 				withTiming(1, { duration: 900 })
 			),
-			-1,
-			true
+			-1
 		);
 	}, [pulse]);
 
@@ -121,13 +125,13 @@ const styles = StyleSheet.create({
 		flexDirection: 'row',
 		alignItems: 'center',
 		justifyContent: 'center',
-		paddingVertical: SPACING.sm + 2,
+		paddingVertical: CTA_PADDING_V,
 		borderRadius: SIZES.radiusPill,
 		backgroundColor: COLORS.action,
 		shadowColor: COLORS.text,
 		shadowOffset: { width: 0, height: 6 },
-		shadowOpacity: 0.2,
-		shadowRadius: 10,
+		shadowOpacity: CTA_SHADOW_OPACITY,
+		shadowRadius: CTA_SHADOW_RADIUS,
 		elevation: 4,
 	},
 	buttonPressed: {
@@ -149,8 +153,8 @@ const styles = StyleSheet.create({
 		backgroundColor: COLORS.action,
 		shadowColor: COLORS.text,
 		shadowOffset: { width: 0, height: 6 },
-		shadowOpacity: 0.18,
-		shadowRadius: 10,
+		shadowOpacity: CTA_SHADOW_OPACITY_LARGE,
+		shadowRadius: CTA_SHADOW_RADIUS,
 		elevation: 6,
 	},
 	buttonLargePressed: {

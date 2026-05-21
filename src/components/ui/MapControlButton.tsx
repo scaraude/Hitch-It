@@ -9,6 +9,9 @@ import {
 } from 'react-native';
 import { COLORS } from '../../constants';
 
+const GLASS_BG = 'rgba(255, 255, 255, 0.95)';
+const GLASS_BORDER = 'rgba(255, 255, 255, 0.8)';
+
 type ButtonSize = 'small' | 'medium';
 
 interface MapControlButtonProps {
@@ -103,12 +106,11 @@ const styles = StyleSheet.create({
 		elevation: 6,
 	},
 	button: {
-		backgroundColor: 'rgba(255, 255, 255, 0.95)',
+		backgroundColor: GLASS_BG,
 		alignItems: 'center',
 		justifyContent: 'center',
-		// Subtle inner border for glass effect
 		borderWidth: 0.5,
-		borderColor: 'rgba(255, 255, 255, 0.8)',
+		borderColor: GLASS_BORDER,
 	},
 	buttonActive: {
 		backgroundColor: COLORS.primary,
