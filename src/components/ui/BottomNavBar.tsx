@@ -109,7 +109,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
 									<FontAwesome6
 										name="route"
 										size={SIZES.iconMd}
-										color={isActive ? PRIMARY_BLUE : TEXT_GRAY}
+										color={isActive ? ACTIVE_COLOR : INACTIVE_COLOR}
 										pointerEvents="none"
 										style={styles.tabIcon}
 									/>
@@ -117,7 +117,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
 									<Ionicons
 										name={isActive ? tab.activeIcon : tab.icon}
 										size={SIZES.iconMd}
-										color={isActive ? PRIMARY_BLUE : TEXT_GRAY}
+										color={isActive ? ACTIVE_COLOR : INACTIVE_COLOR}
 										pointerEvents="none"
 										style={styles.tabIcon}
 									/>
@@ -139,8 +139,8 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
 	);
 };
 
-const PRIMARY_BLUE = '#539DF3';
-const TEXT_GRAY = '#484C52';
+const ACTIVE_COLOR = COLORS.accent;
+const INACTIVE_COLOR = COLORS.textSecondary;
 
 const ADD_BUTTON_SIZE = 64;
 const ADD_BUTTON_OVERFLOW = 28; // How much the button extends above the nav bar
@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
 	container: {
 		backgroundColor: COLORS.background,
 		borderTopWidth: 1,
-		borderTopColor: '#E0E0E0',
+		borderTopColor: COLORS.border,
 	},
 	tabRow: {
 		flexDirection: 'row',
@@ -181,12 +181,12 @@ const styles = StyleSheet.create({
 		width: '100%',
 		fontFamily: FONTS.body,
 		fontSize: SIZES.fontMd,
-		color: TEXT_GRAY,
+		color: INACTIVE_COLOR,
 		textAlign: 'center',
 		flexShrink: 1,
 	},
 	tabLabelActive: {
-		color: PRIMARY_BLUE,
+		color: ACTIVE_COLOR,
 		fontFamily: FONTS.bodyMedium,
 	},
 	addButtonSpacer: {
@@ -201,12 +201,12 @@ const styles = StyleSheet.create({
 		width: ADD_BUTTON_SIZE,
 		height: ADD_BUTTON_SIZE,
 		borderRadius: ADD_BUTTON_SIZE / 2,
-		backgroundColor: PRIMARY_BLUE,
+		backgroundColor: ACTIVE_COLOR,
 		alignItems: 'center',
 		justifyContent: 'center',
 		borderWidth: 4,
 		borderColor: COLORS.background,
-		shadowColor: '#000',
+		shadowColor: COLORS.text,
 		shadowOffset: { width: 0, height: 2 },
 		shadowOpacity: 0.2,
 		shadowRadius: 4,

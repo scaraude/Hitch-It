@@ -3,7 +3,7 @@ import { COLORS, FONTS, SIZES, SPACING } from '../../constants';
 
 export const sheetStyles = StyleSheet.create({
 	container: {
-		shadowColor: '#000',
+		shadowColor: COLORS.text,
 		shadowOffset: { width: 0, height: -2 },
 		shadowOpacity: SIZES.shadowOpacity,
 		shadowRadius: SIZES.shadowRadius,
