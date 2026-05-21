@@ -69,6 +69,7 @@ Report back the PR URL and the ticket link.
 ## Conventions (project-specific)
 
 - **No AI signature** in commits — never add `Co-Authored-By` / "Generated with" trailers.
+- **Atomic commits, sensibly grouped.** Split the work into commits that each stand on their own — one logical change per commit (e.g. "add shared Button" separate from "migrate screens to Button", separate from unrelated tooling). Don't dump everything into one giant commit. But don't over-fragment either: no one-file-per-commit or one-line commits just to separate things that belong together. A good commit is the smallest change that still makes sense as a unit and would pass review on its own.
 - **Don't commit plan docs.** Planning artifacts belong in the Notion ticket, not git. Design specs may be committed if useful.
 - **Push and PR are shared-state actions** — they're authorized as the terminal step of this workflow, but never force-push to `master`.
 - Default base branch for PRs is `master`.
