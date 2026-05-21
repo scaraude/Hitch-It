@@ -1,7 +1,7 @@
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { sheetStyles } from '../../components/ui';
+import { Button, sheetStyles } from '../../components/ui';
 import { COLORS, SIZES, SPACING } from '../../constants';
 import { useTranslation } from '../../i18n';
 import type { NavigationRoute, SpotOnRoute } from '../types';
@@ -75,28 +75,12 @@ export function NavigationCompleteSheet({
 				</Text>
 
 				<View style={sheetStyles.buttonGroup}>
-					<Pressable
-						style={({ pressed }) => [
-							sheetStyles.primaryButton,
-							pressed && sheetStyles.buttonPressed,
-						]}
-						onPress={onSave}
-					>
-						<Text style={sheetStyles.primaryButtonText}>
-							{t('common.yesSave')}
-						</Text>
-					</Pressable>
-					<Pressable
-						style={({ pressed }) => [
-							sheetStyles.secondaryButton,
-							pressed && sheetStyles.buttonPressed,
-						]}
+					<Button label={t('common.yesSave')} onPress={onSave} />
+					<Button
+						variant="ghost"
+						label={t('common.noThanks')}
 						onPress={onDiscard}
-					>
-						<Text style={sheetStyles.secondaryButtonText}>
-							{t('common.noThanks')}
-						</Text>
-					</Pressable>
+					/>
 				</View>
 			</BottomSheetView>
 		</BottomSheet>

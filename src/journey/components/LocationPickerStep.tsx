@@ -6,6 +6,7 @@ import type { Region } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AddressInput } from '../../components/AddressInput';
 import MapViewComponent, { type MapViewRef } from '../../components/MapView';
+import { Button } from '../../components/ui';
 import { COLORS, MAP_CONFIG, SPACING } from '../../constants';
 import { SIZES } from '../../constants/sizes';
 import { useTranslation } from '../../i18n';
@@ -167,14 +168,7 @@ export const LocationPickerStep: React.FC<LocationPickerStepProps> = ({
 					{ paddingBottom: insets.bottom + SPACING.md },
 				]}
 			>
-				<Pressable
-					style={styles.ctaButton}
-					onPress={handleConfirm}
-					accessibilityLabel={ctaLabel}
-					accessibilityRole="button"
-				>
-					<Text style={styles.ctaText}>{ctaLabel}</Text>
-				</Pressable>
+				<Button label={ctaLabel} onPress={handleConfirm} />
 			</View>
 		</View>
 	);
@@ -286,16 +280,5 @@ const styles = StyleSheet.create({
 		paddingHorizontal: SPACING.lg,
 		paddingTop: SPACING.md,
 		backgroundColor: 'rgba(255, 255, 255, 0.95)',
-	},
-	ctaButton: {
-		backgroundColor: COLORS.primary,
-		paddingVertical: SPACING.md,
-		borderRadius: SIZES.radiusMedium,
-		alignItems: 'center',
-	},
-	ctaText: {
-		color: COLORS.textLight,
-		fontSize: SIZES.fontMd,
-		fontWeight: '600',
 	},
 });

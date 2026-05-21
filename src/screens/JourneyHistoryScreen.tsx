@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../auth';
+import { Button } from '../components/ui';
 import { COLORS, SPACING } from '../constants';
 import { SIZES } from '../constants/sizes';
 import { useTranslation } from '../i18n';
@@ -145,11 +146,7 @@ export default function JourneyHistoryScreen() {
 		<View style={styles.emptyState}>
 			<Ionicons name="map-outline" size={64} color={COLORS.textSecondary} />
 			<Text style={styles.emptyStateText}>{t('journey.noJourneys')}</Text>
-			<Pressable style={styles.emptyStateButton} onPress={handleAddJourney}>
-				<Text style={styles.emptyStateButtonText}>
-					{t('journey.addFirstJourney')}
-				</Text>
-			</Pressable>
+			<Button label={t('journey.addFirstJourney')} onPress={handleAddJourney} />
 		</View>
 	);
 
@@ -307,16 +304,5 @@ const styles = StyleSheet.create({
 		color: COLORS.textSecondary,
 		marginTop: SPACING.md,
 		marginBottom: SPACING.lg,
-	},
-	emptyStateButton: {
-		backgroundColor: COLORS.primary,
-		paddingHorizontal: SPACING.lg,
-		paddingVertical: SPACING.md,
-		borderRadius: SIZES.radiusMedium,
-	},
-	emptyStateButtonText: {
-		color: COLORS.textLight,
-		fontSize: SIZES.fontMd,
-		fontWeight: '600',
 	},
 });

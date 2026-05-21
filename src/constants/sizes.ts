@@ -1,10 +1,18 @@
 export const SIZES = {
-	// Border radius
-	radiusSmall: 4,
+	// Border radius (legacy keys retained)
+	radiusSmall: 8,
 	radiusMedium: 8,
 	radiusLarge: 16,
 	radiusXLarge: 20,
 	radiusRound: 9999,
+
+	// Brand radius scale (Brand Book v1)
+	radiusXs: 8,
+	radiusSm: 12,
+	radiusMd: 16,
+	radiusLg: 20,
+	radiusXl: 24,
+	radiusPill: 9999,
 
 	// Font sizes
 	fontXs: 12,

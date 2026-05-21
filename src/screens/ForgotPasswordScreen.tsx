@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../auth';
+import { Button } from '../components/ui';
 import { COLORS, SPACING } from '../constants';
 import { SIZES } from '../constants/sizes';
 import { useTranslation } from '../i18n';
@@ -187,15 +188,12 @@ export default function ForgotPasswordScreen() {
 								/>
 							</View>
 
-							<Pressable
-								style={[styles.button, isLoading && styles.buttonDisabled]}
+							<Button
+								label={isLoading ? t('auth.sending') : t('auth.sendResetLink')}
 								onPress={handleSendReset}
 								disabled={isLoading}
-							>
-								<Text style={styles.buttonText}>
-									{isLoading ? t('auth.sending') : t('auth.sendResetLink')}
-								</Text>
-							</Pressable>
+								style={styles.submitButton}
+							/>
 						</>
 					)}
 				</View>
@@ -267,21 +265,8 @@ const styles = StyleSheet.create({
 		fontSize: SIZES.fontMd,
 		color: COLORS.text,
 	},
-	button: {
-		backgroundColor: COLORS.primary,
-		height: SIZES.buttonHeight,
-		borderRadius: SIZES.radiusMedium,
-		justifyContent: 'center',
-		alignItems: 'center',
+	submitButton: {
 		marginTop: SPACING.sm,
-	},
-	buttonDisabled: {
-		opacity: 0.6,
-	},
-	buttonText: {
-		color: COLORS.textLight,
-		fontSize: SIZES.fontMd,
-		fontWeight: '600',
 	},
 	footer: {
 		flexDirection: 'row',

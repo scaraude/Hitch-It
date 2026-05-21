@@ -1,7 +1,8 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { COLORS, SIZES, SPACING } from '../constants';
 import { logger } from '../utils';
+import { Button } from './ui';
 
 interface Props {
 	children: ReactNode;
@@ -41,14 +42,7 @@ export class ErrorBoundary extends Component<Props, State> {
 						{this.state.error && (
 							<Text style={styles.errorText}>{this.state.error.message}</Text>
 						)}
-						<TouchableOpacity
-							style={styles.button}
-							onPress={this.handleRetry}
-							accessibilityLabel="Réessayer"
-							accessibilityRole="button"
-						>
-							<Text style={styles.buttonText}>Réessayer</Text>
-						</TouchableOpacity>
+						<Button label="Réessayer" onPress={this.handleRetry} />
 					</View>
 				)
 			);
@@ -77,16 +71,5 @@ const styles = StyleSheet.create({
 		color: COLORS.textSecondary,
 		marginBottom: SPACING.xl,
 		textAlign: 'center',
-	},
-	button: {
-		backgroundColor: COLORS.primary,
-		paddingVertical: SPACING.md,
-		paddingHorizontal: SPACING.xl,
-		borderRadius: SIZES.radiusMedium,
-	},
-	buttonText: {
-		color: COLORS.background,
-		fontSize: SIZES.fontMd,
-		fontWeight: '600',
 	},
 });

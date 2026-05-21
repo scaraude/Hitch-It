@@ -4,20 +4,39 @@ export const APP_CONFIG = {
 	description: 'A modern React Native app for hitchhiking',
 } as const;
 
+const BRAND = {
+	sunbeam: '#FFB703',
+	sunbeamTint: '#FFCB47',
+	sunbeamDeep: '#E09600',
+	ink: '#1B2A41',
+	inkSoft: '#5A6472',
+	petrol: '#0F6E72',
+	petrolTint: '#E2F0F0',
+	coral: '#FB5343',
+} as const;
+
 export const COLORS = {
-	primary: '#096396',
-	secondary: '#4A90E2',
-	success: '#4CAF50',
-	warning: '#FF9800',
-	error: '#F44336',
-	danger: '#F44336',
-	background: '#FFFFFF',
-	surface: '#F5F5F5',
-	text: '#212121',
-	textSecondary: '#757575',
+	// Brand palette (canonical — Brand Book v1 "Sunbeam & Petrol")
+	...BRAND,
+	// Role tokens (Brand Book v1)
+	action: BRAND.sunbeam,
+	onAction: BRAND.ink,
+	accent: BRAND.petrol,
+	// Semantic aliases — existing consumer keys keep working
+	primary: BRAND.petrol,
+	secondary: '#2D7DD2',
+	success: '#2E9E5B',
+	warning: '#E8810C',
+	error: '#E5484D',
+	danger: '#E5484D',
+	info: '#2D7DD2',
+	background: '#FFFDF9',
+	surface: '#F6F3EC',
+	text: BRAND.ink,
+	textSecondary: BRAND.inkSoft,
 	textLight: '#FFFFFF',
-	border: '#E0E0E0',
-	navigationRoutePassed: '#9E9E9E',
+	border: '#E9E5DC',
+	navigationRoutePassed: BRAND.inkSoft,
 } as const;
 
 export const MAP_CONFIG = {
