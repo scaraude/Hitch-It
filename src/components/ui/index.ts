@@ -1,4 +1,5 @@
 export { ActionButton } from './ActionButton';
+export { AppText } from './AppText';
 export { BottomNavBar } from './BottomNavBar';
 export { Button } from './Button';
 export { CompassIcon } from './CompassIcon';

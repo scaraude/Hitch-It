@@ -58,4 +58,24 @@ export const SPACING = {
 	xxl: 48,
 } as const;
 
+export const FONTS = {
+	// Fredoka — headings & display (Brand Book v1)
+	heading: 'Fredoka_500Medium',
+	headingSemiBold: 'Fredoka_600SemiBold',
+	// Nunito Sans — body copy (Brand Book v1)
+	body: 'NunitoSans_400Regular',
+	bodyMedium: 'NunitoSans_500Medium',
+	bodySemiBold: 'NunitoSans_600SemiBold',
+	bodyBold: 'NunitoSans_700Bold',
+} as const;
+
+export const TYPOGRAPHY = {
+	display: { fontFamily: FONTS.headingSemiBold, fontSize: 32, lineHeight: 40 },
+	title: { fontFamily: FONTS.headingSemiBold, fontSize: 24, lineHeight: 32 },
+	heading: { fontFamily: FONTS.heading, fontSize: 20, lineHeight: 28 },
+	body: { fontFamily: FONTS.body, fontSize: 16, lineHeight: 24 },
+	label: { fontFamily: FONTS.bodySemiBold, fontSize: 14, lineHeight: 20 },
+	caption: { fontFamily: FONTS.body, fontSize: 12, lineHeight: 16 },
+} as const;
+
 export { SIZES } from './sizes';

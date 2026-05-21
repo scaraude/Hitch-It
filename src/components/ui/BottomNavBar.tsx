@@ -2,7 +2,7 @@ import { FontAwesome6, Ionicons } from '@expo/vector-icons';
 import type React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { COLORS, SIZES, SPACING } from '../../constants';
+import { COLORS, FONTS, SIZES, SPACING } from '../../constants';
 import { useTranslation } from '../../i18n';
 
 type TabId = 'home' | 'search' | 'add' | 'history' | 'profile';
@@ -179,6 +179,7 @@ const styles = StyleSheet.create({
 	},
 	tabLabel: {
 		width: '100%',
+		fontFamily: FONTS.body,
 		fontSize: SIZES.fontMd,
 		color: TEXT_GRAY,
 		textAlign: 'center',
@@ -186,7 +187,7 @@ const styles = StyleSheet.create({
 	},
 	tabLabelActive: {
 		color: PRIMARY_BLUE,
-		fontWeight: '500',
+		fontFamily: FONTS.bodyMedium,
 	},
 	addButtonSpacer: {
 		flex: 1,
