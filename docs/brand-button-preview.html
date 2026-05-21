@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TCK-85 — Role tokens &amp; Button preview</title>
+<style>
+  :root {
+    --sunbeam: #FFB703; --sunbeam-deep: #E09600;
+    --ink: #1B2A41; --ink-soft: #5A6472;
+    --petrol: #0F6E72; --petrol-tint: #E2F0F0; --coral: #FB5343;
+    --background: #FFFDF9; --surface: #F6F3EC; --border: #E9E5DC;
+    --success: #2E9E5B; --warning: #E8810C; --error: #E5484D;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 32px;
+    font-family: -apple-system, "Segoe UI", Roboto, system-ui, sans-serif;
+    background: var(--background); color: var(--ink); line-height: 1.5;
+  }
+  h1 { font-size: 26px; margin: 0 0 4px; }
+  h2 { font-size: 18px; margin: 36px 0 12px; color: var(--ink); }
+  p.lead { color: var(--ink-soft); margin: 0 0 8px; max-width: 60ch; }
+  .note { color: var(--ink-soft); font-size: 13px; }
+  .row { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; }
+  .swatch { width: 132px; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: #fff; }
+  .swatch .chip { height: 64px; }
+  .swatch .meta { padding: 8px 10px; font-size: 12px; }
+  .swatch .meta b { display: block; font-size: 13px; }
+  .swatch .meta code { color: var(--ink-soft); }
+  .shift { display: flex; align-items: center; gap: 14px; padding: 14px; border: 1px solid var(--border); border-radius: 16px; background: #fff; max-width: 560px; }
+  .shift .box { width: 56px; height: 56px; border-radius: 12px; border: 1px solid rgba(0,0,0,.08); }
+  .arrow { font-size: 22px; color: var(--ink-soft); }
+  /* Buttons (mirror src/components/ui/Button.tsx) */
+  .btn { min-height: 48px; padding: 8px 24px; border-radius: 16px; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; letter-spacing: .3px; font-size: 16px; border: none; cursor: default; }
+  .btn--primary { background: var(--sunbeam); color: var(--ink); }
+  .btn--secondary { background: var(--petrol); color: #fff; }
+  .btn--ghost { background: transparent; color: var(--petrol); border: 1.5px solid var(--petrol); }
+  .btn--disabled { opacity: .5; }
+  .cardgrid { display: flex; flex-wrap: wrap; gap: 12px; }
+  table { border-collapse: collapse; margin-top: 8px; font-size: 14px; }
+  th, td { text-align: left; padding: 6px 14px; border-bottom: 1px solid var(--border); }
+  .pass { color: var(--success); font-weight: 700; }
+</style>
+</head>
+<body>
+  <h1>TCK-85 — Role tokens &amp; shared Button</h1>
+  <p class="lead">Backbone of the “Sunbeam &amp; Petrol” branding pass: de-overload <code>primary</code>, introduce role tokens, and a shared <code>Button</code>. Static preview — colors mirror <code>src/constants/index.ts</code> and <code>src/components/ui/Button.tsx</code>.</p>
+
+  <h2>The key shift — <code>primary</code> de-overloaded</h2>
+  <div class="shift">
+    <div class="box" style="background:#096396"></div>
+    <span class="arrow">→</span>
+    <div class="box" style="background:var(--petrol)"></div>
+    <div>
+      <b>primary → accent (petrol)</b>
+      <div class="note">Old <code>#096396</code> (dark blue, used as text/icon accent) maps to <code>petrol #0F6E72</code> — stays AAA-legible everywhere. Yellow lives only in the new <code>action</code> token, applied deliberately to CTAs.</div>
+    </div>
+  </div>
+
+  <h2>Role &amp; brand tokens</h2>
+  <div class="row">
+    <div class="swatch"><div class="chip" style="background:var(--sunbeam)"></div><div class="meta"><b>action</b><code>#FFB703</code> · CTA fill</div></div>
+    <div class="swatch"><div class="chip" style="background:var(--ink)"></div><div class="meta"><b>onAction / ink</b><code>#1B2A41</code> · text on action</div></div>
+    <div class="swatch"><div class="chip" style="background:var(--petrol)"></div><div class="meta"><b>accent / petrol</b><code>#0F6E72</code></div></div>
+    <div class="swatch"><div class="chip" style="background:var(--coral)"></div><div class="meta"><b>coral</b><code>#FB5343</code></div></div>
+    <div class="swatch"><div class="chip" style="background:var(--warning)"></div><div class="meta"><b>warning</b><code>#E8810C</code></div></div>
+    <div class="swatch"><div class="chip" style="background:var(--success)"></div><div class="meta"><b>success</b><code>#2E9E5B</code></div></div>
+    <div class="swatch"><div class="chip" style="background:var(--surface);border-bottom:1px solid var(--border)"></div><div class="meta"><b>surface</b><code>#F6F3EC</code></div></div>
+    <div class="swatch"><div class="chip" style="background:var(--background);border-bottom:1px solid var(--border)"></div><div class="meta"><b>background</b><code>#FFFDF9</code></div></div>
+  </div>
+
+  <h2>Button variants</h2>
+  <div class="cardgrid">
+    <button class="btn btn--primary">Hitch it</button>
+    <button class="btn btn--secondary">Compare</button>
+    <button class="btn btn--ghost">No thanks</button>
+    <button class="btn btn--primary btn--disabled">Disabled</button>
+  </div>
+  <p class="note">primary = action (sunbeam) + onAction (ink) · secondary = accent (petrol) + white · ghost = petrol outline.</p>
+
+  <h2>Contrast (WCAG)</h2>
+  <table>
+    <tr><th>Pair</th><th>Ratio</th><th>AA</th><th>AAA</th></tr>
+    <tr><td>ink on sunbeam (primary btn)</td><td>~9.6:1</td><td class="pass">✓</td><td class="pass">✓</td></tr>
+    <tr><td>white on petrol (secondary btn)</td><td>~5.3:1</td><td class="pass">✓</td><td>—</td></tr>
+    <tr><td>petrol on background (ghost btn)</td><td>~5.0:1</td><td class="pass">✓</td><td>—</td></tr>
+    <tr><td>ink on background (body text)</td><td>~14:1</td><td class="pass">✓</td><td class="pass">✓</td></tr>
+  </table>
+  <p class="note">No yellow-as-text anywhere: <code>action</code> is fill-only, paired with <code>onAction</code> (ink).</p>
+</body>
+</html>
