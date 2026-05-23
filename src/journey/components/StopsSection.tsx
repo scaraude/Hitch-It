@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
 	},
 	addButtonActive: {
 		borderColor: COLORS.error,
-		backgroundColor: 'rgba(244, 67, 54, 0.1)',
+		backgroundColor: COLORS.errorTint,
 	},
 	addButtonText: {
 		fontSize: SIZES.fontSm,

@@ -28,6 +28,7 @@ export const COLORS = {
 	success: '#2E9E5B',
 	warning: '#E8810C',
 	error: '#E5484D',
+	errorTint: 'rgba(229, 72, 77, 0.1)',
 	danger: '#E5484D',
 	info: '#2D7DD2',
 	background: '#FFFDF9',
