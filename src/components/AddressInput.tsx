@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
 		right: 0,
 		borderRadius: SIZES.radiusMedium,
 		marginTop: SPACING.xs,
-		shadowColor: '#000',
+		shadowColor: COLORS.text,
 		shadowOffset: { width: 0, height: 2 },
 		shadowOpacity: SIZES.shadowOpacity,
 		shadowRadius: SIZES.shadowRadius,

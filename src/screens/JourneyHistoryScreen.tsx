@@ -24,7 +24,7 @@ import type { RootStackParamList } from '../navigation/types';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
-const PROFILE_BACKGROUND_COLOR = '#C9A961';
+const PROFILE_BACKGROUND_COLOR = COLORS.sunbeamDeep;
 
 export default function JourneyHistoryScreen() {
 	const navigation = useNavigation<NavigationProp>();

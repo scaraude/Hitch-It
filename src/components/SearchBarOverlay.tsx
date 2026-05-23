@@ -85,14 +85,14 @@ const styles = StyleSheet.create({
 		backgroundColor: COLORS.background,
 		alignItems: 'center',
 		justifyContent: 'center',
-		shadowColor: '#000',
+		shadowColor: COLORS.text,
 		shadowOffset: { width: 0, height: 1 },
 		shadowOpacity: 0.2,
 		shadowRadius: 2,
 		elevation: 3,
 	},
 	searchIcon: {
-		color: '#484C52',
+		color: COLORS.textSecondary,
 	},
 	expandedContainer: {
 		position: 'absolute',
@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
 		paddingRight: SPACING.md,
 		paddingVertical: SPACING.sm,
 		minHeight: 56,
-		shadowColor: '#000',
+		shadowColor: COLORS.text,
 		shadowOffset: { width: 0, height: 2 },
 		shadowOpacity: 0.15,
 		shadowRadius: 8,
@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
 		borderRadius: 20,
 	},
 	backIcon: {
-		color: '#484C52',
+		color: COLORS.textSecondary,
 	},
 	inputWrapper: {
 		flex: 1,
