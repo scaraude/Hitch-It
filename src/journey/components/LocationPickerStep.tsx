@@ -123,7 +123,11 @@ export const LocationPickerStep: React.FC<LocationPickerStepProps> = ({
 							accessibilityLabel={t('common.closeSearch')}
 							accessibilityRole="button"
 						>
-							<Ionicons name="arrow-back" size={22} color="#484C52" />
+							<Ionicons
+								name="arrow-back"
+								size={22}
+								color={COLORS.textSecondary}
+							/>
 						</Pressable>
 						<View style={styles.inputWrapper}>
 							<AddressInput
@@ -221,7 +225,7 @@ const styles = StyleSheet.create({
 		paddingHorizontal: SPACING.md,
 		paddingVertical: SPACING.sm,
 		minHeight: 48,
-		shadowColor: '#000',
+		shadowColor: COLORS.text,
 		shadowOffset: { width: 0, height: 2 },
 		shadowOpacity: 0.15,
 		shadowRadius: 8,
@@ -246,7 +250,7 @@ const styles = StyleSheet.create({
 		paddingRight: SPACING.md,
 		paddingVertical: SPACING.sm,
 		minHeight: 56,
-		shadowColor: '#000',
+		shadowColor: COLORS.text,
 		shadowOffset: { width: 0, height: 2 },
 		shadowOpacity: 0.15,
 		shadowRadius: 8,

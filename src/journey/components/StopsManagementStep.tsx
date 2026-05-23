@@ -20,8 +20,8 @@ import type { Location, MapRegion } from '../../types';
 import type { ManualStop } from '../hooks/useManualJourneyFlow';
 import { StopsSection } from './StopsSection';
 
-// Non-token color used for unselected stop markers (dark gray dot)
-const STOP_MARKER_COLOR = '#333333';
+// Color for unselected stop markers
+const STOP_MARKER_COLOR = COLORS.text;
 
 interface StopsManagementStepProps {
 	startLocation: Location;
@@ -343,7 +343,7 @@ const styles = StyleSheet.create({
 		borderTopRightRadius: SIZES.radiusXLarge,
 		paddingHorizontal: SPACING.lg,
 		maxHeight: '50%',
-		shadowColor: '#000',
+		shadowColor: COLORS.text,
 		shadowOffset: { width: 0, height: -2 },
 		shadowOpacity: 0.1,
 		shadowRadius: 8,

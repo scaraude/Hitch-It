@@ -24,7 +24,7 @@ import type { RootStackParamList } from '../navigation/types';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
-const PROFILE_BACKGROUND_COLOR = '#C9A961';
+const PROFILE_BACKGROUND_COLOR = COLORS.sunbeamDeep;
 
 export default function JourneyHistoryScreen() {
 	const navigation = useNavigation<NavigationProp>();
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
 	username: {
 		fontSize: SIZES.font2Xl,
 		fontWeight: '700',
-		color: COLORS.text,
+		color: COLORS.textLight,
 		marginBottom: SPACING.lg,
 	},
 	statsContainer: {
@@ -261,11 +261,11 @@ const styles = StyleSheet.create({
 	statValue: {
 		fontSize: SIZES.fontXl,
 		fontWeight: '700',
-		color: COLORS.text,
+		color: COLORS.textLight,
 	},
 	statLabel: {
 		fontSize: SIZES.fontSm,
-		color: COLORS.textSecondary,
+		color: COLORS.textLight,
 		marginTop: SPACING.xs,
 	},
 	sectionHeader: {
