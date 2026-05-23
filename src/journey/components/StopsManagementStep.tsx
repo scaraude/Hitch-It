@@ -20,7 +20,7 @@ import type { Location, MapRegion } from '../../types';
 import type { ManualStop } from '../hooks/useManualJourneyFlow';
 import { StopsSection } from './StopsSection';
 
-// Non-token color used for unselected stop markers (dark gray dot)
+// Color for unselected stop markers
 const STOP_MARKER_COLOR = COLORS.text;
 
 interface StopsManagementStepProps {
