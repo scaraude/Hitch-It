@@ -6,7 +6,7 @@ import { SIZES } from '../../constants/sizes';
 import { useTranslation } from '../../i18n';
 import type { ManualStop } from '../hooks/useManualJourneyFlow';
 
-const STOP_MARKER_COLOR = '#333333';
+const STOP_MARKER_COLOR = COLORS.text;
 
 interface StopsListProps {
 	stops: ManualStop[];
